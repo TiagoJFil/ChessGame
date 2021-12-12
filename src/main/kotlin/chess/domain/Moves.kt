@@ -2,17 +2,10 @@ package chess.domain
 
 import Board
 import Colors
-import Column
 import Piece
 import PieceMove
 import PieceType
-import Row
-import Square
-import findColumn
-import findRow
-import isAColumn
-import isARow
-import toSquare
+import chess.domain.board_components.*
 
 
 import kotlin.math.abs
@@ -414,8 +407,9 @@ private fun isMovePossible(pieceInfo: PieceMove, orientation: Orientation): Bool
 }
 
 //Não testa se o cavalo faz check
-
+/*
 fun getCheck(board: Board): Boolean {
+    TODO()
     val kingSquare = board.getKingSquare(board.getPlayerColor())
     val lastMove = board.getLastMove().substring(3..4).toSquare()
     if(kingSquare != null) {
@@ -427,7 +421,10 @@ fun getCheck(board: Board): Boolean {
     }
 
     return false
+
 }
+*/
+
 
 
 

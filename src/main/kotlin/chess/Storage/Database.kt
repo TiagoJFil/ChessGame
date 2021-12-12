@@ -136,7 +136,7 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
  * @property moves    the move
  * @property _id      the id of the game where the move was played
  */
-data class Document(val _id: String, val moves: List<Move>)
+private data class Document(val _id: String, val moves: List<Move>)
 
 
 /**

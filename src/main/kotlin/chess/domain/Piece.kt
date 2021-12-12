@@ -1,4 +1,8 @@
+import chess.domain.MoveType
 import chess.domain.Player
+import chess.domain.board_components.Square
+import chess.domain.board_components.findColumn
+import chess.domain.board_components.findRow
 
 /**
  * Represents the possible piece types.
@@ -35,7 +39,7 @@ enum class Colors {
 data class PieceMove(val startSquare: Square, val endSquare: Square)
 
 
-enum class MoveInput(val index : Int){
+private enum class MoveInput(val index : Int){
     POSITION_FROM_LETTER(1),
     POSITION_FROM_NUMBER(2),
     POSITION_TO_LETTER(3),
@@ -79,18 +83,27 @@ fun Char.toPieceType():PieceType{
     }
 }
 
+typealias Direction = Pair<Int, Int>
 
 /**
  * @param type    the [PieceType] of the piece
  * @param player  the [Player] corresponding of the piece
  * Represents a chess piece.
  */
-class Piece(val type: PieceType, val player: Player) {
-    private var moved = false
+interface Piece {
+    val player: Player
+    //var moved: Boolean
 
     /**
      * @return the piece as a string with the correspondent color
      */
+    override fun toString(): String
+
+    fun getPossibleMoves(board: Board, pos: Square): List<PieceMove>
+
+    fun canMove(board: Board, pieceMove: PieceMove): MoveType
+
+    /*
     override fun toString(): String {
         val pieceString = when (this.type) {
             PieceType.ROOK -> "r"
@@ -104,7 +117,7 @@ class Piece(val type: PieceType, val player: Player) {
         return if (player.color == Colors.WHITE) pieceString.toUpperCase()
         else pieceString
     }
-
+*/
     /**
      * @return a [Boolean] value if the piece belongs to the white player(true) or false if it belongs to the black player
      */
@@ -112,6 +125,7 @@ class Piece(val type: PieceType, val player: Player) {
         return player.color == Colors.WHITE
     }
 
+    /*
     /**
      * @return a [Boolean] value indicating if the piece has moved(true) or false if it hasn't
      */
@@ -126,7 +140,7 @@ class Piece(val type: PieceType, val player: Player) {
         moved = true
     }
 
-
+*/
 }
 
 
