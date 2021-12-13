@@ -1,4 +1,5 @@
 import chess.domain.board_components.Column
+import chess.domain.board_components.findColumn
 import chess.domain.board_components.toColumn
 import org.junit.Assert.*
 import org.junit.Test
@@ -13,7 +14,7 @@ import org.junit.Assert.assertTrue
 class TestColumn {
     @Test
     fun `Letter to Column with ordinal property`() {
-        val column = 'c'.toColumnOrNull()
+        val column = findColumn('c')
         assertNotNull(column)
         assertEquals(2, column.ordinal)
     }
@@ -24,12 +25,12 @@ class TestColumn {
     }
     @Test
     fun `Invalid letter to Column results null`() {
-        val column = 'x'.toColumnOrNull()
+        val column = findColumn('x')
         assertNull(column)
     }
     @Test
     fun `All valid letters to columns`() {
-        assertEquals((0..7).toList(),  ('a'..'z').mapNotNull{ it.toColumnOrNull()?.ordinal })
+        assertEquals((0..7).toList(),  ('a'..'z').mapNotNull{findColumn(it)?.ordinal })
     }
     @Test
     fun `Get all valid values of Column`() {
@@ -39,7 +40,7 @@ class TestColumn {
     @Test
     fun `All invalid columns`() {
         val invalidChars = (0..255).map{ it.toChar() } - ('a'..'h')
-        val invalidColumns = invalidChars.mapNotNull{ it.toColumnOrNull() }
+        val invalidColumns = invalidChars.mapNotNull{ findColumn(it) }
         assertEquals(0 , invalidColumns.size)
     }
 }

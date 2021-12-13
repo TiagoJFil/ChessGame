@@ -1,5 +1,4 @@
 import chess.Storage.Move
-import chess.domain.Pieces.Knight
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
@@ -83,7 +82,7 @@ class Board() {
             var j = 'a'
             for (piece in idx) {
                 if (piece != null)
-                    if ((piece.type == PieceType.KING) && piece.player.color == playerColor) return "$j$k".toSquare()
+                    if ((piece is King ) && piece.player.color == playerColor) return "$j$k".toSquare()
                 j++
             }
             k--
@@ -107,7 +106,7 @@ class Board() {
                 Knight(blackPlayer),
                 Piece(PieceType.BISHOP, blackPlayer),
                 Piece(PieceType.QUEEN, blackPlayer),
-                Piece(PieceType.KING, blackPlayer),
+                King(blackPlayer),
                 Piece(PieceType.BISHOP, blackPlayer),
                 Knight(blackPlayer),
                 Piece(PieceType.ROOK, blackPlayer)
@@ -141,7 +140,7 @@ class Board() {
                 Knight(whitePlayer),
                 Piece(PieceType.BISHOP, whitePlayer),
                 Piece(PieceType.QUEEN, whitePlayer),
-                Piece(PieceType.KING, whitePlayer),
+                King(whitePlayer),
                 Piece(PieceType.BISHOP, whitePlayer),
                 Knight(whitePlayer),
                 Piece(PieceType.ROOK, whitePlayer)
@@ -166,8 +165,12 @@ class Board() {
         board[pieceMovement.startSquare.row.value()][pieceMovement.startSquare.column.value()] = null
         board[pieceMovement.endSquare.row.value()][pieceMovement.endSquare.column.value()] = piece
 
+        when(piece) {
+            is Pawn -> piece.setAsMoved()
+            is King -> piece.setAsMoved()
+            is Rook -> piece.setAsMoved()
+        }
 
-        piece.setAsMoved()
         changePlayerTurn()
 
         return this
@@ -235,7 +238,7 @@ class Board() {
      */
     fun promotePiece(square: Square, promotionType: PieceType): Boolean {
         val piece = getPieceAt(square) ?: return false
-        if (piece.type != PieceType.PAWN) return false
+        if (piece !is Pawn) return false
         else {
             board[square.row.value()][square.column.value()] = Piece(promotionType, piece.player)
             board[square.row.value()][square.column.value()]?.setAsMoved()

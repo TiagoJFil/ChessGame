@@ -33,12 +33,10 @@ fun findColumn(c : Char): Column {
 
 
 fun Int.toColumn() : Column  {
-    if( (MIN_X_LETTER +this ).isNotAColumn())
-        throw IllegalArgumentException("Column must be between $MIN_X_LETTER and $MAX_X_LETTER")
+    require((MIN_X_LETTER +this).isAColumn()) {
+        "Char is not valid"
+    }
     return Column.values()[this]
 }
 
 fun Char.isAColumn() = this in MIN_X_LETTER..MAX_X_LETTER
-
-fun Char.isNotAColumn() = this !in MIN_X_LETTER..MAX_X_LETTER
-

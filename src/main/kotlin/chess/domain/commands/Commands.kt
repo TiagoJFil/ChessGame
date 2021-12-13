@@ -8,6 +8,7 @@ import chess.GameName
 import chess.Storage.DataBase
 import chess.Storage.Move
 import chess.domain.Player
+import chess.domain.board_components.toSquare
 import toPieceType
 import toSquare
 import chess.domain.traceBackPawn

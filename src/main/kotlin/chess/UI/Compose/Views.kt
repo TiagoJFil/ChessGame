@@ -1,9 +1,14 @@
 package chess.UI.Compose
 
+import Bishop
 import Board
 import Colors
+import King
+import Knight
+import Pawn
 import Piece
-import Square
+import Queen
+import Rook
 import androidx.compose.desktop.DesktopMaterialTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
@@ -18,14 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import findColumn
-import findRow
+import chess.domain.board_components.toSquare
 import org.junit.Test
-import toSquare
 
 @Preview
 @Composable
-fun BuildBoard(){
+fun buildBoard(){
     Row {
 
         for(i in 1..8) {
@@ -54,7 +57,7 @@ fun BuildBoard(){
 
 
 @Composable
-fun BoardToComposable(board: Board){
+fun boardToComposable(board: Board){
     Column {
         for(i in 8 downTo 1) {
                 Row {
@@ -62,7 +65,7 @@ fun BoardToComposable(board: Board){
                         val column = (count + 'a'.code).toChar()// convert to char
                         val square = "$column$i".toSquare()
                         val piece = board.getPieceAt(square)
-                        Tile(piece)
+                        tile(piece)
                     }
                 }
         }
@@ -70,42 +73,42 @@ fun BoardToComposable(board: Board){
 }
 
 @Composable
-fun Tile(piece: Piece?){
+fun tile(piece: Piece?){
 
     if (piece != null) {
         val pieceColor = piece.player.color
-        val pieceImage = when (piece.type) {
-            PieceType.PAWN -> {
+        val pieceImage = when (piece) {
+            is Pawn -> {
                 if (pieceColor == Colors.WHITE)
                     "white-pawn.png"
                 else
                     "black-pawn.png"
             }
-            PieceType.ROOK -> {
+            is Rook -> {
                 if (pieceColor == Colors.WHITE)
                     "white-rook.png"
                 else
                     "black-rook.png"
             }
-            PieceType.KNIGHT -> {
+            is Knight -> {
                 if (pieceColor == Colors.WHITE)
                     "white-knight.png"
                 else
                     "black-knight.png"
             }
-            PieceType.BISHOP -> {
+            is Bishop -> {
                 if (pieceColor == Colors.WHITE)
                     "white-bishop.png"
                 else
                     "black-bishop.png"
             }
-            PieceType.QUEEN -> {
+            is Queen -> {
                 if (pieceColor == Colors.WHITE)
                     "white-queen.png"
                 else
                     "black-queen.png"
             }
-            PieceType.KING -> {
+            is King -> {
                 if (pieceColor == Colors.WHITE)
                     "white-king.png"
                 else
@@ -149,8 +152,8 @@ fun BackgroundTile(tileColor: Colors) {
 @Preview
 fun App(board: Board) {
     DesktopMaterialTheme {
-        BuildBoard()
-        BoardToComposable(board)
+        buildBoard()
+        boardToComposable(board)
     }
 }
 
