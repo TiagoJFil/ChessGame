@@ -1,5 +1,4 @@
-import chess.domain.MoveType
-import chess.domain.Player
+import chess.domain.*
 import chess.domain.board_components.Square
 import chess.domain.board_components.findColumn
 import chess.domain.board_components.findRow
@@ -84,7 +83,13 @@ sealed interface Piece {
 
     fun getPossibleMoves(board: Board, pos: Square): List<PieceMove>
 
+
+
+
     fun canMove(board: Board, pieceInfo: PieceMove): MoveType
+
+
+
 
     /**
      * @return a [Boolean] value if the piece belongs to the white player(true) or false if it belongs to the black player
@@ -256,11 +261,35 @@ class Bishop (override val player: Player) : Piece {
     }
 
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
-        TODO("Not yet implemented")
+        var newPos :Square? = pos
+        possibleDirections.forEach {
+
+            while(board.getPieceAt(newPos) != null){
+                newPos = newPos.addDirection(it)
+            }
+
+        }
     }
 
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
-        TODO("Not yet implemented")
+
+        TODO()
+        /*
+        val pieceDefaultOrientation = listOf(Orientation.DIAGONAL)
+        val orientationFromInput = getOrientation(pieceInfo.startSquare,pieceInfo.endSquare) ?: return MoveType.ILLEGAL
+        if(!pieceDefaultOrientation.contains(orientationFromInput)) return MoveType.ILLEGAL //in case the piece doesn't allow the orientation of the move
+
+        val moveIsPossible = isMovePossible(pieceInfo,orientationFromInput)
+        val pieceAtEndPos = board.getPieceAt(pieceInfo.endSquare)
+
+        if(moveIsPossible && isPathClear(pieceInfo,board,orientationFromInput)){
+            if (pieceAtEndPos == null) return MoveType.REGULAR
+            if (pieceAtEndPos.player.color != board.getPlayerColor()) return MoveType.CAPTURE
+        }
+
+        return MoveType.ILLEGAL
+
+         */
     }
 
 }
