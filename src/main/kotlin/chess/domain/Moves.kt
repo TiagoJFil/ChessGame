@@ -44,17 +44,6 @@ interface VerifyMoves {
     operator fun invoke(pieceInfo: PieceMove, board: Board) = CanMoveTo(pieceInfo,board)
 }
 
-private fun buildMapOfMoveInterface() : Map<PieceType, VerifyMoves> {
-    return mapOf(
-        PieceType.ROOK to CanRookMoveTo(),
-        PieceType.BISHOP to CanBishopMoveTo(),
-        PieceType.KNIGHT to CanKnightMoveTo(),
-        PieceType.QUEEN to CanQueenMoveTo(),
-        PieceType.KING to CanKingMoveTo(),
-        PieceType.PAWN to CanPawnMoveTo()
-    )
-}
-
 
 
 /**
@@ -68,20 +57,8 @@ fun canPieceMoveTo(moveString:String,board: Board): MoveType {
 
     val pieceInfo = PieceMove(moveString.substring(1..2).toSquare(), moveString.substring(3..4).toSquare())
 
-    val map = buildMapOfMoveInterface()
-    /** estranho, porque nunca vavmos ter null no mapa */
-
-    val canPieceMove = map[piece.type] ?: throw IllegalArgumentException("Piece type not supported")
-    val Movement = canPieceMove(pieceInfo,board) ?: throw IllegalArgumentException("Invalid move")
-
-    return Movement
+    return piece.canMove(board, pieceInfo)
 }
-
-
-
-
-
-
 
 
 
@@ -91,6 +68,7 @@ fun canPieceMoveTo(moveString:String,board: Board): MoveType {
  * @returns a full string with the Piece, the start position and the end position or null if there is no move possible.
  */
 fun traceBackPawn(endPos:String, board: Board):String?{
+    /*
     val column = endPos[0]
     val row = endPos[1]
     var pieceCapturingRight : Piece? = null
@@ -144,11 +122,14 @@ fun traceBackPawn(endPos:String, board: Board):String?{
     }
 
     return if(tracedPawn == null) tracedPawn else tracedPawn + endPos
+*/
+    return null
 }
+
 
 private class CanPawnMoveTo(): VerifyMoves {
 
-    override fun CanMoveTo(pieceInfo: PieceMove, board: Board): MoveType {
+    override fun CanMoveTo(pieceInfo: PieceMove, board: Board): MoveType {/*
         val piece = board.getPieceAt(pieceInfo.startSquare) ?: throw IllegalArgumentException("ERROR: Check failed..")
         val direction : Int = if(piece.belongsToWhitePlayer()) UP else DOWN
         val border = if(piece.belongsToWhitePlayer()) PAWN_PROMOTION_ROW_WHITE else PAWN_PROMOTION_ROW_BLACK
@@ -182,9 +163,11 @@ private class CanPawnMoveTo(): VerifyMoves {
             ) return MoveType.REGULAR
 
         }
-
+        return MoveType.ILLEGAL
+ */
         return MoveType.ILLEGAL
     }
+
 }
 
 private class CanKingMoveTo(): VerifyMoves {
@@ -207,6 +190,7 @@ private class CanKingMoveTo(): VerifyMoves {
         return MoveType.ILLEGAL
     }
     private fun canCastle(pieceInfo: PieceMove, board: Board): Boolean {
+        /*
         val piece = board.getPieceAt(pieceInfo.startSquare) ?: return false
         val rookAtRightPos : Piece?
         val rookAtLeftPos : Piece?
@@ -228,7 +212,8 @@ private class CanKingMoveTo(): VerifyMoves {
             ) return true
 
         }
-
+        return false
+        */
         return false
     }
 }

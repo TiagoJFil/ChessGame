@@ -68,21 +68,6 @@ fun String.formatToPieceMove(): PieceMove{
 
 
 
-/**
- * Converts a char into a PieceType.
- */
-fun Char.toPieceType():PieceType{
-    return when(this.toLowerCase()){
-        'r' -> PieceType.ROOK
-        'n' -> PieceType.KNIGHT
-        'b' -> PieceType.BISHOP
-        'q' -> PieceType.QUEEN
-        'k' -> PieceType.KING
-        'p' -> PieceType.PAWN
-        else -> throw IllegalArgumentException("$this is not a valid piece type")
-    }
-}
-
 typealias Direction = Pair<Int, Int>
 
 /**

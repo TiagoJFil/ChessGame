@@ -74,47 +74,22 @@ fun boardToComposable(board: Board){
 
 @Composable
 fun tile(piece: Piece?){
-
+    var pieceImage = "empty-tile.png"
     if (piece != null) {
         val pieceColor = piece.player.color
-        val pieceImage = when (piece) {
-            is Pawn -> {
-                if (pieceColor == Colors.WHITE)
-                    "white-pawn.png"
-                else
-                    "black-pawn.png"
-            }
-            is Rook -> {
-                if (pieceColor == Colors.WHITE)
-                    "white-rook.png"
-                else
-                    "black-rook.png"
-            }
-            is Knight -> {
-                if (pieceColor == Colors.WHITE)
-                    "white-knight.png"
-                else
-                    "black-knight.png"
-            }
-            is Bishop -> {
-                if (pieceColor == Colors.WHITE)
-                    "white-bishop.png"
-                else
-                    "black-bishop.png"
-            }
-            is Queen -> {
-                if (pieceColor == Colors.WHITE)
-                    "white-queen.png"
-                else
-                    "black-queen.png"
-            }
-            is King -> {
-                if (pieceColor == Colors.WHITE)
-                    "white-king.png"
-                else
-                    "black-king.png"
-            }
+        pieceImage = when (piece) {
+            is Pawn -> "pawn.png"
+            is Rook -> "rook.png"
+            is Knight -> "knight.png"
+            is Bishop -> "bishop.png"
+            is Queen -> "queen.png"
+            is King -> "king.png"
+            else -> {"empty-tile.png"}
         }
+        pieceImage = if (pieceColor == Colors.WHITE)
+            "white-$pieceImage"
+        else "black-$pieceImage"
+    }
         Box{
             Image(
                 painter = painterResource(pieceImage),
@@ -122,16 +97,6 @@ fun tile(piece: Piece?){
                 // modifier = Modifier.size(60.dp).padding(5.dp),
                 contentDescription = null)
         }
-
-    }
-    if(piece == null){
-        Box{
-          Image(
-              painter = painterResource("empty-tile.png"),
-              modifier = Modifier.size(75.dp).align(Alignment.Center),
-              contentDescription = null)
-        }
-    }
 
 }
 

@@ -9,8 +9,6 @@ import chess.Storage.DataBase
 import chess.Storage.Move
 import chess.domain.Player
 import chess.domain.board_components.toSquare
-import toPieceType
-import toSquare
 import chess.domain.traceBackPawn
 
 private const val PAWN_INPUT = 2
@@ -132,12 +130,11 @@ class PlayCommand(private val chess: Chess) : Commands {
                 if (filteredInput.databaseMove.contains("=")) {
                     chess.board.promotePiece(
                         filteredInput.filteredMove.substring(1, 2).toSquare(),
-                        filteredInput.filteredMove.last().toPieceType()
+                        filteredInput.filteredMove.last()
                     )
                 }else{
                     chess.board.promotePiece(
-                        filteredInput.filteredMove.substring(1, 2).toSquare(),
-                        'q'.toPieceType()
+                        filteredInput.filteredMove.substring(1, 2).toSquare()
                     )
 
                 }

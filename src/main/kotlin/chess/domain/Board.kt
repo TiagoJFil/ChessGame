@@ -102,48 +102,49 @@ class Board() {
 
         val newBoard: BoardMap = arrayOf(
             arrayOf(
-                Piece(PieceType.ROOK, blackPlayer),
+                Rook(blackPlayer),
                 Knight(blackPlayer),
-                Piece(PieceType.BISHOP, blackPlayer),
-                Piece(PieceType.QUEEN, blackPlayer),
+                Bishop(blackPlayer),
+                Queen(blackPlayer),
                 King(blackPlayer),
-                Piece(PieceType.BISHOP, blackPlayer),
+                Bishop(blackPlayer),
                 Knight(blackPlayer),
-                Piece(PieceType.ROOK, blackPlayer)
+                Rook(blackPlayer)
             ),
             arrayOf(
-                Piece(PieceType.PAWN, blackPlayer),
-                Piece(PieceType.PAWN, blackPlayer),
-                Piece(PieceType.PAWN, blackPlayer),
-                Piece(PieceType.PAWN, blackPlayer),
-                Piece(PieceType.PAWN, blackPlayer),
-                Piece(PieceType.PAWN, blackPlayer),
-                Piece(PieceType.PAWN, blackPlayer),
-                Piece(PieceType.PAWN, blackPlayer)
+                Pawn(blackPlayer),
+                Pawn(blackPlayer),
+                Pawn(blackPlayer),
+                Pawn(blackPlayer),
+                Pawn(blackPlayer),
+                Pawn(blackPlayer),
+                Pawn(blackPlayer),
+                Pawn(blackPlayer)
             ),
             arrayOfNulls(BOARD_SIZE),
             arrayOfNulls(BOARD_SIZE),
             arrayOfNulls(BOARD_SIZE),
             arrayOfNulls(BOARD_SIZE),
             arrayOf(
-                Piece(PieceType.PAWN, whitePlayer),
-                Piece(PieceType.PAWN, whitePlayer),
-                Piece(PieceType.PAWN, whitePlayer),
-                Piece(PieceType.PAWN, whitePlayer),
-                Piece(PieceType.PAWN, whitePlayer),
-                Piece(PieceType.PAWN, whitePlayer),
-                Piece(PieceType.PAWN, whitePlayer),
-                Piece(PieceType.PAWN, whitePlayer)
+                Pawn(whitePlayer),
+                Pawn(whitePlayer),
+                Pawn(whitePlayer),
+                Pawn(whitePlayer),
+                Pawn(whitePlayer),
+                Pawn(whitePlayer),
+                Pawn(whitePlayer),
+                Pawn(whitePlayer),
+
             ),
             arrayOf(
-                Piece(PieceType.ROOK, whitePlayer),
+                Rook(whitePlayer),
                 Knight(whitePlayer),
-                Piece(PieceType.BISHOP, whitePlayer),
-                Piece(PieceType.QUEEN, whitePlayer),
+                Bishop(whitePlayer),
+                Queen(whitePlayer),
                 King(whitePlayer),
-                Piece(PieceType.BISHOP, whitePlayer),
+                Bishop(whitePlayer),
                 Knight(whitePlayer),
-                Piece(PieceType.ROOK, whitePlayer)
+                Rook(whitePlayer)
             )
         )
 
@@ -236,18 +237,28 @@ class Board() {
      * @param square the Square where the piece to be promoted is placed
      * @return true if the piece is a promoted or false if it isn't
      */
-    fun promotePiece(square: Square, promotionType: PieceType): Boolean {
+    fun promotePiece(square: Square, promotionType: Char = 'q'): Boolean {
         val piece = getPieceAt(square) ?: return false
         if (piece !is Pawn) return false
         else {
-            board[square.row.value()][square.column.value()] = Piece(promotionType, piece.player)
-            board[square.row.value()][square.column.value()]?.setAsMoved()
+            board[square.row.value()][square.column.value()] = when(promotionType.toLowerCase()) {
+                'r' -> {
+                   val res = Rook(piece.player)
+                       res.setAsMoved()
+                       res
+                }
+                'b' -> Bishop(piece.player)
+                'n' -> Knight(piece.player)
+                'q' -> Queen(piece.player)
+                else -> throw IllegalArgumentException("Invalid promotion type")
+            }
+
 
         }
         return true
     }
 }
-}
+
 
 
 
