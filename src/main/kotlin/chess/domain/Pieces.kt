@@ -92,6 +92,8 @@ sealed interface Piece {
     fun belongsToWhitePlayer(): Boolean {
         return player.color == Colors.WHITE
     }
+
+
 }
 
 
@@ -102,12 +104,12 @@ class Pawn (override val player: Player) : Piece  {
         moved = true
     }
 
-    fun hasMoved(): Boolean {
+     fun hasMoved(): Boolean {
         return moved
     }
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        return if (player.isWhite()) "P" else "p"
     }
 
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
@@ -128,11 +130,11 @@ class King (override val player: Player) : Piece {
         moved = true
     }
 
-    fun hasMoved(): Boolean {
+     fun hasMoved(): Boolean {
         return moved
     }
     override fun toString(): String {
-        TODO("Not yet implemented")
+        return if (player.isWhite()) "K" else "k"
     }
 
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
@@ -148,7 +150,7 @@ class King (override val player: Player) : Piece {
 class Queen (override val player: Player) : Piece {
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        return if (player.isWhite()) "Q" else "q"
     }
 
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
@@ -173,7 +175,7 @@ class Rook (override val player: Player) : Piece {
     }
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        return if (player.isWhite()) "R" else "r"
     }
 
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
@@ -208,7 +210,7 @@ class Knight (override val player: Player) : Piece {
      * @return the piece as a string with the correspondent color
      */
     override fun toString(): String {
-        return if (player.isWhite()) "n" else "N"
+        return if (player.isWhite()) "N" else "n"
     }
 
     /**
@@ -239,9 +241,18 @@ class Knight (override val player: Player) : Piece {
 }
 
 class Bishop (override val player: Player) : Piece {
+    /**
+     * The possible offset this piece can move to
+     */
+    private val possibleDirections = listOf(
+        Pair( 1, 1),
+        Pair( 1,-1),
+        Pair(-1, 1),
+        Pair(-1,-1)
+    )
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        return if (player.isWhite()) "B" else "b"
     }
 
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {

@@ -16,9 +16,9 @@ data class Square(val column: Column, val row: Row){
         return "${column.letter}${MAX_Y_NUMBER - row.value()}"
     }
     fun addDirection(direction: Direction): Square? {
-        if(this.column.value() + direction.first < 0 || this.column.value() + direction.first > 8)
+        if(this.column.value() + direction.first < 0 || this.column.value() + direction.first > 7)
             return null
-        if(this.row.value() + direction.second < MIN_Y_NUMBER || this.row.value() + direction.second > MAX_Y_NUMBER)
+        if(this.row.value() + direction.second < 0 || this.row.value() + direction.second > 7)
             return null
         return Square((this.column.value() + direction.first).toColumn() , (this.row.value() + direction.second).toRow())
     }

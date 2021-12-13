@@ -10,7 +10,7 @@ class HasMoved {
     fun hasPawnMoved() {
         val b = Board()
         val startPos = Square(Column.A, Row.Two)
-        val piece = b.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = b.getPieceAt(startPos) as Pawn
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
         b.makeMove("Pa2a3")
@@ -22,7 +22,7 @@ class HasMoved {
     fun hasRookMoved() {
         val b = Board()
         val startPos = Square(Column.A, Row.One)
-        val piece = b.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = b.getPieceAt(startPos) as Rook
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
         b.makeMove("Pa2a3")
@@ -35,7 +35,7 @@ class HasMoved {
     fun hasKingMoved() {
         val b = Board()
         val startPos = Square(Column.E, Row.One)
-        val piece = b.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = b.getPieceAt(startPos) as King
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
         b.makeMove("Pf2f3")

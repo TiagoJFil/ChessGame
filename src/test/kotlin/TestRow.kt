@@ -5,6 +5,7 @@ import org.junit.Test
  * The Row type identifies one of the rows on the board, also called ranks.
  * Rows are identified by a digit from '8' to '1'. The top row is '8'.
  */
+/*
 class TestRow {
     @Test
     fun `Digit to Row with ordinal property`() {
@@ -38,3 +39,4 @@ class TestRow {
         assertEquals(0 , invalidRows.size)
     }
 }
+*/

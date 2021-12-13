@@ -3,7 +3,6 @@ import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
 import chess.domain.canPieceMoveTo
-import chess.domain.getCheck
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -328,7 +327,7 @@ class QueenTest {
     }
 
 }
-
+/*
 class Check(){
     @Test
     fun `is check`(){
@@ -340,3 +339,4 @@ class Check(){
         assertTrue(getCheck(b))
     }
 }
+*/

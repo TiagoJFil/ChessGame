@@ -55,11 +55,9 @@ class Board() {
     fun getPieceAt(position: Square): Piece? {
         val row = position.row.value()
         val column = position.column.value()
-        return board[position.row.value()][position.column.value()]
+        return board[row][column]
 
     }
-
-
 
 
     /**

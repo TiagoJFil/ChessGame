@@ -7,6 +7,7 @@ import org.junit.Test
  * The Square type identifies a position on the board (Column and Row)
  * Squares are identified by one letter and one digit. The top left is "a8"
  */
+/*
 class TestSquare {
     @Test
     fun `Create a square and convert to string`() {
@@ -37,3 +38,5 @@ class TestSquare {
     }
     */
 }
+
+ */
