@@ -107,9 +107,6 @@ class BishopTest {
         val startPos = Square(Column.C, Row.One)
         val endPos = Square(Column.A, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
-        println(piece)
-
-
 
         val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
         assertEquals(MoveType.REGULAR,move)
@@ -123,7 +120,7 @@ class BishopTest {
         val startPos = Square(Column.F, Row.One)
         val endPos = Square(Column.H, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
-        println(piece)
+
 
 
         val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
@@ -138,7 +135,7 @@ class BishopTest {
         val startPos = Square(Column.H, Row.Three)
         val endPos = Square(Column.F, Row.One)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
-        println(piece)
+
 
 
         val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
@@ -154,7 +151,7 @@ class BishopTest {
         val startPos = Square(Column.C, Row.One)
         val endPos = Square(Column.A, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
-        println(piece)
+
 
 
         val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)

@@ -2,6 +2,7 @@ package chess.domain
 
 import Board
 import Colors
+import Direction
 import Piece
 import PieceMove
 import PieceType
@@ -45,7 +46,44 @@ interface VerifyMoves {
 }
 
 
+/**
+ * @param possibleDirections     List of directions to verify
+ * @param pos                    the position of the piece
+ * @param board                  the board where the piece is
+ * @return the list of possible moves for the piece given
+ */
+fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): List<PieceMove> {
+    var moves = listOf<PieceMove>()
+    possibleDirections.forEach {
+        var newPos : Square? = pos.addDirection(it)
+        while(newPos != null ){
+            val pieceAtEndSquare = board.getPieceAt(newPos)
+            if (pieceAtEndSquare == null){
+                moves += PieceMove(pos, newPos)
+            }
+            if(pieceAtEndSquare != null && pieceAtEndSquare.player.color != board.getPlayerColor()){
+                moves += PieceMove(pos, newPos)
+                break
+            }
+            if(pieceAtEndSquare != null && pieceAtEndSquare.player.color == board.getPlayerColor()){
+                break
+            }
 
+            newPos = newPos.addDirection(it)
+        }
+    }
+    return moves
+}
+
+fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
+    val pieceAtEndSquare = board.getPieceAt(pieceInfo.endSquare)
+    return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
+        false -> MoveType.ILLEGAL
+      pieceAtEndSquare == null -> MoveType.REGULAR
+      pieceAtEndSquare != null && pieceAtEndSquare.player.color == !board.getPlayerColor() -> MoveType.CAPTURE
+     else -> MoveType.ILLEGAL
+}
+}
 /**
  * @param moveString string like Pa2a3
  * @param board local game board
@@ -218,28 +256,8 @@ private class CanKingMoveTo(): VerifyMoves {
     }
 }
 
-private class CanQueenMoveTo(): VerifyMoves {
-    override fun CanMoveTo(pieceInfo: PieceMove, board: Board): MoveType {
-        val pieceDefaultOrientation = listOf(Orientation.VERTICAL, Orientation.HORIZONTAL, Orientation.DIAGONAL)
-        val orientationFromInput = getOrientation(pieceInfo.startSquare,pieceInfo.endSquare) ?: return MoveType.ILLEGAL
-
-        val possibleMoves = isMovePossible(pieceInfo,orientationFromInput)
-
-        val pieceAtEndPos = board.getPieceAt(pieceInfo.endSquare)
-
-        if(!pieceDefaultOrientation.contains(orientationFromInput)) return MoveType.ILLEGAL //in case the piece doesn't allow the orientation of the move
-
-        if(possibleMoves && pieceAtEndPos == null && isPathClear(pieceInfo,board,orientationFromInput)) return MoveType.REGULAR
-
-        if(pieceAtEndPos != null) {
-            val capturesOpponentPiece = possibleMoves && pieceAtEndPos.player.color == !board.getPlayerColor() && isPathClear(pieceInfo, board, orientationFromInput)
-            if (capturesOpponentPiece) return MoveType.CAPTURE
-        }
 
 
-        return MoveType.ILLEGAL
-    }
-}
 
 private class CanRookMoveTo(): VerifyMoves {
     override fun CanMoveTo(pieceInfo: PieceMove, board: Board): MoveType {
@@ -262,42 +280,6 @@ private class CanRookMoveTo(): VerifyMoves {
     }
 }
 
-private class CanBishopMoveTo(): VerifyMoves {
-    override fun CanMoveTo(pieceInfo: PieceMove, board: Board): MoveType {
-        val pieceDefaultOrientation = listOf(Orientation.DIAGONAL)
-        val orientationFromInput = getOrientation(pieceInfo.startSquare,pieceInfo.endSquare) ?: return MoveType.ILLEGAL
-        if(!pieceDefaultOrientation.contains(orientationFromInput)) return MoveType.ILLEGAL //in case the piece doesn't allow the orientation of the move
-
-        val moveIsPossible = isMovePossible(pieceInfo,orientationFromInput)
-        val pieceAtEndPos = board.getPieceAt(pieceInfo.endSquare)
-
-        if(moveIsPossible && isPathClear(pieceInfo,board,orientationFromInput)){
-            if (pieceAtEndPos == null) return MoveType.REGULAR
-            if (pieceAtEndPos.player.color != board.getPlayerColor()) return MoveType.CAPTURE
-        }
-
-        return MoveType.ILLEGAL
-
-    }
-}
-
-private class CanKnightMoveTo(): VerifyMoves {
-
-    override fun CanMoveTo(pieceInfo: PieceMove, board: Board): MoveType {
-        val pieceAtEndPos = board.getPieceAt(pieceInfo.endSquare)
-        val canMove =
-            ((abs(pieceInfo.startSquare.row.value() - pieceInfo.endSquare.row.value()) == 2 && abs(pieceInfo.startSquare.column.value() - pieceInfo.endSquare.column.value()) == 1)
-             ||
-             (abs(pieceInfo.startSquare.row.value() - pieceInfo.endSquare.row.value()) == 1 && abs(pieceInfo.startSquare.column.value() - pieceInfo.endSquare.column.value()) == 2))
-
-        if(pieceAtEndPos == null && canMove) return MoveType.REGULAR
-        if(pieceAtEndPos != null) {
-            val capturesOpponentPiece = canMove && pieceAtEndPos.player.color == !board.getPlayerColor()
-            if (capturesOpponentPiece) return MoveType.CAPTURE
-        }
-        return MoveType.ILLEGAL
-    }
-}
 
 
 /**
