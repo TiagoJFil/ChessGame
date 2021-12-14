@@ -1,3 +1,9 @@
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.application
+import chess.UI.Compose.App
 import chess.domain.MoveType
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
@@ -20,7 +26,7 @@ class PawnTest {
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
-        val firstMove2Squares = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val firstMove2Squares = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR, firstMove2Squares)
 
     }
@@ -33,7 +39,7 @@ class PawnTest {
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
-        val firstMove2Squares = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val firstMove2Squares = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.ILLEGAL, firstMove2Squares)
 
     }
@@ -46,7 +52,7 @@ class PawnTest {
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
-        val firstMove2Squares = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val firstMove2Squares = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR, firstMove2Squares)
 
@@ -60,7 +66,7 @@ class PawnTest {
         val endPos = Square(Column.A, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR, move)
     }
     @Test
@@ -71,7 +77,7 @@ class PawnTest {
         val endPos = Square(Column.A, Row.Six)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR, move)
     }
     @Test
@@ -82,7 +88,7 @@ class PawnTest {
         val endPos = Square(Column.B, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.ILLEGAL, move)
     }
     @Test
@@ -94,7 +100,7 @@ class PawnTest {
         val endPos = Square(Column.B, Row.Seven)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.CAPTURE, move)
     }
 
@@ -108,7 +114,7 @@ class BishopTest {
         val endPos = Square(Column.A, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR,move)
 
 
@@ -123,7 +129,7 @@ class BishopTest {
 
 
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR,move)
 
     }
@@ -138,7 +144,7 @@ class BishopTest {
 
 
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
 
@@ -154,7 +160,7 @@ class BishopTest {
 
 
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.ILLEGAL,move)
 
@@ -171,7 +177,7 @@ class KnightTest {
         val endPos = Square(Column.A, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
@@ -183,7 +189,7 @@ class KnightTest {
         val endPos = Square(Column.C, Row.Four)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
@@ -198,7 +204,7 @@ class RookTest {
         val endPos = Square(Column.A, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
@@ -210,7 +216,7 @@ class RookTest {
         val endPos = Square(Column.A, Row.Five)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.ILLEGAL,move)
     }
@@ -222,7 +228,7 @@ class RookTest {
         val endPos = Square(Column.B, Row.One)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
@@ -240,7 +246,7 @@ class KingTest {
         val endPos = Square(Column.E, Row.Two)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
@@ -252,7 +258,7 @@ class KingTest {
         val endPos = Square(Column.E, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.ILLEGAL,move)
     }
@@ -264,10 +270,61 @@ class KingTest {
         val endPos = Square(Column.D, Row.Two)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
+
+    @Test
+    fun `King tries to move illegally `(){
+        val sut = Board().makeMove("Pf2f4").makeMove("pg7g6").makeMove("pe2e4").makeMove("pg6g5").makeMove("bf1e2")
+
+        val startPos = Square(Column.E, Row.One)
+        val endPos = Square(Column.D, Row.Two)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos, endPos) )
+
+        assertEquals(MoveType.ILLEGAL,move)
+    }
+
+    @Test
+    fun `King tries to move illegally to the side `(){
+        val sut = Board().makeMove("Pf2f4").makeMove("pg7g6").makeMove("pe2e4").makeMove("pg6g5").makeMove("bf1e2")
+
+        val startPos = Square(Column.E, Row.One)
+        val endPos = Square(Column.D, Row.One)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos, endPos) )
+
+        assertEquals(MoveType.ILLEGAL,move)
+    }
+
+    @Test
+    fun `King tries to castle right`(){
+        val sut = Board().makeMove("Pf2f4").makeMove("pg7g6").makeMove("pe2e4").makeMove("pg6g5").makeMove("bf1e2").makeMove("ng1f3")
+
+        val startPos = Square(Column.E, Row.One)
+        val endPos = Square(Column.G, Row.One)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos, endPos) )
+        assertEquals(MoveType.CASTLE,move)
+    }
+
+    @Test
+    fun `King tries to castle right without the rook`(){
+        val sut = Board().makeMove("Pf2f4").makeMove("pg7g6").makeMove("pe2e4").makeMove("pg6g5").makeMove("bf1e2").makeMove("ng1f3").makeMove("ng8f6").makeMove("ph2h4").makeMove("nh7h6").makeMove("ph1h3")
+
+        val startPos = Square(Column.E, Row.One)
+        val endPos = Square(Column.G, Row.One)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos, endPos) )
+        assertEquals(MoveType.ILLEGAL,move)
+    }
+
 }
 
 class QueenTest {
@@ -279,7 +336,7 @@ class QueenTest {
         val endPos = Square(Column.D, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
@@ -291,7 +348,7 @@ class QueenTest {
         val endPos = Square(Column.F, Row.Three)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.REGULAR,move)
     }
@@ -304,7 +361,7 @@ class QueenTest {
         val endPos = Square(Column.F, Row.Seven)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.CAPTURE,move)
     }
@@ -318,7 +375,20 @@ class QueenTest {
         val endPos = Square(Column.D, Row.Six)
         val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = canPieceMoveTo(piece.toString()+startPos.toString()+endPos.toString(), sut)
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+
+        assertEquals(MoveType.ILLEGAL,move)
+    }
+
+    @Test
+    fun `QUEEN cant move to a friendly piece `() {
+        val sut = Board().makeMove("Pe2e4").makeMove("pg7g6").makeMove("pd2d4").makeMove("pg6g5")
+
+        val startPos = Square(Column.D, Row.One)
+        val endPos = Square(Column.C, Row.One)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
         assertEquals(MoveType.ILLEGAL,move)
     }

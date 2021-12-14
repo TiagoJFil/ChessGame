@@ -13,23 +13,26 @@ import androidx.compose.desktop.DesktopMaterialTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import chess.domain.board_components.toSquare
 import org.junit.Test
 
-@Preview
+
 @Composable
-fun buildBoard(){
-    Row {
+fun buildBackgroundBoard(){
+    Row(){
 
         for(i in 1..8) {
             if (i % 2 == 0)
@@ -55,6 +58,13 @@ fun buildBoard(){
     }
 }
 
+/*
+@Composable
+fun Modifier.selectPiece(){
+    this.background(painter = painterResource(id = R.drawable.highlight))
+
+}
+*/
 
 @Composable
 fun boardToComposable(board: Board){
@@ -86,11 +96,12 @@ fun tile(piece: Piece?){
             is King -> "king.png"
             else -> {"empty-tile.png"}
         }
-        pieceImage = if (pieceColor == Colors.WHITE)
-            "white-$pieceImage"
-        else "black-$pieceImage"
+        pieceImage = if (pieceColor == Colors.WHITE) "w_$pieceImage"
+                         else "b_$pieceImage"
     }
-        Box{
+    val boxmodifier = Modifier.clickable {  }
+        Box( //modifier = boxmodifier.border(4.dp,Color.Red),                ----------------------------------------------------------------------------
+        ) {
             Image(
                 painter = painterResource(pieceImage),
                 modifier = Modifier.size(75.dp).align(Alignment.Center),
@@ -112,13 +123,40 @@ fun BackgroundTile(tileColor: Colors) {
 }
 
 
-
-@Composable
 @Preview
+@Composable
+fun abc() {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("asd", fontSize = 100.sp , modifier = Modifier.padding(16.dp))
+
+
+
+    }
+}
+@Composable
+fun chessBoard(board: Board) {
+    buildBackgroundBoard()
+    boardToComposable(board)
+
+}
+
+@Preview
+@Composable
 fun App(board: Board) {
     DesktopMaterialTheme {
-        buildBoard()
-        boardToComposable(board)
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("asd", fontSize = 100.sp , modifier = Modifier.padding(16.dp))
+
+
+
+        }
+        Row {
+
+        }
+            chessBoard(board)
+
+
     }
 }
 
