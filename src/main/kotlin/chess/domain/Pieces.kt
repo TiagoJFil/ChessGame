@@ -1,20 +1,7 @@
 import chess.domain.*
 import chess.domain.board_components.*
 
-/**
- * Represents the possible Colors a player can take
- */
-enum class Colors {
-    WHITE,
-    BLACK;
 
-    operator fun not(): Colors {
-        return when (this) {
-            WHITE -> BLACK
-            BLACK -> WHITE
-        }
-    }
-}
 
 /**
  * @param startSquare       the square where the piece is placed
@@ -38,15 +25,9 @@ private enum class MoveInput(val index : Int){
  **/
 fun String.formatToPieceMove(): PieceMove{
 
-    val startSquare = Square(
-        findColumn(this[MoveInput.POSITION_FROM_LETTER.index]),
-        findRow(this[MoveInput.POSITION_FROM_NUMBER.index])
-    )
+    val startSquare = Square((this[MoveInput.POSITION_FROM_LETTER.index]).toColumn(), (this[MoveInput.POSITION_FROM_NUMBER.index]).toRow())
 
-    val endSquare = Square(
-        findColumn(this[MoveInput.POSITION_TO_LETTER.index]),
-        findRow(this[MoveInput.POSITION_TO_NUMBER.index])
-    )
+    val endSquare = Square((this[MoveInput.POSITION_TO_LETTER.index]).toColumn(), (this[MoveInput.POSITION_TO_NUMBER.index]).toRow())
 
     return PieceMove(startSquare,endSquare)
 }
@@ -91,7 +72,7 @@ sealed interface Piece {
      * @return a [Boolean] value if the piece belongs to the white player(true) or false if it belongs to the black player
      */
     fun belongsToWhitePlayer(): Boolean {
-        return player.color == Colors.WHITE
+        return player.isWhite()
     }
 
 
@@ -122,8 +103,8 @@ class Pawn (override val player: Player) : Piece  {
     /**
      * The possible offset this piece can move to
      */
-    private val possibleDirections = if(this.player.color == Colors.WHITE) listOf(Pair(0, -1))
-                                        else listOf(Pair(0, 1))
+    private val possibleDirections = if(this.player.isWhite()) listOf(Direction(0, -1))
+                                        else listOf(Direction(0, 1))
 
 
     /**
@@ -141,6 +122,16 @@ class Pawn (override val player: Player) : Piece  {
      */
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
         var moves = listOf<PieceMove>()
+        val colorDirection =if (this.belongsToWhitePlayer())  -1 else 1
+        if(!this.hasMoved() ){
+            moves = moves.plus(PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
+        }
+
+        return moves + getMovesByAddingDirection(possibleDirections, pos)
+
+
+        /*
+        var moves = listOf<PieceMove>()
         if (this.hasMoved()) moves += possibleDirections.mapNotNull {
             val newPos = pos.addDirection(it)
             if (newPos != null) PieceMove(pos, newPos)
@@ -153,7 +144,7 @@ class Pawn (override val player: Player) : Piece  {
                 else null
             }
         }
-
+*/
         //FALTA ADICIONAR OS MOVIMENTOS DE ATAQUE ______________________________________________________________________________
         /*
         moves += possibleDirections.mapNotNull {
@@ -181,12 +172,12 @@ class Pawn (override val player: Player) : Piece  {
      * @return the [MoveType] of the piece
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
-        val pieceAtEndSquare = board.getPieceAt(pieceInfo.endSquare)
+        val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
 
         return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
             false -> MoveType.ILLEGAL
             pieceAtEndSquare == null -> MoveType.REGULAR
-            pieceAtEndSquare != null && pieceAtEndSquare.player.color != this.player.color -> MoveType.CAPTURE
+            pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
             else -> MoveType.ILLEGAL
         }
     }
@@ -201,6 +192,7 @@ class Pawn (override val player: Player) : Piece  {
 
 
 }
+
 
 
 /**
@@ -254,11 +246,7 @@ class King (override val player: Player) : Piece {
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
 
 
-        var moves = possibleDirections.mapNotNull {
-            val newPos = pos.addDirection(it)
-            if (newPos != null) PieceMove(pos, newPos)
-            else null
-        }
+        var moves = getMovesByAddingDirection(possibleDirections, pos)
         if (!hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2, 0))))) {
             moves += listOf(PieceMove(pos, pos.addDirectionNotNull(Pair(2, 0))), PieceMove(pos, pos.addDirectionNotNull(Pair(-2, 0))))
         }
@@ -274,12 +262,12 @@ class King (override val player: Player) : Piece {
      * @return the [MoveType] of the piece
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
-        val pieceAtEndSquare = board.getPieceAt(pieceInfo.endSquare)
+        val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if (!hasMoved() && canCastle(board, pieceInfo)) return MoveType.CASTLE
         return when (getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
             pieceAtEndSquare == null -> MoveType.REGULAR
-            pieceAtEndSquare != null && pieceAtEndSquare.player.color != this.player.color -> MoveType.CAPTURE
+            pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
             else -> MoveType.ILLEGAL
         }
     }
@@ -307,8 +295,8 @@ class King (override val player: Player) : Piece {
             } else {
                 move.endSquare.addDirection(Pair(-1, 0)) ?: return false
             }
-            val rook = board.getPieceAt(newSquare) ?: return false
-            if (rook is Rook && !rook.hasMoved() && rook.player.color == this.player.color) {
+            val rook = board.getPiece(newSquare) ?: return false
+            if (rook is Rook && !rook.hasMoved() && rook.player == this.player) {
                 println("as")
                 return true
             }
@@ -445,11 +433,7 @@ class Knight (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> =  possibleDirections.mapNotNull {
-        val newPos = pos.addDirection(it)
-        if (newPos != null) PieceMove(pos, newPos)
-        else null
-    }
+    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> =  getMovesByAddingDirection(possibleDirections, pos)
     /**
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check

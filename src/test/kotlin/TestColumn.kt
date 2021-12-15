@@ -1,5 +1,4 @@
 import chess.domain.board_components.Column
-import chess.domain.board_components.findColumn
 import chess.domain.board_components.toColumn
 import org.junit.Assert.*
 import org.junit.Test
@@ -15,7 +14,7 @@ import java.lang.IllegalArgumentException
 class TestColumn {
     @Test
     fun `Letter to Column with ordinal property`() {
-        val column = findColumn('c')
+        val column = ('c').toColumn()
         assertNotNull(column)
         assertEquals(2, column.ordinal)
     }
@@ -27,7 +26,7 @@ class TestColumn {
     @Test
     fun `Invalid letter to Column results null`() {
         assertThrows(IllegalArgumentException::class.java) {
-            findColumn('x')
+            'x'.toColumn()
         }
     }
     @Test

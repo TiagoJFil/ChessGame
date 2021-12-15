@@ -1,7 +1,6 @@
 package chess
 
 import Board
-import Colors
 import chess.Storage.ChessGameAccessException
 import chess.Storage.ChessDataBase
 import chess.domain.Player
@@ -22,7 +21,7 @@ fun main(args: Array<String>) {
         else createMongoClient()
 
 
-    val chessGame = Chess(Board(),ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player(Colors.WHITE) )
+    val chessGame = Chess(Board(),ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
     try {
         val handler = buildCommandHandler(chessGame)
         while (true) {

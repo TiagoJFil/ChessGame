@@ -1,8 +1,6 @@
 package chess.UI.Compose
-
 import Bishop
 import Board
-import Colors
 import King
 import Knight
 import Pawn
@@ -26,9 +24,24 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import chess.domain.Player
 import chess.domain.board_components.toSquare
 import org.junit.Test
 
+/**
+ * Represents the possible Colors a tile can take
+ */
+private enum class Colors {
+    WHITE,
+    BLACK;
+
+    operator fun not(): Colors {
+        return when (this) {
+            WHITE -> BLACK
+            BLACK -> WHITE
+        }
+    }
+}
 
 @Composable
 fun buildBackgroundBoard(){
@@ -74,7 +87,7 @@ fun boardToComposable(board: Board){
                     for (count in 0..7) {
                         val column = (count + 'a'.code).toChar()// convert to char
                         val square = "$column$i".toSquare()
-                        val piece = board.getPieceAt(square)
+                        val piece = board.getPiece(square)
                         tile(piece)
                     }
                 }
@@ -86,7 +99,7 @@ fun boardToComposable(board: Board){
 fun tile(piece: Piece?){
     var pieceImage = "empty-tile.png"
     if (piece != null) {
-        val pieceColor = piece.player.color
+        val pieceColor = piece.player
         pieceImage = when (piece) {
             is Pawn -> "pawn.png"
             is Rook -> "rook.png"
@@ -96,7 +109,7 @@ fun tile(piece: Piece?){
             is King -> "king.png"
             else -> {"empty-tile.png"}
         }
-        pieceImage = if (pieceColor == Colors.WHITE) "w_$pieceImage"
+        pieceImage = if (pieceColor == Player.WHITE) "w_$pieceImage"
                          else "b_$pieceImage"
     }
     val boxmodifier = Modifier.clickable {  }
@@ -113,7 +126,7 @@ fun tile(piece: Piece?){
 
 
 @Composable
-fun BackgroundTile(tileColor: Colors) {
+private fun BackgroundTile(tileColor: Colors) {
     val colorRGB =
         if (tileColor == Colors.BLACK) Color(0xFF789454)
         else Color(0xFFfcf1e8)

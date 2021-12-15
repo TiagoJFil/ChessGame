@@ -10,7 +10,7 @@ class HasMoved {
     fun hasPawnMoved() {
         val b = Board()
         val startPos = Square(Column.A, Row.Two)
-        val piece = b.getPieceAt(startPos) as Pawn
+        val piece = b.getPiece(startPos) as Pawn
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
         b.makeMove("Pa2a3")
@@ -22,7 +22,7 @@ class HasMoved {
     fun hasRookMoved() {
         val b = Board()
         val startPos = Square(Column.A, Row.One)
-        val piece = b.getPieceAt(startPos) as Rook
+        val piece = b.getPiece(startPos) as Rook
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
         b.makeMove("Pa2a3")
@@ -35,7 +35,7 @@ class HasMoved {
     fun hasKingMoved() {
         val b = Board()
         val startPos = Square(Column.E, Row.One)
-        val piece = b.getPieceAt(startPos) as King
+        val piece = b.getPiece(startPos) as King
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
         b.makeMove("Pf2f3")
@@ -50,13 +50,13 @@ class BelongToWhitePlayer() {
     fun belongsToWhichPlayer() {
         val b = Board()
         val startPos = Square(Column.E, Row.One)
-        val piece = b.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")  //White Player
+        val piece = b.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")  //White Player
 
         assertTrue(piece.belongsToWhitePlayer())
         assertFalse(!piece.belongsToWhitePlayer())
 
         val startPos1 = Square(Column.E, Row.Eight)
-        val piece1 = b.getPieceAt(startPos1) ?: throw IllegalStateException("No piece at $startPos") //Black Player
+        val piece1 = b.getPiece(startPos1) ?: throw IllegalStateException("No piece at $startPos") //Black Player
 
         assertTrue(!piece1.belongsToWhitePlayer())
         assertFalse(piece1.belongsToWhitePlayer())

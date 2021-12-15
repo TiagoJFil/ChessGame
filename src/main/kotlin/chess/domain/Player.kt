@@ -1,26 +1,27 @@
 package chess.domain
 
-import Colors
-
 /**
  * @param color      the color of the player
  * Represents a player in the game.
  */
-class Player(val color : Colors){
+enum class Player{
+    WHITE,
+    BLACK;
 
     /**
      * @returns true if the player is white, false otherwise
      */
-    fun isWhite() = this.color == Colors.WHITE
+    fun isWhite() = this == WHITE
 
     /**
      * @return the opponent of this player
      */
     operator fun not(): Player {
-        return when(this.color){
-            Colors.BLACK -> Player(Colors.WHITE)
-            Colors.WHITE -> Player(Colors.BLACK)
+        return when(this){
+            Player.BLACK -> Player.WHITE
+            Player.WHITE -> Player.BLACK
         }
 
     }
+
 }

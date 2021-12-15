@@ -18,13 +18,19 @@ enum class Row(val number: Int) {  //BoardMap[row][column]
     One(7);
 
     fun value() = number
+    operator fun plus(second: Int): Row {
+        require((this.value() + second).isARow())
+        return values()[this.value() + second]
+    }
 
 }
 
-fun findRow(c : Char) : Row{  // '1' passa pra int e depois é que fazemos a operação
-    require(c.isARow())
-    return Row.values()[8 - c.toString().toInt()]
+
+fun Char.toRow() : Row{
+    require(this.isARow())
+    return Row.values()[8 - this.toString().toInt()]
 }
+
 fun Int.toRow(): Row {
     require(this in MIN_Y_NUMBER..MAX_Y_NUMBER)
     return Row.values()[this]
@@ -32,3 +38,5 @@ fun Int.toRow(): Row {
 
 
 fun Char.isARow() = this.toString().toInt() in MIN_Y_NUMBER..MAX_Y_NUMBER
+
+fun Int.isARow() = this in MIN_Y_NUMBER..MAX_Y_NUMBER

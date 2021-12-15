@@ -1,7 +1,5 @@
-import chess.domain.Player
 import chess.domain.board_components.toSquare
 import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertSame
 import org.junit.Test
 
 class BoardTest {
@@ -36,7 +34,16 @@ class BoardTest {
     fun `getPieceAt e1 returns the king`(){
         val sut = Board()
         val square = "e1".toSquare()
-        assertEquals ("K", sut.getPieceAt(square).toString())
+        assertEquals ("K", sut.getPiece(square).toString())
     }
 
+    /*
+    @Test
+    fun `empty board equals empty board`(){
+        val a = Board()
+        val b = Board()
+        assertEquals (Board(),Board())
+        val Boar = Board()
+    }
+*/
 }

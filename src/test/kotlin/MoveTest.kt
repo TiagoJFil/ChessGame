@@ -1,16 +1,8 @@
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
-import chess.UI.Compose.App
 import chess.domain.MoveType
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
-import chess.domain.canPieceMoveTo
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 
@@ -23,7 +15,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Two)
         val endPos = Square(Column.A, Row.Four)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
         val firstMove2Squares = piece.canMove(sut,PieceMove(startPos,endPos))
@@ -37,7 +29,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Two)
         val endPos = Square(Column.A, Row.One)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
@@ -51,7 +43,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Two)
         val endPos = Square(Column.B, Row.Two)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
@@ -66,7 +58,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Two)
         val endPos = Square(Column.A, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.ILLEGAL, move)
@@ -79,7 +71,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Four)
         val endPos = Square(Column.A, Row.Six)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
         val firstMove2Squares = piece.canMove(sut,PieceMove(startPos,endPos))
@@ -92,7 +84,7 @@ class PawnTest {
 
         val startPos = Square(Column.B, Row.Two)
         val endPos = Square(Column.B, Row.Four)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
         val firstMove2Squares = piece.canMove(sut,PieceMove(startPos,endPos))
@@ -106,7 +98,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Two)
         val endPos = Square(Column.A, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR, move)
@@ -117,7 +109,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Seven)
         val endPos = Square(Column.A, Row.Six)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR, move)
@@ -128,7 +120,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Two)
         val endPos = Square(Column.B, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.ILLEGAL, move)
@@ -140,7 +132,7 @@ class PawnTest {
 
         val startPos = Square(Column.A, Row.Six)
         val endPos = Square(Column.B, Row.Seven)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.CAPTURE, move)
@@ -154,7 +146,7 @@ class BishopTest {
         val sut = Board().makeMove("Pb2b4")
         val startPos = Square(Column.C, Row.One)
         val endPos = Square(Column.A, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR,move)
@@ -167,7 +159,7 @@ class BishopTest {
         val sut = Board().makeMove("Pg2g4")
         val startPos = Square(Column.F, Row.One)
         val endPos = Square(Column.H, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
 
@@ -182,7 +174,7 @@ class BishopTest {
 
         val startPos = Square(Column.H, Row.Three)
         val endPos = Square(Column.F, Row.One)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
 
@@ -198,7 +190,7 @@ class BishopTest {
 
         val startPos = Square(Column.C, Row.One)
         val endPos = Square(Column.A, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
 
@@ -217,7 +209,7 @@ class KnightTest {
 
         val startPos = Square(Column.B, Row.One)
         val endPos = Square(Column.A, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -229,7 +221,7 @@ class KnightTest {
 
         val startPos = Square(Column.A, Row.Three)
         val endPos = Square(Column.C, Row.Four)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -245,7 +237,7 @@ class RookTest {
 
         val startPos = Square(Column.A, Row.One)
         val endPos = Square(Column.A, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -257,7 +249,7 @@ class RookTest {
 
         val startPos = Square(Column.A, Row.One)
         val endPos = Square(Column.A, Row.Five)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -269,7 +261,7 @@ class RookTest {
 
         val startPos = Square(Column.A, Row.One)
         val endPos = Square(Column.B, Row.One)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -287,7 +279,7 @@ class KingTest {
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.E, Row.Two)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -299,7 +291,7 @@ class KingTest {
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.E, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -311,7 +303,7 @@ class KingTest {
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.D, Row.Two)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -324,7 +316,7 @@ class KingTest {
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.D, Row.Two)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos, endPos) )
 
@@ -337,7 +329,7 @@ class KingTest {
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.D, Row.One)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos, endPos) )
 
@@ -350,7 +342,7 @@ class KingTest {
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.G, Row.One)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos, endPos) )
         assertEquals(MoveType.CASTLE,move)
@@ -362,7 +354,7 @@ class KingTest {
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.G, Row.One)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos, endPos) )
         assertEquals(MoveType.ILLEGAL,move)
@@ -377,7 +369,7 @@ class QueenTest {
 
         val startPos = Square(Column.D, Row.One)
         val endPos = Square(Column.D, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -389,7 +381,7 @@ class QueenTest {
 
         val startPos = Square(Column.D, Row.One)
         val endPos = Square(Column.F, Row.Three)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -402,7 +394,7 @@ class QueenTest {
 
         val startPos = Square(Column.F, Row.Three)
         val endPos = Square(Column.F, Row.Seven)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -416,7 +408,7 @@ class QueenTest {
 
         val startPos = Square(Column.D, Row.One)
         val endPos = Square(Column.D, Row.Six)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 
@@ -429,7 +421,7 @@ class QueenTest {
 
         val startPos = Square(Column.D, Row.One)
         val endPos = Square(Column.C, Row.One)
-        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut,PieceMove(startPos,endPos))
 

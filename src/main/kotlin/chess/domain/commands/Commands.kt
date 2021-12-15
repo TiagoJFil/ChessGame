@@ -1,15 +1,18 @@
 package chess.domain.commands
 import Board
-import Colors
 import chess.domain.MoveType
 import chess.domain.canPieceMoveTo
 import chess.Chess
 import chess.GameName
+import chess.Storage.ChessDataBase
 import chess.Storage.DataBase
 import chess.Storage.Move
 import chess.domain.Player
-import chess.domain.board_components.toSquare
 import chess.domain.traceBackPawn
+import isel.leic.tds.storage.DbMode
+import isel.leic.tds.storage.getDBConnectionInfo
+import isel.leic.tds.storage.mongodb.createMongoClient
+import org.junit.Test
 
 private const val PAWN_INPUT = 2
 
@@ -48,14 +51,16 @@ class OpenCommand(private val chess: Chess) : Commands {
 
         val gameExists = chess.dataBase.createGameDocumentIfItNotExists(gameId)
 
-        var board = Board()
-        if (gameExists) {
-            board = updateNewBoard(chess.dataBase, gameId, Board())
+
+        val board = if (gameExists) {
+             updateNewBoard(chess.dataBase, gameId, Board())
+        }else{
+            Board()
         }
 
 
 
-        chess.currentPlayer = Player(Colors.WHITE)
+        chess.currentPlayer = Player.WHITE
         chess.board = board
         chess.currentGameId = gameId
 
@@ -77,7 +82,7 @@ class JoinCommand(private val chess: Chess) : Commands {
 
         if(!chess.dataBase.doesGameExist(gameId)) return ERROR("ERROR: Game $parameter does not exist.")
 
-        chess.currentPlayer = Player(Colors.BLACK)
+        chess.currentPlayer = Player.BLACK
         chess.board =  updateNewBoard(chess.dataBase, gameId, Board())
         chess.currentGameId = gameId
         //Se inicializarmos um jogo novo não há lastMove logo dá erro. Temos de arranjar isso
@@ -100,7 +105,7 @@ class PlayCommand(private val chess: Chess) : Commands {
 
         val gameId = chess.currentGameId ?: return ERROR("ERROR: Can't play without a game: try open or join commands.")
 
-        if(chess.board.getPlayerColor() != chess.currentPlayer.color) return ERROR("ERROR: Wait for your turn: try refresh command.")
+        if(chess.board.getPlayerColor() != chess.currentPlayer) return ERROR("ERROR: Wait for your turn: try refresh command.")
 
         val filteredInput = filterInput(parameter,chess.board) ?: return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
 
@@ -128,14 +133,14 @@ class PlayCommand(private val chess: Chess) : Commands {
                 if(filteredInput.databaseMove.contains("x"))
                     return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
                 if (filteredInput.databaseMove.contains("=")) {
-                    chess.board.promotePiece(
-                        filteredInput.filteredMove.substring(1, 2).toSquare(),
-                        filteredInput.filteredMove.last()
-                    )
+            //        chess.board.promotePiece(
+                //        filteredInput.filteredMove.substring(1, 2).toSquare(),
+                  //      filteredInput.filteredMove.last()
+              //      )
                 }else{
-                    chess.board.promotePiece(
-                        filteredInput.filteredMove.substring(1, 2).toSquare()
-                    )
+              //      chess.board.promotePiece(
+                 //       filteredInput.filteredMove.substring(1, 2).toSquare()
+                //    )
 
                 }
 
@@ -172,7 +177,7 @@ class RefreshCommand(private val chess: Chess) : Commands {
 
         val gameId = chess.currentGameId ?: return ERROR("ERROR: Can't refresh without a game: try open or join commands.")
 
-        if(chess.currentPlayer.color == chess.board.getPlayerColor()) return ERROR("ERROR: It's your turn: try play.")
+        if(chess.currentPlayer == chess.board.getPlayerColor()) return ERROR("ERROR: It's your turn: try play.")
 
         val board = updateNewBoard(chess.dataBase, gameId, Board())
 
@@ -213,17 +218,14 @@ class ExitCommand: Commands {
  * @param board         the board to update
  * Updates a board with the moves from the DataBase with the given gameId.
  */
-private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board {
-    if((dataBase.getAllMoves(gameId).count() != 0 )) {
-        dataBase.getAllMoves(gameId).forEach {
-            val move = filterInput(it.move,board)
-            if(move != null) {
-                board.makeMove(move.filteredMove)
-            }
-        }
+private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board =
+    dataBase.getAllMoves(gameId).fold(board) {
+        acc, move ->
+        val moveFiltered = filterInput(move.move,board)
+        if(moveFiltered != null) {
+            board.makeMove(moveFiltered.filteredMove)
+        }else acc
     }
-    return board
-}
 
 
 /**

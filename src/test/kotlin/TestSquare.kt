@@ -23,12 +23,12 @@ class TestSquare {
     }
     @Test
     fun `addDirection works with sum`() {
-        val newSquare ="b2".toSquare().addDirection(Pair(1,1))
+        val newSquare ="b2".toSquare().addDirection(Pair(1,-1))
         assertEquals("c3".toSquare(), newSquare)
     }
     @Test
     fun `addDirection works with subtraction`() {
-        val newSquare ="b2".toSquare().addDirection(Pair(-1,-1))
+        val newSquare ="b2".toSquare().addDirection(Pair(-1,1))
         assertEquals("a1".toSquare(), newSquare)
     }
 

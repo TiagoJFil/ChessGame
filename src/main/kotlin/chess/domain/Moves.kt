@@ -26,9 +26,23 @@ private const val RIGHT = 1
 private const val PAWN_PROMOTION_ROW_WHITE = 7
 private const val PAWN_PROMOTION_ROW_BLACK = 0
 
+/**
+ * This function returns the moves for the pieces: KNIGHT, PAWN, KING,
+ * @param possibleDirections     List of directions to verify
+ * @param pos                    the position of the piece
+ * @return the list of possible moves for the piece given
+ */
+fun getMovesByAddingDirection(possibleDirections : List<Direction> ,pos: Square): List<PieceMove> {
+    return possibleDirections.mapNotNull {
+        val newPos = pos.addDirection(it)
+        if (newPos != null) PieceMove(pos, newPos)
+        else null
+    }
+}
 
 
 /**
+ * This function returns the moves for the pieces: ROOK, BISHOP, QUEEN,
  * @param possibleDirections     List of directions to verify
  * @param pos                    the position of the piece
  * @param board                  the board where the piece is
@@ -36,20 +50,20 @@ private const val PAWN_PROMOTION_ROW_BLACK = 0
  */
 fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): List<PieceMove> {
     var moves = listOf<PieceMove>()
-    val piece = board.getPieceAt(pos) ?: throw IllegalArgumentException("No piece at position $pos")
-    val color = piece.player.color
+    val piece = board.getPiece(pos) ?: throw IllegalArgumentException("No piece at position $pos")
+    val color = piece.player
     possibleDirections.forEach {
         var newPos : Square? = pos.addDirection(it)
         while(newPos != null ){
-            val pieceAtEndSquare = board.getPieceAt(newPos)
+            val pieceAtEndSquare = board.getPiece(newPos)
             if (pieceAtEndSquare == null){
                 moves += PieceMove(pos, newPos)
             }
-            if(pieceAtEndSquare != null && pieceAtEndSquare.player.color != color){
+            if(pieceAtEndSquare != null && pieceAtEndSquare.player != color){
                 moves += PieceMove(pos, newPos)
                 break
             }
-            if(pieceAtEndSquare != null && pieceAtEndSquare.player.color == color){
+            if(pieceAtEndSquare != null && pieceAtEndSquare.player == color){
                 break
             }
 
@@ -59,12 +73,17 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
     return moves
 }
 
+/**
+ * @param board                  the board where the piece is
+ * @param pieceInfo              the [PieceMove] on the move to verify
+ * @return the type of the movement for the piece given
+ */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
-    val pieceAtEndSquare = board.getPieceAt(pieceInfo.endSquare)
+    val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
     return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
         false -> MoveType.ILLEGAL
       pieceAtEndSquare == null -> MoveType.REGULAR
-      pieceAtEndSquare != null && pieceAtEndSquare.player.color != this.player.color -> MoveType.CAPTURE
+      pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
      else -> MoveType.ILLEGAL
 }
 
@@ -75,13 +94,13 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
  * checks if the move is possible
  */
 fun canPieceMoveTo(moveString:String,board: Board): MoveType {
-    //if the starting square is empty (the piece is empty)
-    val piece  = board.getPieceAt(moveString.substring(1..2).toSquare()) ?: return MoveType.ILLEGAL
+    val piece  = board.getPiece(moveString.substring(1..2).toSquare()) ?: return MoveType.ILLEGAL
 
     val pieceInfo = PieceMove(moveString.substring(1..2).toSquare(), moveString.substring(3..4).toSquare())
 
     return piece.canMove(board, pieceInfo)
 }
+
 
 
 
@@ -99,39 +118,28 @@ fun traceBackPawn(endPos:String, board: Board):String?{
     var pieceRowBehind : Piece? = null
     var pieceTwoRowsBehind : Piece? = null
 
-    val direction : Int = if(board.getPlayerColor() == Colors.WHITE) DOWN else UP
+    val direction : Int = if(board.getPlayerColor().isWhite()) DOWN else UP
 
-    if((column + 1).isAColumn() && (row - direction).isARow())  pieceCapturingRight = board.getPieceAt(
-        Square(
-            findColumn(
-                column + 1
-            ), findRow(row - direction)
+    if((column + 1).isAColumn() && (row - direction).isARow())  pieceCapturingRight = board.getPiece(
+        Square((column + 1).toColumn(), (row - direction).toRow()
         )
     )
-    if((column - 1).isAColumn() && (row - direction).isARow())  pieceCapturingLeft =  board.getPieceAt(
-        Square(
-            findColumn(
-                column - 1
-            ), findRow(row - direction)
+    if((column - 1).isAColumn() && (row - direction).isARow())  pieceCapturingLeft =  board.getPiece(
+        Square((column - 1).toColumn(), (row - direction).toRow()
         )
     )
-    if((row - direction).isARow() && column.isAColumn()) pieceRowBehind = board.getPieceAt(
-        Square(
-            findColumn(column),
-            findRow(row - direction)
+    if((row - direction).isARow() && column.isAColumn()) pieceRowBehind = board.getPiece(
+        Square((column).toColumn(), (row - direction).toRow()
         )
     )
-    if((row -(direction + direction)).isARow() && column.isAColumn()) pieceTwoRowsBehind = board.getPieceAt(
-        Square(
-            findColumn(column),
-            findRow(row - (direction + direction))
-        )
+    if((row -(direction + direction)).isARow() && column.isAColumn()) pieceTwoRowsBehind = board.getPiece(
+        Square((column).toColumn(), (row - (direction + direction)).toRow())
     )
 
     var tracedPawn : String? = "P"
 
 
-    val endPosPiece = board.getPieceAt(Square(findColumn(endPos[0]), findRow(endPos[1])))
+    val endPosPiece = board.getPiece(Square((endPos[0]).toColumn(), (endPos[1]).toRow()))
 
     tracedPawn = if(endPosPiece == null) {
         if(pieceRowBehind!= null && pieceRowBehind   is Pawn) tracedPawn + column + (row - direction)

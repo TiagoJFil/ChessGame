@@ -22,8 +22,11 @@ enum class Column(val letter: Char) { //ordem normal
 
 }
 
-
-fun findColumn(c : Char): Column {
+/**
+ * @return the Column associated with the given char value.
+ */
+fun Char.toColumn(): Column {
+    val c = this.lowercaseChar()
     require(c.isAColumn()) {
         "Char is not valid"
     }
@@ -32,6 +35,9 @@ fun findColumn(c : Char): Column {
 }
 
 
+/**
+ * @return the Column associated with the given int value.
+ */
 fun Int.toColumn() : Column  {
     require((MIN_X_LETTER +this).isAColumn()) {
         "Char is not valid"
@@ -39,4 +45,7 @@ fun Int.toColumn() : Column  {
     return Column.values()[this]
 }
 
+/**
+ * @return a boolean indicating if the given char is a valid Column.
+ */
 fun Char.isAColumn() = this in MIN_X_LETTER..MAX_X_LETTER

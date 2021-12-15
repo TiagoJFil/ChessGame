@@ -20,7 +20,7 @@ class CommandsTest {
             if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
             else createMongoClient()
 
-        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player(Colors.WHITE))
+        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE)
 
         val handler = buildCommandHandler(chessGame)
         val openAction =
@@ -42,7 +42,7 @@ class CommandsTest {
             if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
             else createMongoClient()
 
-        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player(Colors.WHITE))
+        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE)
 
         val handler = buildCommandHandler(chessGame)
         val joinAction =
@@ -63,7 +63,7 @@ class CommandsTest {
             if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
             else createMongoClient()
 
-        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player(Colors.WHITE))
+        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE)
         val handler = buildCommandHandler(chessGame)
         val refreshAction =
             handler["refresh"] //It will never be null cause it access refresh command, hence why we are using double bang in line below

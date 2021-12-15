@@ -1,33 +1,40 @@
 import chess.Storage.Move
 import chess.domain.Player
 import chess.domain.board_components.Square
-import chess.domain.board_components.toSquare
 
 
-private const val BOARD_SIZE = 8
+const val BOARD_SIZE = 8
 const val MIN_X_LETTER = 'a'
 const val MAX_X_LETTER = 'h'
 const val MIN_Y_NUMBER = 1
 const val MAX_Y_NUMBER = 8
 
-typealias BoardMap = Array<Array<Piece?>>
+typealias BoardList = List<Piece?>
 
+data class Board internal constructor(
 
-class Board() {
-    private val board: BoardMap = defaultBoard()
-    private var player = Player(Colors.WHITE)
-
-
+    private val board: BoardList = List<Piece?>(BOARD_SIZE * BOARD_SIZE) {
+        when(it){
+            in 0..7 -> makePiecesRow(Player.BLACK)[it]
+            in 8..15 -> makePawnRow(Player.BLACK)[it - 8]
+            in 48..55 -> makePawnRow(Player.WHITE)[it - 48]
+            in 56..63 -> makePiecesRow(Player.WHITE)[it - 56]
+            else -> null
+        }
+                                                                         },
+    val player: Player = Player.WHITE
+) {
+    companion object {
+        operator fun invoke() = Board()
+    }
 
     /**
      * Converts the board into a String representation.
      */
     override fun toString(): String {
         var string = ""
-        board.forEach { it ->
-            it.forEach {
-                string += it?.toString() ?: " "
-            }
+        board.forEach {
+            string += it?.toString() ?: " "
         }
         return string
     }
@@ -36,44 +43,43 @@ class Board() {
      * changes the player turn on the board.
      */
     private fun changePlayerTurn() {
-        player = if (player.isWhite()) Player(Colors.BLACK)
-        else Player(Colors.WHITE)
+        TODO("REMOVE THIS")
+        player = if (player.isWhite()) Player.BLACK
+        else Player.WHITE
     }
 
 
     /**
      * @return the current player color.
      */
-    fun getPlayerColor(): Colors {
-        return player.color
+    fun getPlayerColor(): Player {
+        return player
     }
 
     /**
      * @param startPos the [Square] of the piece
      * @return the piece on the given coordinates or null if there is no piece at the given coordinates.
      */
-    fun getPieceAt(position: Square): Piece? {
-        val row = position.row.value()
-        val column = position.column.value()
-        return board[row][column]
+    fun getPiece(at: Square): Piece? = board[at.toIndex()]
 
-    }
+
 
 
     /**
      * @param coordinates the [Coordinates] where we check if there is a piece
      * @return true if there is a piece on the given coordinates, false otherwise
      */
-    fun hasPieceAt(square: Square): Boolean {
-        return board[square.row.value()][square.column.value()] != null
-    }
+    fun hasPiece(at: Square): Boolean = board[at.toIndex()] != null
 
+
+
+
+/*
     /**
      * @param currentPlayer color of the king we are looking for
      * @return the square were the king is positioned
      * loops through the map looking for the player's king
      */
-
     fun getKingSquare(playerColor: Colors): Square? {
         var k = '8'
         for (idx in board) {
@@ -87,67 +93,7 @@ class Board() {
         }
         return null //this should never occur if checkmate is well implemented
     }
-
-
-    /**
-     * put the pieces on the default position on the board
-     * @return [BoardMap] which is an array of array of pieces
-     */
-    private fun defaultBoard(): BoardMap {
-        val whitePlayer = Player(Colors.WHITE)
-        val blackPlayer = Player(Colors.BLACK)
-
-
-        val newBoard: BoardMap = arrayOf(
-            arrayOf(
-                Rook(blackPlayer),
-                Knight(blackPlayer),
-                Bishop(blackPlayer),
-                Queen(blackPlayer),
-                King(blackPlayer),
-                Bishop(blackPlayer),
-                Knight(blackPlayer),
-                Rook(blackPlayer)
-            ),
-            arrayOf(
-                Pawn(blackPlayer),
-                Pawn(blackPlayer),
-                Pawn(blackPlayer),
-                Pawn(blackPlayer),
-                Pawn(blackPlayer),
-                Pawn(blackPlayer),
-                Pawn(blackPlayer),
-                Pawn(blackPlayer)
-            ),
-            arrayOfNulls(BOARD_SIZE),
-            arrayOfNulls(BOARD_SIZE),
-            arrayOfNulls(BOARD_SIZE),
-            arrayOfNulls(BOARD_SIZE),
-            arrayOf(
-                Pawn(whitePlayer),
-                Pawn(whitePlayer),
-                Pawn(whitePlayer),
-                Pawn(whitePlayer),
-                Pawn(whitePlayer),
-                Pawn(whitePlayer),
-                Pawn(whitePlayer),
-                Pawn(whitePlayer),
-
-            ),
-            arrayOf(
-                Rook(whitePlayer),
-                Knight(whitePlayer),
-                Bishop(whitePlayer),
-                Queen(whitePlayer),
-                King(whitePlayer),
-                Bishop(whitePlayer),
-                Knight(whitePlayer),
-                Rook(whitePlayer)
-            )
-        )
-
-        return newBoard
-    }
+*/
 
 
     /**
@@ -156,31 +102,31 @@ class Board() {
      * Makes a move on the board and changes the player turn
      */
     fun makeMove(move: String): Board {
-
         val pieceMovement = move.formatToPieceMove()
-
-        val piece = board[pieceMovement.startSquare.row.value()][pieceMovement.startSquare.column.value()]
-            ?: throw IllegalStateException("no piece at startingSquare")
-        board[pieceMovement.startSquare.row.value()][pieceMovement.startSquare.column.value()] = null
-        board[pieceMovement.endSquare.row.value()][pieceMovement.endSquare.column.value()] = piece
-
+        val piece =getPiece(pieceMovement.startSquare) ?: throw IllegalStateException("no piece at startingSquare")
         when(piece) {
             is Pawn -> piece.setAsMoved()
             is King -> piece.setAsMoved()
             is Rook -> piece.setAsMoved()
         }
+        val newBoard : BoardList = board.mapIndexed{index, it ->
+            when(index){
+                pieceMovement.startSquare.toIndex() -> null
+                pieceMovement.endSquare.toIndex() -> piece
+                else -> it
+            }
+        }
 
-        changePlayerTurn()
 
-        return this
+        return Board(newBoard, !player)
     }
 
     fun isPlayerMovingOwnPieces(move: String): Boolean {
         val pieceMovement = move.formatToPieceMove()
         val startingSquare = Square(pieceMovement.startSquare.column, pieceMovement.startSquare.row)
-        val pieceAtStart = getPieceAt(startingSquare) ?: return false
+        val pieceAtStart = getPiece(startingSquare) ?: return false
 
-        return pieceAtStart.player.color == getPlayerColor()
+        return pieceAtStart.player == getPlayerColor()
     }
 
     /**
@@ -189,7 +135,7 @@ class Board() {
     fun isPlayerMovingTheRightPieces(move: String): Boolean {
         val pieceMovement = move.formatToPieceMove()
         val startingSquare = Square(pieceMovement.startSquare.column, pieceMovement.startSquare.row)
-        val pieceAtStart = getPieceAt(startingSquare) ?: return false
+        val pieceAtStart = getPiece(startingSquare) ?: return false
 
         return pieceAtStart.toString().equals((move[0]).toString(), ignoreCase = true)
     }
@@ -231,15 +177,16 @@ class Board() {
         TODO()
     }
 
+    /*
     /**
      * @param square the Square where the piece to be promoted is placed
      * @return true if the piece is a promoted or false if it isn't
      */
-    fun promotePiece(square: Square, promotionType: Char = 'q'): Boolean {
-        val piece = getPieceAt(square) ?: return false
-        if (piece !is Pawn) return false
+    fun promotePiece(square: Square, promotionType: Char = 'q') : Board{
+        val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
+        if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
         else {
-            board[square.row.value()][square.column.value()] = when(promotionType.toLowerCase()) {
+            board[square.toIndex()] = when(promotionType.toLowerCase()) {
                 'r' -> {
                    val res = Rook(piece.player)
                        res.setAsMoved()
@@ -253,10 +200,40 @@ class Board() {
 
 
         }
-        return true
     }
+
+    */
 }
 
+/**
+ * @param player    The player that owns the pieces
+ * Creates a list with the first 8 pieces of the player
+ */
+private fun makePiecesRow(player: Player) = listOf(
+    Rook(player),
+    Knight(player),
+    Bishop(player),
+    Queen(player),
+    King(player),
+    Bishop(player),
+    Knight(player),
+    Rook(player)
+)
+
+/**
+ * @param player    The player that owns the pieces
+ * Creates a list with the player's pawns
+ */
+private fun makePawnRow(player: Player) = listOf(
+    Pawn(player),
+    Pawn(player),
+    Pawn(player),
+    Pawn(player),
+    Pawn(player),
+    Pawn(player),
+    Pawn(player),
+    Pawn(player)
+)
 
 
 
