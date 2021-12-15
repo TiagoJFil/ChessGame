@@ -21,6 +21,6 @@ class Player(val color : Colors){
             Colors.BLACK -> Player(Colors.WHITE)
             Colors.WHITE -> Player(Colors.BLACK)
         }
-
     }
 }
+

@@ -112,6 +112,7 @@ class PlayCommand(private val chess: Chess) : Commands {
         }
 
         val movement = canPieceMoveTo(filteredInput.filteredMove, chess.board)
+
         when(movement){
             MoveType.ILLEGAL -> return ERROR("Illegal move $parameter. Illegal move.");
 
@@ -130,19 +131,20 @@ class PlayCommand(private val chess: Chess) : Commands {
                 if (filteredInput.databaseMove.contains("=")) {
                     chess.board.promotePiece(
                         filteredInput.filteredMove.substring(1, 2).toSquare(),
-                        filteredInput.filteredMove.last()
-                    )
+                        filteredInput.filteredMove.last())
                 }else{
                     chess.board.promotePiece(
                         filteredInput.filteredMove.substring(1, 2).toSquare()
                     )
-
                 }
-
             }
 
             MoveType.REGULAR ->{ if(filteredInput.databaseMove.contains("x") || filteredInput.databaseMove.contains("="))
                return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
+            }
+
+            MoveType.ENPASSANT -> {
+
             }
         }
 

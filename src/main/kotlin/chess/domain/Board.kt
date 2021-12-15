@@ -1,7 +1,14 @@
+import androidx.compose.ui.graphics.Color
+import chess.GameName
+import chess.Storage.DataBase
 import chess.Storage.Move
+import chess.domain.MoveType
 import chess.domain.Player
 import chess.domain.board_components.Square
+import chess.domain.board_components.toColumn
+import chess.domain.board_components.toRow
 import chess.domain.board_components.toSquare
+import com.mongodb.client.MongoDatabase
 
 
 private const val BOARD_SIZE = 8
@@ -204,8 +211,6 @@ class Board() {
     fun doCastling(move: Move): List<Move> {
 
         val rookColumnLetter = if (move.move[3] == 'c') MIN_X_LETTER else MAX_X_LETTER
-
-
         val rookStartPos = move.move.substring(1..2)
         val kingStartPos = rookColumnLetter + move.move[2].toString()
         val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d" + move.move[2] else "f" + move.move[2]
@@ -217,7 +222,6 @@ class Board() {
         makeMove(kingMove)
         makeMove(rookMove)
         //changes the player turn twice so we need to  change it again
-
         changePlayerTurn()
         val moves = mutableListOf<Move>()
         moves.add(Move(kingMove))
@@ -226,9 +230,38 @@ class Board() {
         return moves
     }
 
+    //em vez de piecemove so start square, talvez
+    fun doEnPassant(pieceMove: PieceMove, lastMove: PieceMove): PieceMove? {
+        val piece = getPieceAt(position = pieceMove.startSquare)
+        val canEnPassant : Pair<Boolean,Boolean>
 
-    fun doEnpassant(pieceMove: PieceMove) {
-        TODO()
+        if(piece == Pawn(player = Player(getPlayerColor()))){
+            canEnPassant = Pawn(player = Player(color = getPlayerColor()))
+                .canEnPassant(board = this, startSquare = pieceMove.startSquare, lastMove = lastMove)
+
+            if(canEnPassant.first && getPlayerColor() == Colors.BLACK){
+                return PieceMove(
+                    startSquare = pieceMove.startSquare,
+                    endSquare = Square(column = (pieceMove.startSquare.column.value()-1).toColumn(), row = (pieceMove.startSquare.row.value()-1).toRow()))
+            }
+            else if(canEnPassant.first && getPlayerColor() == Colors.WHITE){
+                return PieceMove(
+                    startSquare = pieceMove.startSquare,
+                    endSquare = Square(column = (pieceMove.startSquare.column.value()-1).toColumn(), row = (pieceMove.startSquare.row.value()+1).toRow()))
+            }
+            else if(canEnPassant.second && getPlayerColor() == Colors.WHITE){
+                return PieceMove(
+                    startSquare = pieceMove.startSquare,
+                    endSquare = Square(column = (pieceMove.startSquare.column.value()+1).toColumn(), row = (pieceMove.startSquare.row.value()+1).toRow()))
+            }
+            else if(canEnPassant.second && getPlayerColor() == Colors.BLACK){
+                return PieceMove(
+                    startSquare = pieceMove.startSquare,
+                    endSquare = Square(column = (pieceMove.startSquare.column.value()+1).toColumn(), row = (pieceMove.startSquare.row.value()-1).toRow()))
+            }
+        }
+
+        return null
     }
 
     /**
