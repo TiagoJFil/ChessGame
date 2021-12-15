@@ -2,7 +2,7 @@ package chess.domain.board_components
 
 import Direction
 import MAX_Y_NUMBER
-import MIN_Y_NUMBER
+
 
 
 /**
@@ -18,8 +18,13 @@ data class Square(val column: Column, val row: Row){
     fun addDirection(direction: Direction): Square? {
         if(this.column.value() + direction.first < 0 || this.column.value() + direction.first > 7)
             return null
+
         if(this.row.value() + direction.second < 0 || this.row.value() + direction.second > 7)
             return null
+        return Square((this.column.value() + direction.first).toColumn() , (this.row.value() + direction.second).toRow())
+    }
+
+    fun addDirectionNotNull(direction: Direction): Square {
         return Square((this.column.value() + direction.first).toColumn() , (this.row.value() + direction.second).toRow())
     }
 }
