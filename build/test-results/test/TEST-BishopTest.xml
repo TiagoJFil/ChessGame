@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="BishopTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2021-12-15T21:08:40" hostname="DESKTOP-UO9SN5J" time="0.01">
+  <properties/>
+  <testcase name="Bishop cant Move trough a piece" classname="BishopTest" time="0.004"/>
+  <testcase name="Bishop Move to right up" classname="BishopTest" time="0.004"/>
+  <testcase name="Bishop Move to the left up" classname="BishopTest" time="0.0"/>
+  <testcase name="Bishop Move to left down" classname="BishopTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="HasMoved" tests="3" skipped="0" failures="0" errors="0" timestamp="2021-12-15T21:08:40" hostname="DESKTOP-UO9SN5J" time="0.001">
+  <properties/>
+  <testcase name="hasKingMoved" classname="HasMoved" time="0.001"/>
+  <testcase name="hasPawnMoved" classname="HasMoved" time="0.0"/>
+  <testcase name="hasRookMoved" classname="HasMoved" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
