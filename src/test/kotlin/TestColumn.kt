@@ -5,6 +5,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import java.lang.IllegalArgumentException
 
 
 /**
@@ -25,22 +26,13 @@ class TestColumn {
     }
     @Test
     fun `Invalid letter to Column results null`() {
-        val column = findColumn('x')
-        assertNull(column)
-    }
-    @Test
-    fun `All valid letters to columns`() {
-        assertEquals((0..7).toList(),  ('a'..'z').mapNotNull{findColumn(it)?.ordinal })
+        assertThrows(IllegalArgumentException::class.java) {
+            findColumn('x')
+        }
     }
     @Test
     fun `Get all valid values of Column`() {
         assertEquals(8, Column.values().size)
         assertEquals(('a'..'h').toList(), Column.values().map{ it.letter })
-    }
-    @Test
-    fun `All invalid columns`() {
-        val invalidChars = (0..255).map{ it.toChar() } - ('a'..'h')
-        val invalidColumns = invalidChars.mapNotNull{ findColumn(it) }
-        assertEquals(0 , invalidColumns.size)
     }
 }

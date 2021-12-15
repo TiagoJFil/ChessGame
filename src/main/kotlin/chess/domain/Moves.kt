@@ -2,6 +2,7 @@ package chess.domain
 
 import Board
 import Direction
+import Pawn
 import Piece
 import PieceMove
 import chess.domain.board_components.*
@@ -90,7 +91,7 @@ fun canPieceMoveTo(moveString:String,board: Board): MoveType {
  * @returns a full string with the Piece, the start position and the end position or null if there is no move possible.
  */
 fun traceBackPawn(endPos:String, board: Board):String?{
-    /*
+
     val column = endPos[0]
     val row = endPos[1]
     var pieceCapturingRight : Piece? = null
@@ -133,18 +134,18 @@ fun traceBackPawn(endPos:String, board: Board):String?{
     val endPosPiece = board.getPieceAt(Square(findColumn(endPos[0]), findRow(endPos[1])))
 
     tracedPawn = if(endPosPiece == null) {
-        if(pieceRowBehind!= null && pieceRowBehind.type == PieceType.PAWN) tracedPawn + column + (row - direction)
-        else if(pieceTwoRowsBehind!= null && pieceTwoRowsBehind.type == PieceType.PAWN && !pieceTwoRowsBehind.hasMoved()) tracedPawn + column + (row - (direction*2))
+        if(pieceRowBehind!= null && pieceRowBehind   is Pawn) tracedPawn + column + (row - direction)
+        else if(pieceTwoRowsBehind!= null && pieceTwoRowsBehind is Pawn && !pieceTwoRowsBehind.hasMoved()) tracedPawn + column + (row - (direction*2))
         else null
     }
     else{
-        if(pieceCapturingRight!= null && pieceCapturingRight.type == PieceType.PAWN) tracedPawn + (column+1) + (row - direction)
-        else if(pieceCapturingLeft != null && pieceCapturingLeft.type == PieceType.PAWN) tracedPawn + (column-1) + (row - direction)
+        if(pieceCapturingRight!= null && pieceCapturingRight is Pawn) tracedPawn + (column+1) + (row - direction)
+        else if(pieceCapturingLeft != null && pieceCapturingLeft is Pawn) tracedPawn + (column-1) + (row - direction)
         else null
     }
 
     return if(tracedPawn == null) tracedPawn else tracedPawn + endPos
-*/
+
     return null
 }
 
@@ -192,24 +193,3 @@ fun traceBackPawn(endPos:String, board: Board):String?{
 
 
 
-
-
-
-//Não testa se o cavalo faz check
-/*
-fun getCheck(board: Board): Boolean {
-    TODO()
-    val kingSquare = board.getKingSquare(board.getPlayerColor())
-    val lastMove = board.getLastMove().substring(3..4).toSquare()
-    if(kingSquare != null) {
-        val pieceMove = PieceMove(lastMove, kingSquare)
-        if(isPathClear(pieceMove,
-                board,
-                getOrientation(lastMove,kingSquare)!!)
-        ) return true
-    }
-
-    return false
-
-}
-*/

@@ -30,6 +30,49 @@ class PawnTest {
         assertEquals(MoveType.REGULAR, firstMove2Squares)
 
     }
+
+    @Test
+    fun `Pawn cant move backwards`() {
+        val sut = Board()
+
+        val startPos = Square(Column.A, Row.Two)
+        val endPos = Square(Column.A, Row.One)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+        assertEquals(MoveType.ILLEGAL, move)
+
+    }
+
+    @Test
+    fun `Pawn cant move to right`() {
+        val sut = Board()
+
+        val startPos = Square(Column.A, Row.Two)
+        val endPos = Square(Column.B, Row.Two)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+        assertEquals(MoveType.ILLEGAL, move)
+
+    }
+
+    @Test
+    fun `Pawn cant move to same colored pieces  `() {
+        val sut = Board().makeMove("nb1a3").makeMove("Pg7g6")
+
+
+        val startPos = Square(Column.A, Row.Two)
+        val endPos = Square(Column.A, Row.Three)
+        val piece = sut.getPieceAt(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+        assertEquals(MoveType.ILLEGAL, move)
+    }
+
+
     @Test
     fun `Pawn that moved 2 squares cant move again 2 squares`() {
         val sut = Board().makeMove("pa2a4").makeMove("pg7g6")
@@ -60,7 +103,6 @@ class PawnTest {
     @Test
     fun `Pawn moves 1 squares white`() {
         val sut = Board()
-
 
         val startPos = Square(Column.A, Row.Two)
         val endPos = Square(Column.A, Row.Three)
@@ -193,6 +235,7 @@ class KnightTest {
 
         assertEquals(MoveType.REGULAR,move)
     }
+
 }
 
 class RookTest {
