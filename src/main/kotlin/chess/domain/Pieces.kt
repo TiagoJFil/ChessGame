@@ -84,6 +84,8 @@ sealed interface Piece {
  */
 class Pawn (override val player: Player) : Piece  {
 
+    private var count = 0
+
     private var moved = false
 
     /**
@@ -91,6 +93,7 @@ class Pawn (override val player: Player) : Piece  {
      */
     fun setAsMoved() {
         moved = true
+        count++
     }
 
     /**
@@ -144,7 +147,7 @@ class Pawn (override val player: Player) : Piece  {
                 else null
             }
         }
-*/
+        */
         //FALTA ADICIONAR OS MOVIMENTOS DE ATAQUE ______________________________________________________________________________
         /*
         moves += possibleDirections.mapNotNull {
@@ -174,16 +177,29 @@ class Pawn (override val player: Player) : Piece  {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
 
-        return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
+        return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
+            pieceAtEndSquare == null && checkEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
             else -> MoveType.ILLEGAL
         }
     }
 
-    fun checkEnpassant(oldBoard: Board,newBoard: Board , pieceInfo: PieceMove): MoveType {
-        TODO("Not yet implemented")
+    fun checkEnpassant(board: Board, pos: PieceMove ): Boolean{
+
+        val rowAdd = if(player.isWhite()) -1 else 1
+
+        val leftPiece = board.getPiece(Square(pos.startSquare.column,pos.startSquare.row + -1))
+        val rightPiece = board.getPiece(Square(pos.startSquare.column,pos.startSquare.row + 1))
+
+        if(pos.endSquare == Square(pos.startSquare.column + rowAdd, pos.startSquare.row + 1))
+            return (rightPiece is Pawn && rightPiece.count == 1 && rightPiece.player != player)
+
+        if(pos.endSquare == Square(pos.startSquare.column + rowAdd, pos.startSquare.row + -1))
+            return (leftPiece is Pawn && leftPiece.count == 1 && leftPiece.player != player)
+
+        return false
     }
 
     fun traceBackPawn(endPos:String, board: Board){
@@ -284,13 +300,13 @@ class King (override val player: Player) : Piece {
             Pair(-1, 0)
         )
         val movesUnfiltered = getMoves(board, pieceInfo.startSquare, possibleDirections)
-        val castlemoves = movesUnfiltered.filter { it.endSquare.column.value() - it.startSquare.column.value() == 2 }
+        val castlemoves = movesUnfiltered.filter { it.endSquare.column.number - it.startSquare.column.number == 2 }
 
         if (!castlemoves.contains(pieceInfo)) return false
         if (castlemoves.isEmpty()) return false
 
         for (move in castlemoves) {
-            val newSquare: Square = if (move.endSquare.column.value() == 6) {
+            val newSquare: Square = if (move.endSquare.column.number == 6) {
                 move.endSquare.addDirection(Pair(1, 0)) ?: return false
             } else {
                 move.endSquare.addDirection(Pair(-1, 0)) ?: return false

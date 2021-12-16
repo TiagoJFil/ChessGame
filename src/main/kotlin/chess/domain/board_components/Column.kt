@@ -8,18 +8,20 @@ import MIN_X_LETTER
  * Represents the Column that is used to represent the X axis on the board.
  * @property letter    the letter associated with the Column
  */
-enum class Column(val letter: Char) { //ordem normal
-    A('a'),
-    B('b'),
-    C('c'),
-    D('d'),
-    E('e'),
-    F('f'),
-    G('g'),
-    H('h');
+enum class Column(val letter: Char, val number : Int) { //ordem normal
+    A('a',0),
+    B('b',1),
+    C('c',2),
+    D('d',3),
+    E('e',4),
+    F('f',5),
+    G('g',6),
+    H('h',7);
 
-    fun value() = letter - MIN_X_LETTER // ex: 'a' - 'a' == 0
-
+    operator fun plus(second: Int): Column {
+        require((number + second).isARow())
+        return values()[number + second]
+    }
 }
 
 /**

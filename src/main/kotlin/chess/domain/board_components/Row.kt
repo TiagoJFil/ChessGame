@@ -17,10 +17,9 @@ enum class Row(val number: Int) {  //BoardMap[row][column]
     Two(6),
     One(7);
 
-    fun value() = number
     operator fun plus(second: Int): Row {
-        require((this.value() + second).isARow())
-        return values()[this.value() + second]
+        require((number + second).isARow())
+        return values()[number + second]
     }
 
 }
