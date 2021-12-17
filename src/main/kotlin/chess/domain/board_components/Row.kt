@@ -16,12 +16,6 @@ enum class Row(val number: Int) {  //BoardMap[row][column]
     Three(5),
     Two(6),
     One(7);
-
-    operator fun plus(second: Int): Row {
-        require((number + second).isARow())
-        return values()[number + second]
-    }
-
 }
 
 
@@ -32,6 +26,11 @@ fun Char.toRow() : Row{
 
 fun Int.toRow(): Row {
     require(this in MIN_Y_NUMBER..MAX_Y_NUMBER)
+    return Row.values()[this]
+}
+
+fun Int.toRowOnList(): Row {
+    require(this in 0..7)
     return Row.values()[this]
 }
 

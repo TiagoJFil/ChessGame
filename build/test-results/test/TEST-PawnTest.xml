@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="PawnTest" tests="10" skipped="0" failures="10" errors="0" timestamp="2021-12-16T21:38:20" hostname="DESKTOP-UO9SN5J" time="0.046">
+<testsuite name="PawnTest" tests="10" skipped="0" failures="10" errors="0" timestamp="2021-12-17T18:16:10" hostname="DESKTOP-KSQO8RA" time="0.007">
   <properties/>
-  <testcase name="Pawn cant move backwards" classname="PawnTest" time="0.04">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+  <testcase name="Pawn cant move backwards" classname="PawnTest" time="0.002">
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn cant move backwards(MoveTest.kt:35)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -59,11 +57,9 @@
 	at java.base/java.lang.Thread.run(Thread.java:831)
 </failure>
   </testcase>
-  <testcase name="Pawn moves 2 squares" classname="PawnTest" time="0.001">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+  <testcase name="Pawn moves 2 squares" classname="PawnTest" time="0.0">
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn moves 2 squares(MoveTest.kt:21)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -118,10 +114,8 @@
 </failure>
   </testcase>
   <testcase name="Pawn moves 1 squares black" classname="PawnTest" time="0.0">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn moves 1 squares black(MoveTest.kt:114)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -176,10 +170,8 @@
 </failure>
   </testcase>
   <testcase name="Pawn moves 1 squares white" classname="PawnTest" time="0.001">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn moves 1 squares white(MoveTest.kt:103)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -233,11 +225,9 @@
 	at java.base/java.lang.Thread.run(Thread.java:831)
 </failure>
   </testcase>
-  <testcase name="Pawn that moved 2 squares cant move again 2 squares" classname="PawnTest" time="0.001">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+  <testcase name="Pawn that moved 2 squares cant move again 2 squares" classname="PawnTest" time="0.0">
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn that moved 2 squares cant move again 2 squares(MoveTest.kt:77)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -291,11 +281,9 @@
 	at java.base/java.lang.Thread.run(Thread.java:831)
 </failure>
   </testcase>
-  <testcase name="Pawn moves cant move diagonally without a piece to capture " classname="PawnTest" time="0.001">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+  <testcase name="Pawn moves cant move diagonally without a piece to capture " classname="PawnTest" time="0.0">
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn moves cant move diagonally without a piece to capture (MoveTest.kt:125)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -349,11 +337,9 @@
 	at java.base/java.lang.Thread.run(Thread.java:831)
 </failure>
   </testcase>
-  <testcase name="after a pawn moved 2 squares anothar pawn on the start can do the same" classname="PawnTest" time="0.001">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:140)
-	at Pawn.canMove(Pieces.kt:200)
+  <testcase name="after a pawn moved 2 squares anothar pawn on the start can do the same" classname="PawnTest" time="0.0">
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.after a pawn moved 2 squares anothar pawn on the start can do the same(MoveTest.kt:90)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -407,11 +393,9 @@
 	at java.base/java.lang.Thread.run(Thread.java:831)
 </failure>
   </testcase>
-  <testcase name="Pawn cant move to same colored pieces  " classname="PawnTest" time="0.0">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+  <testcase name="Pawn cant move to same colored pieces  " classname="PawnTest" time="0.003">
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn cant move to same colored pieces  (MoveTest.kt:63)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -466,10 +450,8 @@
 </failure>
   </testcase>
   <testcase name="Pawn cant move to right" classname="PawnTest" time="0.001">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn cant move to right(MoveTest.kt:49)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)
@@ -524,10 +506,8 @@
 </failure>
   </testcase>
   <testcase name="Pawn can move diagonally to capture a piece " classname="PawnTest" time="0.0">
-    <failure message="kotlin.NotImplementedError: An operation is not implemented." type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented.
-	at Pawn.checkEnpassant(Pieces.kt:210)
-	at Pawn.getPossibleMoves(Pieces.kt:150)
-	at Pawn.canMove(Pieces.kt:200)
+    <failure message="kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS" type="kotlin.NotImplementedError">kotlin.NotImplementedError: An operation is not implemented: MISSING PROMOTION FUNCTIONS
+	at Pawn.canMove(Pieces.kt:198)
 	at PawnTest.Pawn can move diagonally to capture a piece (MoveTest.kt:137)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:78)

@@ -1,6 +1,7 @@
 import chess.Storage.Move
 import chess.domain.Player
 import chess.domain.board_components.Square
+import chess.domain.board_components.toSquare
 
 
 const val BOARD_SIZE = 8
@@ -39,15 +40,6 @@ data class Board internal constructor(
         return string
     }
 
-    /**
-     * changes the player turn on the board.
-     */
-    private fun changePlayerTurn() {
-        TODO("REMOVE THIS")
-        player = if (player.isWhite()) Player.BLACK
-        else Player.WHITE
-    }
-
 
     /**
      * @return the current player color.
@@ -67,33 +59,23 @@ data class Board internal constructor(
 
     /**
      * @param coordinates the [Coordinates] where we check if there is a piece
-     * @return true if there is a piece on the given coordinates, false otherwise
+     * @return true if there is a piece on the given coordinates, false otherwise.
      */
     fun hasPiece(at: Square): Boolean = board[at.toIndex()] != null
 
 
 
 
-/*
+
     /**
      * @param currentPlayer color of the king we are looking for
      * @return the square were the king is positioned
-     * loops through the map looking for the player's king
+     * Finds the king of the given color
      */
-    fun getKingSquare(playerColor: Colors): Square? {
-        var k = '8'
-        for (idx in board) {
-            var j = 'a'
-            for (piece in idx) {
-                if (piece != null)
-                    if ((piece is King ) && piece.player.color == playerColor) return "$j$k".toSquare()
-                j++
-            }
-            k--
-        }
-        return null //this should never occur if checkmate is well implemented
+    fun getKingSquare(player: Player): Square {
+        return board.indexOfFirst{ it is King && it.player == player }.toSquare()
     }
-*/
+
 
 
     /**
@@ -119,57 +101,6 @@ data class Board internal constructor(
 
 
         return Board(newBoard, !player)
-    }
-
-    fun isPlayerMovingOwnPieces(move: String): Boolean {
-        val pieceMovement = move.formatToPieceMove()
-        val startingSquare = Square(pieceMovement.startSquare.column, pieceMovement.startSquare.row)
-        val pieceAtStart = getPiece(startingSquare) ?: return false
-
-        return pieceAtStart.player == getPlayerColor()
-    }
-
-    /**
-     *
-     */
-    fun isPlayerMovingTheRightPieces(move: String): Boolean {
-        val pieceMovement = move.formatToPieceMove()
-        val startingSquare = Square(pieceMovement.startSquare.column, pieceMovement.startSquare.row)
-        val pieceAtStart = getPiece(startingSquare) ?: return false
-
-        return pieceAtStart.toString().equals((move[0]).toString(), ignoreCase = true)
-    }
-
-
-    /**
-     * @param board         The board to perform the castling on
-     * @param move          The move received from the user to perform the castling.
-     * @returns     a List of Moves that happened during the castling.
-     * Moves the king and the rook to the correct position.
-     */
-    fun doCastling(move: Move): List<Move> {
-
-        val rookColumnLetter = if (move.move[3] == 'c') MIN_X_LETTER else MAX_X_LETTER
-
-
-        val rookStartPos = move.move.substring(1..2)
-        val kingStartPos = rookColumnLetter + move.move[2].toString()
-        val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d" + move.move[2] else "f" + move.move[2]
-        val newKingPos = if (rookColumnLetter == MIN_X_LETTER) "c" + move.move[2] else "g" + move.move[2]
-
-        val kingMove = "K$kingStartPos$newKingPos"
-        val rookMove = "R$rookStartPos$newRookPos"
-
-        makeMove(kingMove)
-        makeMove(rookMove)
-        //changes the player turn twice so we need to  change it again
-
-        changePlayerTurn()
-        val moves = mutableListOf<Move>()
-        moves.add(Move(kingMove))
-        moves.add(Move(rookMove))
-
-        return moves
     }
 
 
@@ -203,7 +134,74 @@ data class Board internal constructor(
     }
 
     */
+
+
+    fun asList(): List<Piece?> {
+        return board
+    }
+
 }
+
+/**
+ * @param board         The board to perform the castling on
+ * @param move          The move received from the user to perform the castling.
+ * @returns     a List of Moves that happened during the castling.
+ * Moves the king and the rook to the correct position.
+ */
+fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
+
+    val rookColumnLetter = if (move.move[3] == 'c') MIN_X_LETTER else MAX_X_LETTER
+
+
+    val rookStartPos = move.move.substring(1..2)
+    val kingStartPos = rookColumnLetter + move.move[2].toString()
+    val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d" + move.move[2] else "f" + move.move[2]
+    val newKingPos = if (rookColumnLetter == MIN_X_LETTER) "c" + move.move[2] else "g" + move.move[2]
+
+    val kingMove = "K$kingStartPos$newKingPos"
+    val rookMove = "R$rookStartPos$newRookPos"
+
+    val newBoard = this.makeMove(kingMove).makeMove(rookMove).asList()
+
+
+
+
+    //changes the player turn twice so we need to  change it again
+
+
+    val moves = mutableListOf<Move>()
+    moves.add(Move(kingMove))
+    moves.add(Move(rookMove))
+
+    return Pair(Board(newBoard, !player),moves)
+}
+
+
+/**
+ * Checks whether the player is moving the own piece or the opponent's
+ * @param move the [Move] we want to make
+ * @return true if the player is moving his own piece, false otherwise
+ */
+fun Board.isPlayerMovingOwnPieces(move: PieceMove): Boolean {
+
+    val startingSquare = Square(move.startSquare.column, move.startSquare.row)
+    val pieceAtStart = getPiece(startingSquare) ?: return false
+
+    return pieceAtStart.player == getPlayerColor()
+}
+
+/**
+ * Checks whether the player is moving the the same piece time of piece as he is trying to move
+ *
+ */
+fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
+    val pieceMovement = move.formatToPieceMove()
+    val startingSquare = Square(pieceMovement.startSquare.column, pieceMovement.startSquare.row)
+    val pieceAtStart = getPiece(startingSquare) ?: return false
+
+    return pieceAtStart.toString().equals((move[0]).toString(), ignoreCase = true)
+}
+
 
 /**
  * @param player    The player that owns the pieces

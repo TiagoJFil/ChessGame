@@ -195,6 +195,7 @@ class Pawn (override val player: Player) : Piece  {
      * @return the [MoveType] of the piece
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
+        TODO("MISSING PROMOTION FUNCTIONS")
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
 
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
@@ -207,17 +208,24 @@ class Pawn (override val player: Player) : Piece  {
     }
 
     private fun checkEnpassant(board: Board, pos: PieceMove ): Boolean{
-        TODO()
+
         val rowAdd = if(player.isWhite()) -1 else 1
+        val leftPos = pos.startSquare.addDirection(Direction(-1,0))
+        val rightPos = pos.startSquare.addDirection(Direction(1,0))
+        if(leftPos != null){
+            val leftPiece = board.getPiece(leftPos)
 
-        val leftPiece = board.getPiece(Square(pos.startSquare.column,pos.startSquare.row + -1))
-        val rightPiece = board.getPiece(Square(pos.startSquare.column,pos.startSquare.row + 1))
+            val bellowLeftPiece = leftPos.addDirection(Direction(0,rowAdd))
+            if(pos.endSquare == bellowLeftPiece)
+                return (leftPiece is Pawn && leftPiece.count == 1 && leftPiece.player != player)
+        }
+        if(rightPos != null){
+            val rightPiece = board.getPiece(rightPos)
 
-        if(pos.endSquare == Square(pos.startSquare.column + rowAdd, pos.startSquare.row + 1))
-            return (rightPiece is Pawn && rightPiece.count == 1 && rightPiece.player != player)
-
-        if(pos.endSquare == Square(pos.startSquare.column + rowAdd, pos.startSquare.row + -1))
-            return (leftPiece is Pawn && leftPiece.count == 1 && leftPiece.player != player)
+            val bellowRightPiece = rightPos.addDirection(Direction(0,rowAdd))
+            if(pos.endSquare == bellowRightPiece)
+                return (rightPiece is Pawn && rightPiece.count == 1 && rightPiece.player != player)
+        }
 
         return false
     }

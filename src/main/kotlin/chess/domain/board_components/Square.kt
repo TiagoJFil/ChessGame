@@ -2,7 +2,6 @@ package chess.domain.board_components
 
 import BOARD_SIZE
 import Direction
-import MAX_Y_NUMBER
 
 
 /**
@@ -13,7 +12,7 @@ import MAX_Y_NUMBER
  */
 data class Square(val column: Column, val row: Row){
     override fun toString(): String {
-        return "${column.letter}${MAX_Y_NUMBER - row.number}"
+        return "${column.letter}${BOARD_SIZE - row.number}"
     }
     fun addDirection(direction: Direction): Square? {
         if(column.number + direction.first < 0 || column.number + direction.first > 7)
@@ -51,7 +50,7 @@ fun isInCoordinateRange(value: Int) = value < BOARD_SIZE * BOARD_SIZE
 /**
  * Int extensions for expressing board coordinates
  */
-fun Int.toSquare() = Square((this / BOARD_SIZE).toColumn(), (this % BOARD_SIZE).toRow())
+fun Int.toSquare() : Square =Square((this % BOARD_SIZE).toColumn(), (this / BOARD_SIZE).toRowOnList())
 fun Int.toSquareOrNull() = if (isInCoordinateRange(this)) toSquare() else null
 val Int.Square
     get(): Square = toSquare()

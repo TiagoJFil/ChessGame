@@ -2,9 +2,12 @@ package chess.domain
 
 import Board
 import Direction
+import MAX_X_LETTER
+import MIN_X_LETTER
 import Pawn
 import Piece
 import PieceMove
+import chess.Storage.Move
 import chess.domain.board_components.*
 
 
@@ -156,6 +159,7 @@ fun traceBackPawn(endPos:String, board: Board):String?{
 
     return null
 }
+
 
 
 

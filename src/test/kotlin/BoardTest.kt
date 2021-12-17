@@ -1,10 +1,9 @@
+import chess.domain.Player
 import chess.domain.board_components.toSquare
 import junit.framework.Assert.assertEquals
 import org.junit.Test
 
 class BoardTest {
-
-
 
     @Test
     fun `Initial position Board`() {
@@ -37,6 +36,19 @@ class BoardTest {
         assertEquals ("K", sut.getPiece(square).toString())
     }
 
+    @Test
+    fun `getKingSquare for white returns the king square`(){
+        val sut = Board()
+        val square = sut.getKingSquare(Player.WHITE)
+        assertEquals ("e1".toSquare(), square)
+    }
+
+    @Test
+    fun `getKingSquare for black returns the king square`(){
+        val sut = Board()
+        val square = sut.getKingSquare(Player.BLACK)
+        assertEquals ("e8".toSquare(), square)
+    }
     /*
     @Test
     fun `empty board equals empty board`(){

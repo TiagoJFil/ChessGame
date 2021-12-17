@@ -1,14 +1,15 @@
 package chess.domain.commands
 import Board
-import chess.domain.MoveType
-import chess.domain.canPieceMoveTo
 import chess.Chess
 import chess.GameName
 import chess.Storage.ChessDataBase
 import chess.Storage.DataBase
 import chess.Storage.Move
-import chess.domain.Player
-import chess.domain.traceBackPawn
+import chess.domain.*
+import doCastling
+import formatToPieceMove
+import isPlayerMovingOwnPieces
+import isPlayerMovingTheRightPieces
 import isel.leic.tds.storage.DbMode
 import isel.leic.tds.storage.getDBConnectionInfo
 import isel.leic.tds.storage.mongodb.createMongoClient
@@ -101,6 +102,11 @@ class JoinCommand(private val chess: Chess) : Commands {
 class PlayCommand(private val chess: Chess) : Commands {
 
     override fun execute(parameter: String?): Result {
+        TODO("ITS WRONG BECAUSE IT DOENST UPDATE THE BOARD" +
+                "MAYBE WHEN A BOARD GOES ON CONTINUE WE CAN MAKE IT UPDATE" )
+
+
+
         if (parameter == null || parameter.isEmpty()) return ERROR("ERROR: Missing move.")
 
         val gameId = chess.currentGameId ?: return ERROR("ERROR: Can't play without a game: try open or join commands.")
@@ -109,7 +115,7 @@ class PlayCommand(private val chess: Chess) : Commands {
 
         val filteredInput = filterInput(parameter,chess.board) ?: return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
 
-        if(!chess.board. isPlayerMovingOwnPieces(filteredInput.filteredMove)) {
+        if(!chess.board. isPlayerMovingOwnPieces(filteredInput.filteredMove.formatToPieceMove())) {
             return ERROR("You can't move the other player's pieces")
         }
         if(!chess.board.isPlayerMovingTheRightPieces(filteredInput.filteredMove)) {
@@ -123,11 +129,11 @@ class PlayCommand(private val chess: Chess) : Commands {
             MoveType.CASTLE -> {
                 if(filteredInput.databaseMove.contains("x") || filteredInput.databaseMove.contains("="))
                     return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
-                val moves = chess.board.doCastling( Move(filteredInput.filteredMove))
+                val (newBoard,moves) = chess.board.doCastling( Move(filteredInput.filteredMove))
                 moves.forEach {
                     chess.dataBase.addMoveToDb(it, gameId)
                 }
-                return CONTINUE(Pair(chess.board,null))
+                return CONTINUE(Pair(newBoard,null))
             }
             MoveType.PROMOTION -> {
                 if(filteredInput.databaseMove.contains("x"))
@@ -153,7 +159,7 @@ class PlayCommand(private val chess: Chess) : Commands {
 
 
 
-        chess.board.makeMove(filteredInput.filteredMove)
+        chess.board = chess.board.makeMove(filteredInput.filteredMove)
         chess.dataBase.addMoveToDb(Move(filteredInput.databaseMove),gameId)
 
 
