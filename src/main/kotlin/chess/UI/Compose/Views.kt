@@ -15,18 +15,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.Key.Companion.Menu
+import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.*
 import chess.domain.Player
 import chess.domain.board_components.toSquare
 import org.junit.Test
+import java.awt.TrayIcon
 
 /**
  * Represents the possible Colors a tile can take
@@ -45,7 +52,7 @@ private enum class Colors {
 
 @Composable
 fun buildBackgroundBoard(){
-    Row(){
+    Row{
 
         for(i in 1..8) {
             if (i % 2 == 0)
@@ -97,7 +104,7 @@ fun boardToComposable(board: Board){
 
 @Composable
 fun tile(piece: Piece?){
-    var pieceImage = "empty-tile.png"
+    var pieceImage = "empty-tile"
     if (piece != null) {
         val pieceColor = piece.player
         pieceImage = when (piece) {
@@ -107,20 +114,25 @@ fun tile(piece: Piece?){
             is Bishop -> "bishop.png"
             is Queen -> "queen.png"
             is King -> "king.png"
-            else -> {"empty-tile.png"}
+            else -> {"empty-tile"}
         }
         pieceImage = if (pieceColor == Player.WHITE) "w_$pieceImage"
                          else "b_$pieceImage"
     }
     val boxmodifier = Modifier.clickable {  }
-        Box( //modifier = boxmodifier.border(4.dp,Color.Red),                ----------------------------------------------------------------------------
+    Box( //modifier = boxmodifier.border(4.dp,Color.Red),                ----------------------------------------------------------------------------
         ) {
+        if (pieceImage != "empty-tile") {
             Image(
                 painter = painterResource(pieceImage),
                 modifier = Modifier.size(75.dp).align(Alignment.Center),
                 // modifier = Modifier.size(60.dp).padding(5.dp),
-                contentDescription = null)
+                contentDescription = null
+            )
+        } else {
+            Spacer(Modifier.size(75.dp))
         }
+    }
 
 }
 
@@ -136,16 +148,6 @@ private fun BackgroundTile(tileColor: Colors) {
 }
 
 
-@Preview
-@Composable
-fun abc() {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("asd", fontSize = 100.sp , modifier = Modifier.padding(16.dp))
-
-
-
-    }
-}
 @Composable
 fun chessBoard(board: Board) {
     buildBackgroundBoard()
@@ -158,33 +160,67 @@ fun chessBoard(board: Board) {
 fun App(board: Board) {
     DesktopMaterialTheme {
 
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("asd", fontSize = 100.sp , modifier = Modifier.padding(16.dp))
+        Box {
+            Text("asd", fontSize = 20.sp , modifier = Modifier.padding(4.dp))
 
-
+            chessBoard(board)
 
         }
         Row {
 
         }
-            chessBoard(board)
+
 
 
     }
 }
+@Composable
+fun makeMenu() = application {
+    val action = remember { mutableStateOf("Last action: None") }
+    val isOpen = remember { mutableStateOf(true) }
 
+    if (isOpen.value) {
+
+        Window(onCloseRequest = { isOpen.value = false }) {
+            MenuBar {
+                Menu("Game", mnemonic = 'G') {
+                    Item("Open", onClick = { action.value = "Last action: OPEN" })
+                    Item("Join", onClick = { action.value = "Last action: JOIN" })
+                }
+                Menu("Options", mnemonic = 'O') {
+                    Item("Show Possible Moves", onClick = { action.value = "Clicked the other option" })
+                }
+            }
+        }
+    }
+}
+@Composable
+fun showPossibleMoves(){
+
+}
+@Composable
+fun FrameWindowScope.menu(action : MutableState<String>){
+    MenuBar {
+        Menu("Game", mnemonic = 'G') {
+            Item("Open", onClick = { action.value = "Last action: OPEN" })
+            Item("Join", onClick = { action.value = "Last action: JOIN" })
+        }
+        Menu("Options", mnemonic = 'O') {
+            Item("Show Possible Moves", onClick = { action.value = "Clicked the other option" })
+        }
+    }
+}
 
 @Test
 fun main() = application {
     val board = Board()
+    val action = remember { mutableStateOf("Last action: None") }
     Window(onCloseRequest = ::exitApplication,
-        state = WindowState(
-            width =615.dp,
-            height =635.dp,
-        ),
+            state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
         icon = painterResource("favicon.ico"),
-        title = "Chess")
-    {
+        title = "Chess"
+    ) {
+        menu(action)
 
         App(board)
     }

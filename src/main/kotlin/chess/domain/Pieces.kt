@@ -129,6 +129,27 @@ class Pawn (override val player: Player) : Piece  {
         if(!this.hasMoved() ){
             moves = moves.plus(PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
         }
+        val squareToDiagonalRight = pos.addDirection(Direction(1,colorDirection))
+        val squareToDiagonalLeft = pos.addDirection(Direction(-1,colorDirection))
+
+        if(squareToDiagonalLeft != null ){
+            val piece = board.getPiece(squareToDiagonalLeft)
+            if(piece != null && piece.player != this.player){
+                moves = moves.plus(PieceMove(pos, squareToDiagonalLeft))
+            }
+            if(checkEnpassant(board,PieceMove(pos, squareToDiagonalLeft))){
+                moves = moves.plus(PieceMove(pos, squareToDiagonalLeft))
+            }
+        }
+
+        if(squareToDiagonalRight != null ){
+            val piece = board.getPiece(squareToDiagonalRight)
+            if(piece != null && piece.player != this.player){
+                moves = moves.plus(PieceMove(pos, squareToDiagonalRight))
+            }
+            if(checkEnpassant(board,PieceMove(pos,squareToDiagonalRight )))
+                moves = moves.plus(PieceMove(pos, squareToDiagonalRight))
+        }
 
         return moves + getMovesByAddingDirection(possibleDirections, pos)
 
@@ -165,7 +186,6 @@ class Pawn (override val player: Player) : Piece  {
             }
         }*/
 
-        return moves
     }
 
 
@@ -186,8 +206,8 @@ class Pawn (override val player: Player) : Piece  {
         }
     }
 
-    fun checkEnpassant(board: Board, pos: PieceMove ): Boolean{
-
+    private fun checkEnpassant(board: Board, pos: PieceMove ): Boolean{
+        TODO()
         val rowAdd = if(player.isWhite()) -1 else 1
 
         val leftPiece = board.getPiece(Square(pos.startSquare.column,pos.startSquare.row + -1))
