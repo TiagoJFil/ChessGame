@@ -137,7 +137,7 @@ class Pawn (override val player: Player) : Piece  {
             if(piece != null && piece.player != this.player){
                 moves = moves.plus(PieceMove(pos, squareToDiagonalLeft))
             }
-            if(checkEnpassant(board,PieceMove(pos, squareToDiagonalLeft))){
+            if(canEnpassant(board,PieceMove(pos, squareToDiagonalLeft))){
                 moves = moves.plus(PieceMove(pos, squareToDiagonalLeft))
             }
         }
@@ -147,45 +147,11 @@ class Pawn (override val player: Player) : Piece  {
             if(piece != null && piece.player != this.player){
                 moves = moves.plus(PieceMove(pos, squareToDiagonalRight))
             }
-            if(checkEnpassant(board,PieceMove(pos,squareToDiagonalRight )))
+            if(canEnpassant(board,PieceMove(pos,squareToDiagonalRight )))
                 moves = moves.plus(PieceMove(pos, squareToDiagonalRight))
         }
 
         return moves + getMovesByAddingDirection(possibleDirections, pos)
-
-
-        /*
-        var moves = listOf<PieceMove>()
-        if (this.hasMoved()) moves += possibleDirections.mapNotNull {
-            val newPos = pos.addDirection(it)
-            if (newPos != null) PieceMove(pos, newPos)
-            else null
-        }else{
-            val tempDir = possibleDirections + possibleDirections.map { it.first * 2 to it.second * 2 }
-            moves += tempDir.mapNotNull {
-                val newPos = pos.addDirection(it)
-                if (newPos != null) PieceMove(pos, newPos)
-                else null
-            }
-        }
-        */
-        //FALTA ADICIONAR OS MOVIMENTOS DE ATAQUE ______________________________________________________________________________
-        /*
-        moves += possibleDirections.mapNotNull {
-
-            if (it.second == -1) {
-                val newPos = pos.addDirection(Direction(it.first - 1, it.second))
-                val pieceAtPos: Piece?
-                if (newPos != null) {
-                    pieceAtPos = board.getPieceAt(newPos)
-                    if (pieceAtPos != null && pieceAtPos.player.color != this.player.color) {
-                        PieceMove(pos, newPos)
-                    }
-                } else null
-
-            }
-        }*/
-
     }
 
 
@@ -195,19 +161,20 @@ class Pawn (override val player: Player) : Piece  {
      * @return the [MoveType] of the piece
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
-        TODO("MISSING PROMOTION FUNCTIONS")
+
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
 
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
-            pieceAtEndSquare == null && checkEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
+            canPromote(pieceInfo) -> MoveType.PROMOTION
+            pieceAtEndSquare == null && canEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
             else -> MoveType.ILLEGAL
         }
     }
 
-    private fun checkEnpassant(board: Board, pos: PieceMove ): Boolean{
+    private fun canEnpassant(board: Board, pos: PieceMove): Boolean{
 
         val rowAdd = if(player.isWhite()) -1 else 1
         val leftPos = pos.startSquare.addDirection(Direction(-1,0))
@@ -227,6 +194,12 @@ class Pawn (override val player: Player) : Piece  {
                 return (rightPiece is Pawn && rightPiece.count == 1 && rightPiece.player != player)
         }
 
+        return false
+    }
+
+    private fun canPromote(pieceInfo: PieceMove): Boolean{
+        if(pieceInfo.endSquare.row.number == 0 || pieceInfo.endSquare.row.number == 7)
+            return true
         return false
     }
 

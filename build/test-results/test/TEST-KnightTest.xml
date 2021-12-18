@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="KnightTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2021-12-17T18:16:10" hostname="DESKTOP-KSQO8RA" time="0.0">
-  <properties/>
-  <testcase name="Knight Move 1" classname="KnightTest" time="0.0"/>
-  <testcase name="Knight Move 2" classname="KnightTest" time="0.0"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
