@@ -5,6 +5,7 @@ import King
 import Knight
 import Pawn
 import Piece
+import PieceMove
 import Queen
 import Rook
 import androidx.compose.desktop.DesktopMaterialTheme
@@ -35,6 +36,7 @@ import chess.domain.board_components.toSquare
 import org.junit.Test
 import java.awt.TrayIcon
 
+private const val ORANGE = 0xFFB5651E
 /**
  * Represents the possible Colors a tile can take
  */
@@ -150,8 +152,11 @@ private fun BackgroundTile(tileColor: Colors) {
 
 @Composable
 fun chessBoard(board: Board) {
-    buildBackgroundBoard()
-    boardToComposable(board)
+    Box {
+        buildBackgroundBoard()
+        boardToComposable(board)
+    }
+
 
 }
 
@@ -160,15 +165,23 @@ fun chessBoard(board: Board) {
 fun App(board: Board) {
     DesktopMaterialTheme {
 
-        Box {
-            Text("asd", fontSize = 20.sp , modifier = Modifier.padding(4.dp))
+        Row(Modifier.background(Color(ORANGE)), ) {
+            Column{
+                for(i in 7 downTo 0) {
+                    Text("$i", fontSize = 20.sp , modifier = Modifier.padding(4.dp))
+                }
+            }
 
-            chessBoard(board)
+            Column {
+                Text("1 2 3", fontSize = 20.sp , modifier = Modifier.padding(4.dp))
+            }
+            Box(Modifier.absoluteOffset(x = 40.dp, y = 40.dp)) {
+                chessBoard(board)
+            }
 
         }
-        Row {
 
-        }
+
 
 
 
@@ -195,7 +208,7 @@ fun makeMenu() = application {
     }
 }
 @Composable
-fun showPossibleMoves(){
+fun showPossibleMoves(moves:List<PieceMove>){
 
 }
 @Composable
