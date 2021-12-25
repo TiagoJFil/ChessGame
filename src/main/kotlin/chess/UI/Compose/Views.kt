@@ -14,6 +14,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -31,8 +32,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
+import chess.Chess
+import chess.Storage.ChessDataBase
 import chess.domain.Player
 import chess.domain.board_components.toSquare
+import isel.leic.tds.storage.DbMode
+import isel.leic.tds.storage.getDBConnectionInfo
+import isel.leic.tds.storage.mongodb.createMongoClient
 import org.junit.Test
 import java.awt.TrayIcon
 
@@ -162,35 +168,49 @@ fun chessBoard(board: Board) {
 
 @Preview
 @Composable
-fun App(board: Board) {
-    DesktopMaterialTheme {
-
-        Row(Modifier.background(Color(ORANGE)), ) {
-            Column(Modifier.padding(top = 36.dp)){
-                for(i in 7 downTo 0) {
-                    Text("$i", fontSize = 20.sp , modifier = Modifier.padding( top = 26.dp, bottom = 26.dp))
+fun App(chessInfo: Chess) {
+    MaterialTheme {
+        val chess = remember { mutableStateOf(chessInfo)}
+        Row(Modifier.background(Color(ORANGE))) {
+            Column(Modifier.padding(top = 32.dp)) {
+                for (i in 8 downTo 1) {
+                    Text(
+                        "$i",
+                        fontSize = 21.sp,
+                        modifier = Modifier.padding(top = 26.dp, bottom = 25.dp, start = 6.dp, end = 6.dp)
+                    )
                 }
             }
-
-            Column(Modifier.align(Alignment.Top )) {
-                Row(Modifier.padding(start = 36.dp)) {
-                    for(i in 0 .. 7) {
-                        Text("${(i + 'a'.code).toChar()}", fontSize = 20.sp , modifier = Modifier.padding(start =26.dp, end = 26.dp))
-
+            Column {
+                Row {
+                    for (i in 0..7) {
+                        Text(
+                            "${(i + 'a'.code).toChar()}",
+                            fontSize = 21.sp,
+                            modifier = Modifier.padding(start = 32.dp, end = 31.dp, top = 4.dp, bottom = 4.dp)
+                        )
                     }
                 }
-                Box(Modifier.absoluteOffset(x = 20.dp, y = 20.dp)) {
-                    chessBoard(board)
+                Box {
+                    chessBoard(chessInfo.board)
                 }
+
+                Text(
+                    "Game:${chess.value.currentGameId} | You:${chess.value.currentPlayer} | ",
+                    fontSize = 21.sp,
+                    modifier = Modifier.padding(start = 4.dp, end = 31.dp, top = 32.dp, bottom = 4.dp)
+                )
+
+            }
+            Column(Modifier.padding(32.dp).height(640.dp).background(Color.White)) {
+                Text(
+                    "TODO ON THE RIGHT",
+                    fontSize = 21.sp,
+
+                )
             }
 
-
-
-
         }
-
-
-
 
 
     }
@@ -235,6 +255,13 @@ fun FrameWindowScope.menu(action : MutableState<String>){
 @Test
 fun main() = application {
     val board = Board()
+    val dbInfo = getDBConnectionInfo()
+    val driver =
+        if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
+        else createMongoClient()
+
+
+    val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
     val action = remember { mutableStateOf("Last action: None") }
     Window(onCloseRequest = ::exitApplication,
             state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
@@ -243,6 +270,6 @@ fun main() = application {
     ) {
         menu(action)
 
-        App(board)
+        App(chessGame)
     }
 }
