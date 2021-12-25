@@ -166,18 +166,26 @@ fun App(board: Board) {
     DesktopMaterialTheme {
 
         Row(Modifier.background(Color(ORANGE)), ) {
-            Column{
+            Column(Modifier.padding(top = 36.dp)){
                 for(i in 7 downTo 0) {
-                    Text("$i", fontSize = 20.sp , modifier = Modifier.padding(4.dp))
+                    Text("$i", fontSize = 20.sp , modifier = Modifier.padding( top = 26.dp, bottom = 26.dp))
                 }
             }
 
-            Column {
-                Text("1 2 3", fontSize = 20.sp , modifier = Modifier.padding(4.dp))
+            Column(Modifier.align(Alignment.Top )) {
+                Row(Modifier.padding(start = 36.dp)) {
+                    for(i in 0 .. 7) {
+                        Text("${(i + 'a'.code).toChar()}", fontSize = 20.sp , modifier = Modifier.padding(start =26.dp, end = 26.dp))
+
+                    }
+                }
+                Box(Modifier.absoluteOffset(x = 20.dp, y = 20.dp)) {
+                    chessBoard(board)
+                }
             }
-            Box(Modifier.absoluteOffset(x = 40.dp, y = 40.dp)) {
-                chessBoard(board)
-            }
+
+
+
 
         }
 
