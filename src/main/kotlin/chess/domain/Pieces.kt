@@ -151,7 +151,7 @@ class Pawn (override val player: Player) : Piece  {
                 moves = moves.plus(PieceMove(pos, squareToDiagonalRight))
         }
 
-        return moves + getMovesByAddingDirection(possibleDirections, pos)
+        return moves + getMovesByAddingDirection(possibleDirections, pos, board)
     }
 
 
@@ -263,7 +263,7 @@ class King (override val player: Player) : Piece {
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
 
 
-        var moves = getMovesByAddingDirection(possibleDirections, pos)
+        var moves = getMovesByAddingDirection(possibleDirections, pos, board)
         if (!hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2, 0))))) {
             moves += listOf(PieceMove(pos, pos.addDirectionNotNull(Pair(2, 0))), PieceMove(pos, pos.addDirectionNotNull(Pair(-2, 0))))
         }
@@ -450,7 +450,7 @@ class Knight (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> =  getMovesByAddingDirection(possibleDirections, pos)
+    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> =  getMovesByAddingDirection(possibleDirections, pos, board)
     /**
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check

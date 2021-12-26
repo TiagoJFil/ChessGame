@@ -35,12 +35,20 @@ private const val PAWN_PROMOTION_ROW_BLACK = 0
  * @param pos                    the position of the piece
  * @return the list of possible moves for the piece given
  */
-fun getMovesByAddingDirection(possibleDirections : List<Direction> ,pos: Square): List<PieceMove> {
+fun getMovesByAddingDirection(possibleDirections : List<Direction> ,pos: Square,board : Board): List<PieceMove> {
+
+    val startingPiece = board.getPiece(pos) ?: return emptyList()
     return possibleDirections.mapNotNull {
         val newPos = pos.addDirection(it)
-        if (newPos != null) PieceMove(pos, newPos)
+        if (newPos != null) {
+            val piece = board.getPiece(newPos)
+            if (piece == null || piece.player != startingPiece.player)
+                PieceMove(pos, newPos)
+            else null
+            }
         else null
-    }
+        }
+
 }
 
 

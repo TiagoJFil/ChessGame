@@ -228,6 +228,20 @@ class KnightTest {
         assertEquals(MoveType.REGULAR,move)
     }
 
+    @Test
+    fun `Knight not allowed move`() {
+        val sut = Board()
+
+        val startPos = Square(Column.G, Row.One)
+        val endPos = Square(Column.E, Row.Two)
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+
+        assertEquals(MoveType.ILLEGAL,move)
+    }
+
+
 }
 
 class RookTest {
