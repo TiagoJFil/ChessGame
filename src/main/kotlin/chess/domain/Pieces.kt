@@ -1,6 +1,8 @@
 import chess.domain.*
 import chess.domain.board_components.*
-
+import org.junit.Test
+import org.litote.kmongo.util.idValue
+import javax.swing.text.Position
 
 
 /**
@@ -124,10 +126,10 @@ class Pawn (override val player: Player) : Piece  {
      * @return the list of possible directions for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
-        var moves = listOf<PieceMove>()
-        val colorDirection =if (this.belongsToWhitePlayer())  -1 else 1
-        if(!this.hasMoved() ){
-            moves = moves.plus(PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
+        val moves = mutableListOf<PieceMove>()
+        val colorDirection = if (belongsToWhitePlayer())  -1 else 1
+        if(!hasMoved() && board.getPiece(pos.addDirectionNotNull(Direction(0, 2 * colorDirection))) == null){
+            moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
         }
         val squareToDiagonalRight = pos.addDirection(Direction(1,colorDirection))
         val squareToDiagonalLeft = pos.addDirection(Direction(-1,colorDirection))
@@ -135,20 +137,20 @@ class Pawn (override val player: Player) : Piece  {
         if(squareToDiagonalLeft != null ){
             val piece = board.getPiece(squareToDiagonalLeft)
             if(piece != null && piece.player != this.player){
-                moves = moves.plus(PieceMove(pos, squareToDiagonalLeft))
+                moves.add(PieceMove(pos, squareToDiagonalLeft))
             }
             if(canEnpassant(board,PieceMove(pos, squareToDiagonalLeft))){
-                moves = moves.plus(PieceMove(pos, squareToDiagonalLeft))
+                moves.add(PieceMove(pos, squareToDiagonalLeft))
             }
         }
 
         if(squareToDiagonalRight != null ){
             val piece = board.getPiece(squareToDiagonalRight)
             if(piece != null && piece.player != this.player){
-                moves = moves.plus(PieceMove(pos, squareToDiagonalRight))
+                moves.add(PieceMove(pos, squareToDiagonalRight))
             }
             if(canEnpassant(board,PieceMove(pos,squareToDiagonalRight )))
-                moves = moves.plus(PieceMove(pos, squareToDiagonalRight))
+                moves.add(PieceMove(pos, squareToDiagonalRight))
         }
 
         return moves + getMovesByAddingDirection(possibleDirections, pos, board)
@@ -273,12 +275,14 @@ class King (override val player: Player) : Piece {
         return moves
     }
 
+
     /**
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
      * @return the [MoveType] of the piece
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
+        if(checkMate(board,player)) return MoveType.CHECKMATE
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if (!hasMoved() && canCastle(board, pieceInfo)) return MoveType.CASTLE
         return when (getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)) {
@@ -320,6 +324,9 @@ class King (override val player: Player) : Piece {
         }
         return false
     }
+
+
+
 
 }
 
@@ -410,6 +417,7 @@ class Rook (override val player: Player) : Piece {
      * @return the list of possible directions for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(board, pos, possibleDirections)
+
     /**
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
@@ -497,3 +505,16 @@ class Bishop (override val player: Player) : Piece {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
 
 }
+
+
+@Test
+fun main(){
+    val b = Board()
+    val startPos = Square(Column.A, Row.Two)
+    val endPos = Square(Column.A, Row.Four)
+    val possibla = b.getPiece(b.getKingSquare(Player.BLACK))?.getPossibleMoves(b,b.getKingSquare(Player.BLACK))
+    val king = b.getPiece(b.getKingSquare(Player.BLACK))!!.canMove(b,PieceMove(startPos,endPos))
+    val pawn = b.getPiece(startPos)!!.getPossibleMoves(b,startPos)
+
+}
+

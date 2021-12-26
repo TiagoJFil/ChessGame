@@ -9,6 +9,8 @@ const val MIN_X_LETTER = 'a'
 const val MAX_X_LETTER = 'h'
 const val MIN_Y_NUMBER = 1
 const val MAX_Y_NUMBER = 8
+const val MIN_ROW_NUMBER = 0
+const val MAX_ROW_NUMBER = 7
 
 typealias BoardList = List<Piece?>
 
@@ -74,6 +76,15 @@ data class Board internal constructor(
      */
     fun getKingSquare(player: Player): Square {
         return board.indexOfFirst{ it is King && it.player == player }.toSquare()
+    }
+
+
+    /**
+     * @param player current player's color
+     * @return the king piece
+     */
+    fun getKingPiece(player: Player):Piece?{
+        return board.find {it is King && it.player == player}
     }
 
 

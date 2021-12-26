@@ -19,7 +19,7 @@ enum class Column(val letter: Char, val number : Int) { //ordem normal
     H('h',7);
 
     operator fun plus(second: Int): Column {
-        require((number + second).isARow())
+        require((number + second).isAColumn())
         return values()[number + second]
     }
 }
@@ -41,7 +41,7 @@ fun Char.toColumn(): Column {
  * @return the Column associated with the given int value.
  */
 fun Int.toColumn() : Column  {
-    require((MIN_X_LETTER +this).isAColumn()) {
+    require((MIN_X_LETTER+this).isAColumn()) {
         "Char is not valid"
     }
     return Column.values()[this]
@@ -51,3 +51,5 @@ fun Int.toColumn() : Column  {
  * @return a boolean indicating if the given char is a valid Column.
  */
 fun Char.isAColumn() = this in MIN_X_LETTER..MAX_X_LETTER
+
+fun Int.isAColumn() = (MIN_X_LETTER+this).isAColumn()

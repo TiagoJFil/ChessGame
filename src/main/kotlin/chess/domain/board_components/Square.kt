@@ -18,7 +18,7 @@ data class Square(val column: Column, val row: Row){
         if(column.number + direction.first < 0 || column.number + direction.first > 7)
             return null
 
-        if(row.number + direction.second < 0 || this.row.number + direction.second > 7)
+        if(row.number + direction.second < 0 || row.number + direction.second > 7)
             return null
         return Square((column.number + direction.first).toColumn() , (row.number + direction.second).toRow())
     }

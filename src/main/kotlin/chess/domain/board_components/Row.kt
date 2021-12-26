@@ -1,6 +1,8 @@
 package chess.domain.board_components
 
+import MAX_ROW_NUMBER
 import MAX_Y_NUMBER
+import MIN_ROW_NUMBER
 import MIN_Y_NUMBER
 
 /**
@@ -25,7 +27,7 @@ fun Char.toRow() : Row{
 }
 
 fun Int.toRow(): Row {
-    require(this in MIN_Y_NUMBER..MAX_Y_NUMBER)
+    require(this in MIN_ROW_NUMBER..MAX_ROW_NUMBER)
     return Row.values()[this]
 }
 
@@ -37,4 +39,4 @@ fun Int.toRowOnList(): Row {
 
 fun Char.isARow() = this.toString().toInt() in MIN_Y_NUMBER..MAX_Y_NUMBER
 
-fun Int.isARow() = this in MIN_Y_NUMBER..MAX_Y_NUMBER
+fun Int.isARow() = this in MIN_ROW_NUMBER..MAX_ROW_NUMBER
