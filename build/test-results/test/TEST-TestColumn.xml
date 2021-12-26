@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="TestColumn" tests="4" skipped="0" failures="0" errors="0" timestamp="2021-12-26T19:35:50" hostname="DESKTOP-UO9SN5J" time="0.007">
+  <properties/>
+  <testcase name="Letter to Column with ordinal property" classname="TestColumn" time="0.0"/>
+  <testcase name="Get all valid values of Column" classname="TestColumn" time="0.004"/>
+  <testcase name="Invalid letter to Column results null" classname="TestColumn" time="0.002"/>
+  <testcase name="Int to Column with letter property" classname="TestColumn" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

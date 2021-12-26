@@ -83,8 +83,10 @@ data class Board internal constructor(
      * @param player current player's color
      * @return the king piece
      */
-    fun getKingPiece(player: Player):Piece?{
-        return board.find {it is King && it.player == player}
+    fun getKingPiece(player: Player):Piece{
+        val king = board.find {it is King && it.player == player}
+        checkNotNull(king)
+        return king
     }
 
 

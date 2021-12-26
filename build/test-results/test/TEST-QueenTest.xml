@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="QueenTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2021-12-26T19:35:50" hostname="DESKTOP-UO9SN5J" time="0.005">
+  <properties/>
+  <testcase name="QUEEN cant move to a friendly piece " classname="QueenTest" time="0.003"/>
+  <testcase name="QUEEN Captures a piece" classname="QueenTest" time="0.001"/>
+  <testcase name="QUEEN Move vertically 1 space" classname="QueenTest" time="0.0"/>
+  <testcase name="QUEEN cant move over pieces " classname="QueenTest" time="0.0"/>
+  <testcase name="QUEEN Move diagonally 1 space" classname="QueenTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -60,7 +60,7 @@ fun getMovesByAddingDirection(possibleDirections : List<Direction> ,pos: Square,
  * @return the list of possible moves for the piece given
  */
 fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): List<PieceMove> {
-    val moves = mutableListOf<PieceMove>()
+    var moves = listOf<PieceMove>()
     val piece = board.getPiece(pos) ?: throw IllegalArgumentException("No piece at position $pos")
     val color = piece.player
     possibleDirections.forEach {
@@ -68,10 +68,10 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
         while(newPos != null ){
             val pieceAtEndSquare = board.getPiece(newPos)
             if (pieceAtEndSquare == null){
-                moves.plus(PieceMove(pos, newPos))
+                moves = moves + PieceMove(pos, newPos)
             }
             if(pieceAtEndSquare != null && pieceAtEndSquare.player != color){
-                moves.plus(PieceMove(pos, newPos))
+                moves = moves + PieceMove(pos, newPos)
                 break
             }
             if(pieceAtEndSquare != null && pieceAtEndSquare.player == color){
@@ -212,9 +212,8 @@ fun traceBackPawn(endPos:String, board: Board):String?{
 
     fun checkMate(board: Board, player: Player): Boolean{
         val list = mutableListOf<PieceMove>()
-        val b = board.getKingSquare(player)
-
-        val possibleMoves = getPossibleMoves(board,board.getKingSquare(player)).map{it.endSquare}
+        val b = board.getKingPiece(player)
+        val possibleMoves = b.getPossibleMoves(board,board.getKingSquare(player)).map{it.endSquare}
         board.asList().forEachIndexed { idx, p ->
             if(p != null && p.player != player)
                 list.addAll(p.getPossibleMoves(board,idx.toSquare()).filter{it.endSquare in possibleMoves})
