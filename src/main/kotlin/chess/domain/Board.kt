@@ -211,6 +211,18 @@ fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
 }
 
 
+fun Board.getAllMoves(player: Player): List<PieceMove> {
+    val list = mutableListOf<PieceMove>()
+    this.asList().forEachIndexed { idx, p ->
+        if(p != null && p.player != player)
+            list.addAll(p.getPossibleMoves(this,idx.toSquare()))
+    }
+    return list
+}
+
+
+
+
 /**
  * @param player    The player that owns the pieces
  * Creates a list with the first 8 pieces of the player

@@ -2,13 +2,11 @@ package chess.domain
 
 import Board
 import Direction
-import MAX_X_LETTER
-import MIN_X_LETTER
 import Pawn
 import Piece
 import PieceMove
-import chess.Storage.Move
 import chess.domain.board_components.*
+import getAllMoves
 
 
 enum class MoveType{
@@ -210,16 +208,18 @@ fun traceBackPawn(endPos:String, board: Board):String?{
         return MoveType.ILLEGAL
     }
 
-    fun checkMate(board: Board, player: Player): Boolean{
-        val list = mutableListOf<PieceMove>()
-        val b = board.getKingPiece(player)
-        val possibleMoves = b.getPossibleMoves(board,board.getKingSquare(player)).map{it.endSquare}
-        board.asList().forEachIndexed { idx, p ->
-            if(p != null && p.player != player)
-                list.addAll(p.getPossibleMoves(board,idx.toSquare()).filter{it.endSquare in possibleMoves})
-        }
+    fun checkMate(board: Board, otherPlayer: Player): Boolean{
+        val b = board.getKingPiece(otherPlayer)
+        val possibleMoves = b.getPossibleMoves(board,board.getKingSquare(otherPlayer)).map{it.endSquare}
+        val list = board.getAllMoves(otherPlayer).filter{it.endSquare in possibleMoves}
         if(list.size >= 3) return true
         return false
+    }
+
+    fun isKingInCheck(board: Board,otherPlayer: Player):Boolean{
+        val kingSquare = board.getKingSquare(otherPlayer)
+        val listOfEndSquares = board.getAllMoves(otherPlayer).map { it.endSquare }
+        return kingSquare in listOfEndSquares
     }
 
 
