@@ -8,31 +8,23 @@ import Piece
 import PieceMove
 import Queen
 import Rook
-import androidx.compose.desktop.DesktopMaterialTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.Key.Companion.Menu
-import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import chess.Chess
+import chess.GameName
 import chess.Storage.ChessDataBase
 import chess.domain.Player
 import chess.domain.board_components.toSquare
@@ -40,9 +32,21 @@ import isel.leic.tds.storage.DbMode
 import isel.leic.tds.storage.getDBConnectionInfo
 import isel.leic.tds.storage.mongodb.createMongoClient
 import org.junit.Test
-import java.awt.TrayIcon
 
+private const val BACKGROUND_COLOR_1 = 0xFF789454
+private const val BACKGROUND_COLOR_2 = 0xFFfcf1e8
 private const val ORANGE = 0xFFB5651E
+private val TILE_SIZE = 75.dp
+private enum class RESOURCES(val FILENAME: String){
+    PAWN("pawn.png"),
+    ROOK("rook.png"),
+    KNIGHT("knight.png"),
+    BISHOP("bishop.png"),
+    QUEEN("queen.png"),
+    KING("king.png"),
+    ICON("favicon.ico")
+}
+
 /**
  * Represents the possible Colors a tile can take
  */
@@ -58,10 +62,12 @@ private enum class Colors {
     }
 }
 
+/**
+ * Builds the UI for the background chessboard.
+ */
 @Composable
 fun buildBackgroundBoard(){
     Row{
-
         for(i in 1..8) {
             if (i % 2 == 0)
                 Column {
@@ -93,7 +99,9 @@ fun Modifier.selectPiece(){
 
 }
 */
-
+/**
+ * Places the pieces from the [board] received on the chessBoard.
+ */
 @Composable
 fun boardToComposable(board: Board){
     Column {
@@ -111,17 +119,17 @@ fun boardToComposable(board: Board){
 }
 
 @Composable
-fun tile(piece: Piece?){
+private fun tile(piece: Piece?){
     var pieceImage = "empty-tile"
     if (piece != null) {
         val pieceColor = piece.player
         pieceImage = when (piece) {
-            is Pawn -> "pawn.png"
-            is Rook -> "rook.png"
-            is Knight -> "knight.png"
-            is Bishop -> "bishop.png"
-            is Queen -> "queen.png"
-            is King -> "king.png"
+            is Pawn -> RESOURCES.PAWN.FILENAME
+            is Rook -> RESOURCES.ROOK.FILENAME
+            is Knight -> RESOURCES.KNIGHT.FILENAME
+            is Bishop -> RESOURCES.BISHOP.FILENAME
+            is Queen -> RESOURCES.QUEEN.FILENAME
+            is King -> RESOURCES.KING.FILENAME
             else -> {"empty-tile"}
         }
         pieceImage = if (pieceColor == Player.WHITE) "w_$pieceImage"
@@ -133,12 +141,12 @@ fun tile(piece: Piece?){
         if (pieceImage != "empty-tile") {
             Image(
                 painter = painterResource(pieceImage),
-                modifier = Modifier.size(75.dp).align(Alignment.Center),
+                modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
                 // modifier = Modifier.size(60.dp).padding(5.dp),
                 contentDescription = null
             )
         } else {
-            Spacer(Modifier.size(75.dp))
+            Spacer(Modifier.size(TILE_SIZE))
         }
     }
 
@@ -147,12 +155,11 @@ fun tile(piece: Piece?){
 
 @Composable
 private fun BackgroundTile(tileColor: Colors) {
-    val colorRGB =
-        if (tileColor == Colors.BLACK) Color(0xFF789454)
-        else Color(0xFFfcf1e8)
+    val color =
+        if (tileColor == Colors.BLACK) Color(BACKGROUND_COLOR_1)
+        else Color(BACKGROUND_COLOR_2)
 
-    Box(Modifier.background(colorRGB).size(75.dp)) {
-    }
+    Box(Modifier.background(color).size(TILE_SIZE)) {}
 }
 
 
@@ -168,9 +175,11 @@ fun chessBoard(board: Board) {
 
 @Preview
 @Composable
-fun App(chessInfo: Chess) {
+fun App(chess: MutableState<Chess>) {
+
     MaterialTheme {
-        val chess = remember { mutableStateOf(chessInfo)}
+        //val chess = remember { mutableStateOf(chessInfo)}
+        val gameId = chess.value.currentGameId
         Row(Modifier.background(Color(ORANGE))) {
             Column(Modifier.padding(top = 32.dp)) {
                 for (i in 8 downTo 1) {
@@ -192,14 +201,16 @@ fun App(chessInfo: Chess) {
                     }
                 }
                 Box {
-                    chessBoard(chessInfo.board)
+                    chessBoard(chess.value.board)
+                }
+                if(gameId != null){
+                    Text(
+                        "Game:${gameId.id} | You:${chess.value.currentPlayer} | ",
+                        fontSize = 21.sp,
+                        modifier = Modifier.padding(start = 4.dp, end = 31.dp, top = 32.dp, bottom = 4.dp)
+                    )
                 }
 
-                Text(
-                    "Game:${chess.value.currentGameId} | You:${chess.value.currentPlayer} | ",
-                    fontSize = 21.sp,
-                    modifier = Modifier.padding(start = 4.dp, end = 31.dp, top = 32.dp, bottom = 4.dp)
-                )
 
             }
             Column(Modifier.padding(32.dp).height(640.dp).background(Color.White)) {
@@ -215,41 +226,48 @@ fun App(chessInfo: Chess) {
 
     }
 }
-@Composable
-fun makeMenu() = application {
-    val action = remember { mutableStateOf("Last action: None") }
-    val isOpen = remember { mutableStateOf(true) }
 
-    if (isOpen.value) {
-
-        Window(onCloseRequest = { isOpen.value = false }) {
-            MenuBar {
-                Menu("Game", mnemonic = 'G') {
-                    Item("Open", onClick = { action.value = "Last action: OPEN" })
-                    Item("Join", onClick = { action.value = "Last action: JOIN" })
-                }
-                Menu("Options", mnemonic = 'O') {
-                    Item("Show Possible Moves", onClick = { action.value = "Clicked the other option" })
-                }
-            }
-        }
-    }
-}
 @Composable
 fun showPossibleMoves(moves:List<PieceMove>){
 
 }
+// chess: MutableState<Chess>
 @Composable
-fun FrameWindowScope.menu(action : MutableState<String>){
+fun FrameWindowScope.menu(action : MutableState<String>, askingName : MutableState<Boolean>, chess: MutableState<Chess>) {
     MenuBar {
         Menu("Game", mnemonic = 'G') {
-            Item("Open", onClick = { action.value = "Last action: OPEN" })
-            Item("Join", onClick = { action.value = "Last action: JOIN" })
+            Item("Open", onClick = { action.value = "open"; askingName.value = true ; chess.value.currentPlayer = Player.WHITE})
+            Item("Join", onClick = { action.value = "join"; askingName.value = true ; chess.value.currentPlayer = Player.BLACK})
         }
         Menu("Options", mnemonic = 'O') {
             Item("Show Possible Moves", onClick = { action.value = "Clicked the other option" })
         }
     }
+}
+@Composable
+fun getGameName(isAskingForNameOpen: MutableState<Boolean>,action: MutableState<String>, chess : MutableState<Chess>){
+
+    if (isAskingForNameOpen.value) {
+        val gameName = remember { mutableStateOf("") }
+        Dialog(
+            onCloseRequest = { isAskingForNameOpen.value = false },
+            title = "Close the document without saving?",
+        ) {
+            Column{
+                Text("Please insert the name of the game to ${action.value}")
+                TextField(
+                    value = gameName.value,
+                    onValueChange = { gameName.value = it; chess.value.currentGameId = GameName(it) }
+                )
+                Button(
+                    onClick = { isAskingForNameOpen.value = false },
+                ) {
+                    Text("Confirm")
+                }
+            }
+        }
+    }
+
 }
 
 @Test
@@ -259,17 +277,87 @@ fun main() = application {
     val driver =
         if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
         else createMongoClient()
-
-
     val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
-    val action = remember { mutableStateOf("Last action: None") }
+
+    val isAskingForName = remember { mutableStateOf(false) }
+    val action = remember { mutableStateOf("") }
+
+
     Window(onCloseRequest = ::exitApplication,
             state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
-        icon = painterResource("favicon.ico"),
+        icon = painterResource(RESOURCES.ICON.FILENAME),
         title = "Chess"
     ) {
-        menu(action)
+        val chess = remember { mutableStateOf(chessGame) }
+        if (isAskingForName.value) {
+            val gameName = remember { mutableStateOf("") }
+            Dialog(
+                onCloseRequest = { isAskingForName.value = false },
+                title = "Insert Game Name",
+            ) {
+                Column{
+                    Text("Please insert the name of the game to ${action.value}")
+                    TextField(
+                        value = gameName.value,
+                        onValueChange = { gameName.value = it; chess.value.currentGameId = GameName(it) }
+                    )
+                    Button(
+                        onClick = { isAskingForName.value = false },
+                    ) {
+                        Text("Confirm")
+                    }
+                }
+            }
+        }
+        menu(action,isAskingForName,chess )
 
-        App(chessGame)
+        MaterialTheme {
+            //val chess = remember { mutableStateOf(chessInfo)}
+            val gameId = chess.value.currentGameId
+            Row(Modifier.background(Color(ORANGE))) {
+                Column(Modifier.padding(top = 32.dp)) {
+                    for (i in 8 downTo 1) {
+                        Text(
+                            "$i",
+                            fontSize = 21.sp,
+                            modifier = Modifier.padding(top = 26.dp, bottom = 25.dp, start = 6.dp, end = 6.dp)
+                        )
+                    }
+                }
+                Column {
+                    Row {
+                        for (i in 0..7) {
+                            Text(
+                                "${(i + 'a'.code).toChar()}",
+                                fontSize = 21.sp,
+                                modifier = Modifier.padding(start = 32.dp, end = 31.dp, top = 4.dp, bottom = 4.dp)
+                            )
+                        }
+                    }
+                    Box {
+                        chessBoard(chess.value.board)
+                    }
+                    if(gameId != null){
+                        Text(
+                            "Game:${gameId.id} | You:${chess.value.currentPlayer} | ",
+                            fontSize = 21.sp,
+                            modifier = Modifier.padding(start = 4.dp, end = 31.dp, top = 32.dp, bottom = 4.dp)
+                        )
+                    }
+
+
+                }
+                Column(Modifier.padding(32.dp).height(640.dp).background(Color.White)) {
+                    Text(
+                        "TODO ON THE RIGHT",
+                        fontSize = 21.sp,
+
+                        )
+                }
+
+            }
+
+
+        }
     }
 }

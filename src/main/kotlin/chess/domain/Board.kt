@@ -121,38 +121,33 @@ data class Board internal constructor(
         TODO()
     }
 
-    /*
-    /**
-     * @param square the Square where the piece to be promoted is placed
-     * @return true if the piece is a promoted or false if it isn't
-     */
-    fun promotePiece(square: Square, promotionType: Char = 'q') : Board{
-        val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
-        if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
-        else {
-            board[square.toIndex()] = when(promotionType.toLowerCase()) {
-                'r' -> {
-                   val res = Rook(piece.player)
-                       res.setAsMoved()
-                       res
-                }
-                'b' -> Bishop(piece.player)
-                'n' -> Knight(piece.player)
-                'q' -> Queen(piece.player)
-                else -> throw IllegalArgumentException("Invalid promotion type")
-            }
-
-
-        }
-    }
-
-    */
-
-
     fun asList(): List<Piece?> {
         return board
     }
 
+}
+
+/**
+ * @param square the Square where the piece to be promoted is placed
+ * @return true if the piece is a promoted or false if it isn't
+ */
+fun Board.promotePiece(square: Square, promotionType: Char = 'q') : Board{
+    val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
+    if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
+    else {
+        val newPiece = when(promotionType.toLowerCase()){
+            'q' -> Queen(piece.player)
+            'r' -> Rook(piece.player)
+            'b' -> Bishop(piece.player)
+            'n' -> Knight(piece.player)
+            else -> throw IllegalStateException("Invalid promotion type")
+        }
+        val newBoardList = this.asList().mapIndexed{index, it ->
+            if (index == square.toIndex()) newPiece
+            else it
+        }
+        return Board(newBoardList, player)
+    }
 }
 
 /**
