@@ -165,7 +165,7 @@ class Pawn (override val player: Player) : Piece  {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
 
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-
+        if(isKingInCheck(board,player)) return MoveType.CHECK
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
             canPromote(pieceInfo) -> MoveType.PROMOTION
@@ -282,6 +282,7 @@ class King (override val player: Player) : Piece {
      * @return the [MoveType] of the piece
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
+        if(isKingInCheck(board,player)) return MoveType.CHECK
         if(checkMate(board,player)) return MoveType.CHECKMATE
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if (!hasMoved() && canCastle(board, pieceInfo)) return MoveType.CASTLE

@@ -89,11 +89,12 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-    return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
+    if(isKingInCheck(board,player)) return MoveType.CHECK
+    return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
-      pieceAtEndSquare == null -> MoveType.REGULAR
-      pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
-     else -> MoveType.ILLEGAL
+        pieceAtEndSquare == null -> MoveType.REGULAR
+        pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
+        else -> MoveType.ILLEGAL
 }
 
 }
@@ -216,9 +217,9 @@ fun traceBackPawn(endPos:String, board: Board):String?{
         return false
     }
 
-    fun isKingInCheck(board: Board,otherPlayer: Player):Boolean{
-        val kingSquare = board.getKingSquare(otherPlayer)
-        val listOfEndSquares = board.getAllMoves(otherPlayer).map { it.endSquare }
+    fun isKingInCheck(board: Board, player: Player):Boolean{
+        val kingSquare = board.getKingSquare(player)
+        val listOfEndSquares = board.getAllMoves(player).map { it.endSquare }
         return kingSquare in listOfEndSquares
     }
 

@@ -1,7 +1,9 @@
 import chess.domain.MoveType
+import chess.domain.Player
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
+import chess.domain.isKingInCheck
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -200,6 +202,7 @@ class BishopTest {
 
     }
 
+
 }
 
 class KnightTest {
@@ -373,6 +376,16 @@ class KingTest {
         val move = piece.canMove(sut,PieceMove(startPos, endPos) )
         assertEquals(MoveType.ILLEGAL,move)
     }
+
+    @Test
+    fun `is king in check`(){
+        val sut = Board().makeMove("Pe2e4").makeMove("pd7d5").makeMove("Ke1e2").makeMove("bc8g4")
+        assertEquals(true,isKingInCheck(sut,Player.WHITE))
+    }
+
+
+
+
 
 }
 
