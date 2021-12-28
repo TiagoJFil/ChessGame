@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="BelongToWhitePlayer" tests="1" skipped="0" failures="0" errors="0" timestamp="2021-12-26T19:35:50" hostname="DESKTOP-UO9SN5J" time="0.037">
-  <properties/>
-  <testcase name="belongsToWhichPlayer" classname="BelongToWhitePlayer" time="0.037"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

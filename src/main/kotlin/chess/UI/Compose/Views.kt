@@ -9,6 +9,7 @@ import Queen
 import Rook
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -38,16 +39,14 @@ private const val BACKGROUND_COLOR_1 = 0xFF789454
 private const val BACKGROUND_COLOR_2 = 0xFFfcf1e8
 private const val ORANGE = 0xFFB5651E
 private val TILE_SIZE = 75.dp
-private enum class RESOURCES(val FILENAME: String){
-    PAWN("pawn.png"),
-    ROOK("rook.png"),
-    KNIGHT("knight.png"),
-    BISHOP("bishop.png"),
-    QUEEN("queen.png"),
-    KING("king.png"),
-    ICON("favicon.ico")
-}
-
+private const val RESOURCE_PAWN_FILENAME = "pawn.png"
+private const val RESOURCE_ROOK_FILENAME = "rook.png"
+private const val RESOURCE_KNIGHT_FILENAME = "knight.png"
+private const val RESOURCE_BISHOP_FILENAME = "bishop.png"
+private const val RESOURCE_QUEEN_FILENAME = "queen.png"
+private const val RESOURCE_KING_FILENAME = "king.png"
+private const val RESOURCE_ICON_FILENAME = "favicon.ico"
+private const val RESOURCE_SELECTED_TILE_FILENAME = "selected-tile"
 
 
 /**
@@ -95,18 +94,11 @@ fun buildBackgroundBoard(){
     }
 }
 
-/*
-@Composable
-fun Modifier.selectPiece(){
-    this.background(painter = painterResource(id = R.drawable.highlight))
-
-}
-*/
 /**
  * Places the pieces from the [board] received on the chessBoard.
  */
 @Composable
-private fun boardToComposable(board: Board, clicked: MutableState<Clicked>){
+private fun boardToComposable(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>){
     Column {
         for(i in 8 downTo 1) {
             Row {
@@ -114,7 +106,7 @@ private fun boardToComposable(board: Board, clicked: MutableState<Clicked>){
                     val column = (count + 'a'.code).toChar()// convert to char
                     val square = "$column$i".toSquare()
                     val piece = board.getPiece(square)
-                    tile(piece,clicked, square)
+                    tile(piece ,clicked, square, selected)
                 }
             }
         }
@@ -122,35 +114,44 @@ private fun boardToComposable(board: Board, clicked: MutableState<Clicked>){
 }
 
 @Composable
-private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square){
-    var pieceImage = "empty-tile"
+private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square, selected: MutableState<List<Square>>){
+    val pieceImage = remember { mutableStateOf("empty-tile")}
     if (piece != null) {
         val pieceColor = piece.player
-        pieceImage = when (piece) {
-            is Pawn -> RESOURCES.PAWN.FILENAME
-            is Rook -> RESOURCES.ROOK.FILENAME
-            is Knight -> RESOURCES.KNIGHT.FILENAME
-            is Bishop -> RESOURCES.BISHOP.FILENAME
-            is Queen -> RESOURCES.QUEEN.FILENAME
-            is King -> RESOURCES.KING.FILENAME
+        pieceImage.value = when (piece) {
+            is Pawn -> RESOURCE_PAWN_FILENAME
+            is Rook -> RESOURCE_ROOK_FILENAME
+            is Knight -> RESOURCE_KNIGHT_FILENAME
+            is Bishop -> RESOURCE_BISHOP_FILENAME
+            is Queen -> RESOURCE_QUEEN_FILENAME
+            is King -> RESOURCE_KING_FILENAME
             else -> {"empty-tile"}
         }
-        pieceImage = if (pieceColor == Player.WHITE) "w_$pieceImage"
-        else "b_$pieceImage"
+        pieceImage.value = if (pieceColor == Player.WHITE) "w_${pieceImage.value}"
+        else "b_${pieceImage.value}"
     }
-    //modifier = boxmodifier.border(4.dp,Color.Red)
 
-    Box( modifier = Modifier.clickable(
+    val modifier = if(clicked.value is START && (clicked.value as START).square == square.toString()){
+        Modifier.clickable(
             enabled = true,
             onClick = {
-            clicked.value = if(clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
-    })
-    ) {
-        if (pieceImage != "empty-tile") {
+                clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
+            }).border(4.dp,Color.Red)
+        }
+        else {
+        Modifier.clickable(
+            enabled = true,
+            onClick = {
+                clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
+            })
+    }
+
+
+    Box(modifier = modifier) {
+        if (pieceImage.value != "empty-tile") {
             Image(
-                painter = painterResource(pieceImage),
+                painter = painterResource(pieceImage.value),
                 modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
-                // modifier = Modifier.size(60.dp).padding(5.dp),
                 contentDescription = null
             )
         } else {
@@ -158,24 +159,43 @@ private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square){
         }
     }
 
+    if(selected.value.isNotEmpty()){
+        if(selected.value.contains(square)){
+            Box(modifier = Modifier.size(TILE_SIZE)) {
+                Image(
+                    painter = painterResource(RESOURCE_SELECTED_TILE_FILENAME),
+                    modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
+                    contentDescription = null
+                )
+            }
+        }
+    }
+
 }
 
-
+/**
+ * Builds a Background Tile of the chessboard with the [color] received.
+ * @param tileColor The color of the tile.
+ */
 @Composable
 private fun BackgroundTile(tileColor: Colors) {
     val color =
         if (tileColor == Colors.BLACK) Color(BACKGROUND_COLOR_1)
         else Color(BACKGROUND_COLOR_2)
 
-    Box(Modifier.background(color).size(TILE_SIZE)) {}
+    Box(Modifier.background(color).size(TILE_SIZE))
 }
 
-
+/**
+ * Builds the UI for the chessboard(background and the pieces).
+ * @param board The board to be displayed.
+ * @param clicked The state of the clicked square.
+ */
 @Composable
-private fun chessBoard(board: Board, clicked: MutableState<Clicked>) {
+private fun chessBoard(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>) {
     Box {
         buildBackgroundBoard()
-        boardToComposable(board,clicked)
+        boardToComposable(board,clicked,selected)
     }
 }
 
@@ -187,7 +207,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
     Window(onCloseRequest = ::exitApplication,
         state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
-        icon = painterResource(RESOURCES.ICON.FILENAME),
+        icon = painterResource(RESOURCE_ICON_FILENAME),
         title = "Chess"
     ) {
         val chess = remember { mutableStateOf(chessInfo) }
@@ -196,6 +216,8 @@ fun ApplicationScope.App(chessInfo: Chess) {
         val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE())}
         val showPossibleMoves = remember { mutableStateOf(true) } // show possible moves starts as true by default
         val move = remember { mutableStateOf("") }
+        val selected = remember { mutableStateOf(emptyList<Square>()) }
+        val isGameOver = remember { mutableStateOf(false) }
 
         if (isAskingForName.value) {
             getGameName(isAskingForName, actionToDisplay, chess)
@@ -208,11 +230,11 @@ fun ApplicationScope.App(chessInfo: Chess) {
             val start = clicked.value as START
             move.value = start.square
 
-            //TODO : MAKE A BORDER AROUND THE SELECTED PIECE
             if(showPossibleMoves.value) {
                 val moves = chess.value.getPiecePossibleMovesFrom(move.value.toSquare())
                 if (moves.isNotEmpty()) {
-                    //TODO("DISPLAY POSSIBLE MOVES ON THE BOARD
+                    val possibleMoves = moves.map { it.endSquare }
+                    selected.value = possibleMoves
                 }else {
                     move.value = ""
                     clicked.value = NONE()
@@ -223,6 +245,9 @@ fun ApplicationScope.App(chessInfo: Chess) {
         if(clicked.value is FINISH){
             val finish = clicked.value as FINISH
             move.value =  move.value + finish.square
+            if(showPossibleMoves.value){
+                selected.value = emptyList()
+            }
 /*
 TODO("NOT NEEDED BECAUSE WE ARE USING THE FILTERINPUT FROM PLAY ON COMMANDS")
             val startSquare = move.value.substring(0,2).toSquare()
@@ -233,6 +258,7 @@ TODO("NOT NEEDED BECAUSE WE ARE USING THE FILTERINPUT FROM PLAY ON COMMANDS")
 
             clicked.value = NONE()
         }
+
         MaterialTheme {
             val gameId = chess.value.currentGameId
             Row(Modifier.background(Color(ORANGE))) {
@@ -256,7 +282,7 @@ TODO("NOT NEEDED BECAUSE WE ARE USING THE FILTERINPUT FROM PLAY ON COMMANDS")
                         }
                     }
                     Box {
-                        chessBoard(chess.value.board, clicked)
+                        chessBoard(chess.value.board, clicked,selected)
                     }
                     if (gameId != null) {
                         Text(

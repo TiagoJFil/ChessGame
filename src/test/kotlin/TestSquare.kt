@@ -47,14 +47,28 @@ class TestSquare {
         "b9".toSquare()
         }
     }
-    /*
+
     @Test
-    fun `All valid squares`() {
-        val all = Square.values
-        assertEquals(8 * 8, all.size)
-        assertEquals("a8", all.first().toString())
-        assertEquals("h1", all.last().toString())
+    fun `add direction, out of board`() {
+        val newSquare ="a1".toSquare().addDirection(Pair(-1,0)) // out of board left
+        assertEquals(null, newSquare)
+        val newSquare2 ="a1".toSquare().addDirection(Pair(0,1)) // out of board down
+        assertEquals(null, newSquare2)
+        val newSquare3 ="h8".toSquare().addDirection(Pair(1,0)) // out of board right
+        assertEquals(null, newSquare3)
+        val newSquare4 ="h8".toSquare().addDirection(Pair(0,-1)) // out of board up
+        assertEquals(null, newSquare4)
     }
-    */
+
+    @Test
+    fun `add directionNotNull, out of the board returns error`(){
+        assertThrows(IllegalArgumentException::class.java) {
+            "a1".toSquare().addDirectionNotNull(Pair(-1,0)) // out of board left
+            "a1".toSquare().addDirectionNotNull(Pair(0,1)) // out of board down
+            "h8".toSquare().addDirectionNotNull(Pair(1,0)) // out of board right
+            "h8".toSquare().addDirectionNotNull(Pair(0,-1)) // out of board up
+        }
+    }
+
 }
 
