@@ -4,7 +4,6 @@ import Board
 import Direction
 import Pawn
 import Piece
-import PieceMove
 import chess.domain.board_components.*
 import getAllMoves
 
@@ -24,8 +23,35 @@ private const val UP = -1
 private const val DOWN = 1
 private const val LEFT = -1
 private const val RIGHT = 1
-private const val PAWN_PROMOTION_ROW_WHITE = 7
-private const val PAWN_PROMOTION_ROW_BLACK = 0
+
+
+private const val POSITION_FROM_LETTER = 1
+private const val POSITION_FROM_NUMBER = 2
+private const val POSITION_TO_LETTER = 3
+private const val POSITION_TO_NUMBER = 4
+
+
+/**
+ * @param startSquare       the square where the piece is placed
+ * @param endSquare         the square where the piece is moved to.
+ * Represents the piece movement.
+ */
+data class PieceMove(val startSquare: Square, val endSquare: Square)
+
+/**
+ * receives the move input and transforms to a data class of coordinates
+ * @param String  input to make move ex: Pe2e4
+ * @return  the Movement as a data class [PieceMove]
+ **/
+fun String.formatToPieceMove(): PieceMove{
+
+    val startSquare = Square((this[POSITION_FROM_LETTER]).toColumn(), (this[POSITION_FROM_NUMBER]).toRow())
+
+    val endSquare = Square((this[POSITION_TO_LETTER]).toColumn(), (this[POSITION_TO_NUMBER]).toRow())
+
+    return PieceMove(startSquare,endSquare)
+}
+
 
 /**
  * This function returns the moves for the pieces: KNIGHT, PAWN, KING,
@@ -89,8 +115,8 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-    if(isKingInCheck(board,player)) return MoveType.CHECK
-    return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
+    if(isCheckMate(board,player)) return MoveType.CHECKMATE
+    return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
         false -> MoveType.ILLEGAL
         pieceAtEndSquare == null -> MoveType.REGULAR
         pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
@@ -98,10 +124,12 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
 }
 
 }
+
 /**
+ * Determines the type of the movement for the piece given
  * @param moveString string like Pa2a3
  * @param board local game board
- * checks if the move is possible
+ * @return the type of the movement for the piece given
  */
 fun canPieceMoveTo(moveString:String,board: Board): MoveType {
     val piece  = board.getPiece(moveString.substring(1..2).toSquare()) ?: return MoveType.ILLEGAL
@@ -110,8 +138,6 @@ fun canPieceMoveTo(moveString:String,board: Board): MoveType {
 
     return piece.canMove(board, pieceInfo)
 }
-
-
 
 
 /**
@@ -166,62 +192,25 @@ fun traceBackPawn(endPos:String, board: Board):String?{
 
 }
 
-
-
-
-
-     fun CanMoveTo(pieceInfo: PieceMove, board: Board): MoveType {/*
-        val piece = board.getPieceAt(pieceInfo.startSquare) ?: throw IllegalArgumentException("ERROR: Check failed..")
-        val direction : Int = if(piece.belongsToWhitePlayer()) UP else DOWN
-        val border = if(piece.belongsToWhitePlayer()) PAWN_PROMOTION_ROW_WHITE else PAWN_PROMOTION_ROW_BLACK
-
-        val pieceAtEndPos = board.getPieceAt(pieceInfo.endSquare)
-
-        val moveCondition = pieceInfo.endSquare.column.value() == pieceInfo.startSquare.column.value() &&
-                pieceInfo.endSquare.row.value() == pieceInfo.startSquare.row.value() + direction
-
-        if (moveCondition && pieceAtEndPos == null && pieceInfo.endSquare.row.value() == border) return MoveType.PROMOTION
-        if (moveCondition && pieceAtEndPos == null) return MoveType.REGULAR
-
-        if (pieceAtEndPos != null) {
-            val canCapture = abs(pieceInfo.endSquare.column.value() - pieceInfo.startSquare.column.value()) == 1 &&
-                    pieceInfo.endSquare.row.value() == pieceInfo.startSquare.row.value() + direction &&
-                    pieceAtEndPos.player.color != piece.player.color
-            //----------------
-            if(canCapture && pieceInfo.endSquare.row.value() == border) return MoveType.PROMOTION
-            if (canCapture) {
-                return MoveType.CAPTURE
-            }
-
-
-        }
-
-        //condition for moving 2 tiles
-        if (!piece.hasMoved()) {
-            if (pieceInfo.endSquare.column.value() == pieceInfo.startSquare.column.value() &&
-                pieceInfo.endSquare.row.value() == pieceInfo.startSquare.row.value() + 2*direction && pieceAtEndPos == null &&
-                isPathClear(pieceInfo, board, Orientation.VERTICAL)
-            ) return MoveType.REGULAR
-
-        }
-        return MoveType.ILLEGAL
+/**
+ * Verifies if the opponent king is in checkMate
+ * @param board game board
+ * @param color the color of the player
+ * @return true if the king is in checkMate false otherwise
  */
-        return MoveType.ILLEGAL
-    }
+fun isCheckMate(board: Board, otherPlayer: Player): Boolean {
+    val b = board.getKingPiece(otherPlayer)
+    val possibleMoves = b.getPossibleMoves(board, board.getKingSquare(otherPlayer)).map { it.endSquare }
+    val list = board.getAllMoves(otherPlayer).filter { it.endSquare in possibleMoves }
+    if (list.size >= 3) return true
+    return false
+}
 
-    fun checkMate(board: Board, otherPlayer: Player): Boolean{
-        val b = board.getKingPiece(otherPlayer)
-        val possibleMoves = b.getPossibleMoves(board,board.getKingSquare(otherPlayer)).map{it.endSquare}
-        val list = board.getAllMoves(otherPlayer).filter{it.endSquare in possibleMoves}
-        if(list.size >= 3) return true
-        return false
-    }
-
-    fun isKingInCheck(board: Board, player: Player):Boolean{
-        val kingSquare = board.getKingSquare(player)
-        val listOfEndSquares = board.getAllMoves(player).map { it.endSquare }
-        return kingSquare in listOfEndSquares
-    }
+fun isKingInCheck(board: Board, otherPlayer: Player): Boolean {
+    val kingSquare = board.getKingSquare(otherPlayer)
+    val listOfEndSquares = board.getAllMoves(otherPlayer).map { it.endSquare }
+    return kingSquare in listOfEndSquares
+}
 
 
 

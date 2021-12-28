@@ -1,7 +1,9 @@
 import chess.Storage.Move
+import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
+import chess.domain.formatToPieceMove
 
 
 const val BOARD_SIZE = 8
@@ -11,6 +13,7 @@ const val MIN_Y_NUMBER = 1
 const val MAX_Y_NUMBER = 8
 const val MIN_ROW_NUMBER = 0
 const val MAX_ROW_NUMBER = 7
+private const val PAWN_PROMOTION_DEFAULT_PIECE_LETTER = 'q'
 
 typealias BoardList = List<Piece?>
 
@@ -42,7 +45,6 @@ data class Board internal constructor(
         return string
     }
 
-
     /**
      * @return the current player color.
      */
@@ -57,17 +59,11 @@ data class Board internal constructor(
     fun getPiece(at: Square): Piece? = board[at.toIndex()]
 
 
-
-
     /**
      * @param coordinates the [Coordinates] where we check if there is a piece
      * @return true if there is a piece on the given coordinates, false otherwise.
      */
     fun hasPiece(at: Square): Boolean = board[at.toIndex()] != null
-
-
-
-
 
     /**
      * @param currentPlayer color of the king we are looking for
@@ -78,7 +74,6 @@ data class Board internal constructor(
         return board.indexOfFirst{ it is King && it.player == player }.toSquare()
     }
 
-
     /**
      * @param player current player's color
      * @return the king piece
@@ -88,8 +83,6 @@ data class Board internal constructor(
         checkNotNull(king)
         return king
     }
-
-
 
     /**
      * @param move the [Move] we want to make
@@ -131,7 +124,7 @@ data class Board internal constructor(
  * @param square the Square where the piece to be promoted is placed
  * @return true if the piece is a promoted or false if it isn't
  */
-fun Board.promotePiece(square: Square, promotionType: Char = 'q') : Board{
+fun Board.promotePiece(square: Square, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
     val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
     if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
     else {
@@ -172,11 +165,6 @@ fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
     val newBoard = this.makeMove(kingMove).makeMove(rookMove).asList()
 
 
-
-
-    //changes the player turn twice so we need to  change it again
-
-
     val moves = mutableListOf<Move>()
     moves.add(Move(kingMove))
     moves.add(Move(rookMove))
@@ -209,6 +197,8 @@ fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
 
     return pieceAtStart.toString().equals((move[0]).toString(), ignoreCase = true)
 }
+
+
 
 
 fun Board.getAllMoves(player: Player): List<PieceMove> {

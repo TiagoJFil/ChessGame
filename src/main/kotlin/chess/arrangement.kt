@@ -10,7 +10,9 @@ import chess.domain.commands.PlayCommand
 import chess.domain.commands.RefreshCommand
 import View
 import chess.Storage.ChessDataBase
+import chess.domain.PieceMove
 import chess.domain.Player
+import chess.domain.board_components.Square
 import printBoardAndMessage
 import printMessage
 import printMoves
@@ -63,5 +65,15 @@ fun buildCommandHandler(chess: Chess): Map<String, CommandHandler> {
         "play" to CommandHandler(PlayCommand(chess),::printBoardAndMessage)
     )
 }
+/**
+ * Gets the possible moves for the piece at the given square
+ * @param square the square where the piece is located
+ * @return a list of possible moves for the piece at the given square or an empty list if there is no piece at the given square or the piece is not movable
+ */
+fun Chess.getPiecePossibleMovesFrom(square: Square): List<PieceMove> {
 
-
+    val piece = this.board.getPiece(square)
+    if(piece != null && piece.player != this.currentPlayer)
+        return emptyList()
+    return piece?.getPossibleMoves(this.board, square) ?: emptyList()
+}
