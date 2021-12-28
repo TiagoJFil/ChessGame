@@ -1,4 +1,5 @@
 import chess.domain.MoveType
+import chess.domain.PieceMove
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
@@ -18,7 +19,7 @@ class PawnTest {
         val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
 
-        val firstMove2Squares = piece.canMove(sut,PieceMove(startPos,endPos))
+        val firstMove2Squares = piece.canMove(sut, PieceMove(startPos,endPos))
         assertEquals(MoveType.REGULAR, firstMove2Squares)
 
     }

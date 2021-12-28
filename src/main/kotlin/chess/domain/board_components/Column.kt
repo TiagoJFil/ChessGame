@@ -8,7 +8,7 @@ import MIN_X_LETTER
  * Represents the Column that is used to represent the X axis on the board.
  * @property letter    the letter associated with the Column
  */
-enum class Column(val letter: Char, val number : Int) { //ordem normal
+enum class Column(val letter: Char, val number : Int) {
     A('a',0),
     B('b',1),
     C('c',2),

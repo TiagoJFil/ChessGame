@@ -2,20 +2,17 @@ package chess.domain.commands
 import Board
 import chess.Chess
 import chess.GameName
-import chess.Storage.ChessDataBase
 import chess.Storage.DataBase
 import chess.Storage.Move
 import chess.domain.*
+import chess.domain.board_components.toSquare
 import doCastling
-import formatToPieceMove
 import isPlayerMovingOwnPieces
 import isPlayerMovingTheRightPieces
-import isel.leic.tds.storage.DbMode
-import isel.leic.tds.storage.getDBConnectionInfo
-import isel.leic.tds.storage.mongodb.createMongoClient
 import org.junit.Test
 
 private const val PAWN_INPUT = 2
+private const val NO_PIECE_INPUT = 4
 
 /**
  * @param filteredMove       the Filteres move to be sent to makeMove
@@ -80,14 +77,12 @@ class JoinCommand(private val chess: Chess) : Commands {
         val gameId = GameName(parameter)
 
 
-
         if(!chess.dataBase.doesGameExist(gameId)) return ERROR("ERROR: Game $parameter does not exist.")
 
         chess.currentPlayer = Player.BLACK
         chess.board =  updateNewBoard(chess.dataBase, gameId, Board())
         chess.currentGameId = gameId
-        //Se inicializarmos um jogo novo não há lastMove logo dá erro. Temos de arranjar isso
-        //if(chess.domain.getCheck(chess.board)) return ERROR("Your king is in check please protect or move the king")
+
         return CONTINUE(Pair(chess.board,"Join to game $parameter. Play with black pieces."))
     }
 }
@@ -241,23 +236,33 @@ private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): 
  * Allows only the moves that can be played on the board.
  */
 private fun filterInput(input: String, board: Board): Moves? {
-    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?")
-    val filteredPawn = Regex("([abcdefgh])([12345678])")
+    val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?")
+    val filterForPawn = Regex("([abcdefgh])([12345678])")
+    val filteredForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
     val removableInput = Regex("x?(=([NBQR]))?")
     val filteredMove = input.replace(removableInput,"")
 
+    if(!filter.matches(input)  && input.length == NO_PIECE_INPUT && filteredForNoPieceName.matches(input)) {
+        val piece = board.getPiece(input.substring(0, 2).toSquare())
+        if(piece != null) {
+            val filteredInput = piece.toString() + input
+            return Moves(filteredInput,input)
+        }
+        else return null
+    }
 
-    if(!filtered.matches(input)  && (input.length == PAWN_INPUT && !filteredPawn.matches(input))) return null
+    if(!filter.matches(input)  && input.length == PAWN_INPUT && !filterForPawn.matches(input)) return null
 
-    if(input.length == PAWN_INPUT && filteredPawn.matches(input)){
+    if(input.length == PAWN_INPUT && filterForPawn.matches(input)){
         val tracePawn = traceBackPawn(input, board)
         return if(tracePawn == null) null
         else Moves(tracePawn,tracePawn)
     }
-    if(!filtered.matches(filteredMove)) return null
+    if(!filter.matches(filteredMove)) return null
     return Moves(filteredMove,input)
 
 }
+
 
 
 
