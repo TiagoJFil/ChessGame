@@ -23,19 +23,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import chess.Chess
-import chess.GameName
-import chess.Storage.ChessDataBase
-import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
-import chess.domain.commands.joinAction
-import chess.domain.commands.openAction
+import chess.domain.commands.*
 import chess.getPiecePossibleMovesFrom
-import isel.leic.tds.storage.DbMode
-import isel.leic.tds.storage.getDBConnectionInfo
-import isel.leic.tds.storage.mongodb.createMongoClient
-import org.junit.Test
+import com.mongodb.client.MongoClient
+
 
 private const val BACKGROUND_COLOR_1 = 0xFF789454
 private const val BACKGROUND_COLOR_2 = 0xFFfcf1e8
@@ -52,7 +46,10 @@ private const val RESOURCE_ICON_FILENAME = "favicon.ico"
 private const val RESOURCE_SELECTED_TILE_FILENAME = "tile.png"
 
 
-private enum class ACTION
+private enum class ACTION(){
+    OPEN,
+    JOIN
+}
 /**
  * Represents the possible Colors a tile can take
  */
@@ -72,7 +69,7 @@ private enum class Colors {
  * Builds the UI for the background chessboard.
  */
 @Composable
-fun buildBackgroundBoard(){
+private fun buildBackgroundBoard(){
     Row{
         for(i in 1..8) {
             if (i % 2 == 0)
@@ -150,6 +147,7 @@ private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square, 
             })
     }
 
+    //if(chess.value.gameName == null) pieceImage.value = "empty-tile"
 
     Box(modifier = modifier) {
         if (pieceImage.value != "empty-tile") {
@@ -181,7 +179,7 @@ private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square, 
 }
 
 /**
- * Builds a Background Tile of the chessboard with the [color] received.
+ * Builds a Background Tile of the chessboard with the [Colors] received.
  * @param tileColor The color of the tile.
  */
 @Composable
@@ -210,26 +208,38 @@ private fun chessBoard(board: Board, clicked: MutableState<Clicked>, selected: M
  * This is the main entry point for our application, as our app starts here.
  */
 @Composable
-fun ApplicationScope.App(chessInfo: Chess) {
+fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
-    Window(onCloseRequest = ::exitApplication,
+    Window(onCloseRequest = {exit(driver)},
         state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
         icon = painterResource(RESOURCE_ICON_FILENAME),
         title = "Chess"
     ) {
         val chess = remember { mutableStateOf(chessInfo) }
         val isAskingForName = remember { mutableStateOf(false) }
-        val actionToDisplay = remember { mutableStateOf("") }
-        val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE())}
+        val actionToDisplay = remember { mutableStateOf(ACTION.OPEN) }
+        val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE()) }
         val showPossibleMoves = remember { mutableStateOf(true) } // show possible moves starts as true by default
         val move = remember { mutableStateOf("") }
         val selected = remember { mutableStateOf(emptyList<Square>()) }
         val isGameOver = remember { mutableStateOf(false) }
-        val isAGameSelected = remember { mutableStateOf(false) }
+        val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }
 
         if (isAskingForName.value) {
-            getGameName(isAskingForName, actionToDisplay, chess)
+            getGameName(isAskingForName, actionToDisplay, chess,result)
         }
+
+        if(result.value !is ERROR){
+            if(result.value is EXIT){
+                exit(driver)
+            }
+            if(result.value is CONTINUE<*>){
+                val chessFromRes = (result.value as CONTINUE<*>).data as Chess
+                chess.value = chessFromRes
+            }
+        }
+
+
         println("recomposition")
 
         menu(actionToDisplay,isAskingForName,showPossibleMoves)
@@ -324,23 +334,18 @@ TODO("NOT NEEDED BECAUSE WE ARE USING THE FILTERINPUT FROM PLAY ON COMMANDS")
 }
 
 
-@Composable
-fun showPossibleMoves(moves:List<PieceMove>){
-
-}
-
 /**
  * Makes the menu bar at the top of the screen
- * @param action    a [string] that tells the action to be performed (removable)
- * @param isAskingForName  a [boolean] that tells if the user is asking for a name
- * @param chess     a [chess] object that contains the current state of the game
+ * @param action    the action to display
+ * @param askingName  a [Boolean] that tells if the user is asking for a name
+ * @param showPossibleMoves     a [Boolean] that tells if the user wants to see possible moves
  */
 @Composable
-fun FrameWindowScope.menu(action : MutableState<String>, askingName : MutableState<Boolean>,showPossibleMoves : MutableState<Boolean>){
+private fun FrameWindowScope.menu(action : MutableState<ACTION>, askingName : MutableState<Boolean>,showPossibleMoves : MutableState<Boolean>){
     MenuBar {
         Menu("Game", mnemonic = 'G') {
-            Item("Open", onClick = { action.value = "open"; askingName.value = true })
-            Item("Join", onClick = { action.value = "join"; askingName.value = true })
+            Item("Open", onClick = { action.value = ACTION.OPEN; askingName.value = true })
+            Item("Join", onClick = { action.value = ACTION.JOIN; askingName.value = true })
         }
         Menu("Options", mnemonic = 'O') {
             CheckboxItem("Show Possible Moves",checked = showPossibleMoves.value, onCheckedChange = { showPossibleMoves.value = it })
@@ -349,18 +354,18 @@ fun FrameWindowScope.menu(action : MutableState<String>, askingName : MutableSta
 }
 
 @Composable
-fun selectPossiblePromotions(){
+private fun selectPossiblePromotions(){
 
 }
 
 /**
  * This function asks the user for a name and saves it in the [chess] object
- * @param isAskingForName  a [boolean] that tells if the user is asking for a name
- * @param action    a [string] that tells the action to be performed (removable)
+ * @param isAskingForName  a [Boolean] that tells if the user is asking for a name
+ * @param action    the action to display
  * @param chess     a [chess] object that contains the current state of the game
  */
 @Composable
-fun getGameName(isAskingForName: MutableState<Boolean>,action: MutableState<String>, chess : MutableState<Chess>){
+private fun getGameName(isAskingForName: MutableState<Boolean>,action: MutableState<ACTION>, chess : MutableState<Chess>, result : MutableState<Result>){
     val gameName = remember { mutableStateOf("") }
 
     Dialog(
@@ -371,13 +376,13 @@ fun getGameName(isAskingForName: MutableState<Boolean>,action: MutableState<Stri
             Text("Please insert the name of the game to ${action.value}")
             TextField(
                 value = gameName.value,
-                onValueChange = { gameName.value = it; chess.value.currentGameId = GameName(it); }
+                onValueChange = { gameName.value = it }
             )
             Button(
                 onClick = {
                     isAskingForName.value = false
-                    if (action.value == "open") chess.value = openAction(gameName.value, chess.value)
-                    else chess.value = joinAction(gameName.value, chess.value)
+                    if (action.value == ACTION.OPEN) result.value = openAction(gameName.value,chess.value)
+                    else result.value = joinAction(gameName.value,chess.value)
                 }
             ) {
                 Text("Confirm")
@@ -387,15 +392,7 @@ fun getGameName(isAskingForName: MutableState<Boolean>,action: MutableState<Stri
 
 }
 
-@Test
-fun main() = application {
-    val dbInfo = getDBConnectionInfo()
-    val driver =
-        if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
-        else createMongoClient()
-    val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
-
-    this.App(chessGame)
-
-
+fun ApplicationScope.exit(driver: MongoClient){
+    driver.close()
+    exitApplication()
 }

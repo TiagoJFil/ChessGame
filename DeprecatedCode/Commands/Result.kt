@@ -12,10 +12,10 @@ class CONTINUE<T>(val data: T) : Result()
 /**
  * Result produced when the user wants to exit the program.
  */
-class EXIT() : Result()
+class EXIT(val message: String) : Result()
 
 /**
  * Result produced when the user makes an error.
  */
-class ERROR() : Result()
+class ERROR(val message: String) : Result()
 

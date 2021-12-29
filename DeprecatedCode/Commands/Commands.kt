@@ -15,7 +15,7 @@ private const val PAWN_INPUT = 2
 private const val NO_PIECE_INPUT = 4
 
 /**
- * @param filteredMove       the Filteres move to be sent to makeMove
+ * @param filteredMove       the Filteres m ove to be sent to makeMove
  * @param databaseMove       the Filtered Move to be added to the database
  */
 private data class Moves(val filteredMove: String, val databaseMove: String)
@@ -24,6 +24,7 @@ private data class Moves(val filteredMove: String, val databaseMove: String)
  * Contract to be supported by all commands
  */
 interface Commands {
+
     /**
      * Executes this command passing it the given parameter
      * @param parameter the commands parameter, or null, if no parameter has been passed
@@ -45,11 +46,22 @@ class OpenCommand(private val chess: Chess) : Commands {
         if (parameter == null) {
             return ERROR("ERROR: Missing game name.")
         }
-        val newChess =openAction(parameter,chess)
-        TODO("MAKE CHESS WITHOUT VARIABLES")
-        return CONTINUE(Pair(chess.board,"Game $parameter opened. Play with white pieces."))
+        val gameId = GameName(parameter)
+        val gameExists = chess.dataBase.createGameDocumentIfItNotExists(gameId)
+
+        val board = if (gameExists) {
+            updateNewBoard(chess.dataBase, gameId, Board())
+        }else{
+            Board()
+        }
+
+        val newChess = Chess(board,chess.dataBase,gameId,Player.WHITE)
+
+        return CONTINUE(Pair(newChess,"Game $parameter opened. Play with white pieces."))
     }
 }
+
+
 
 /**
  * Command to join a game as a player with the color BLACK.
@@ -60,9 +72,12 @@ class JoinCommand(private val chess: Chess) : Commands {
         val gameId = GameName(parameter)
         if(!chess.dataBase.doesGameExist(gameId)) return ERROR("ERROR: Game $parameter does not exist.")
 
-        val newChess = joinAction(parameter,chess)
-        TODO("MAKE CHESS WITHOUT VARIABLES")
-        return CONTINUE(Pair(chess.board,"Join to game $parameter. Play with black pieces."))
+        val board = updateNewBoard(chess.dataBase, gameId, Board())
+
+        val newChess = Chess(board,chess.dataBase,gameId,Player.BLACK)
+
+
+        return CONTINUE(Pair(newChess,"Join to game $parameter. Play with black pieces."))
     }
 }
 
@@ -203,7 +218,7 @@ fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board =
         acc, move ->
         val moveFiltered = filterInput(move.move,board)
         if(moveFiltered != null) {
-            board.makeMove(moveFiltered.filteredMove)
+            acc.makeMove(moveFiltered.filteredMove)
         }else acc
     }
 
@@ -242,6 +257,24 @@ private fun filterInput(input: String, board: Board): Moves? {
 
 }
 
+
+/**
+ * Gets the new [Chess] instance from the produced command.
+ * If the command was a [Move] command, the new [Chess] instance will not be updated.
+ * @param oldChess  the current [Chess] instance
+ * @param data      the data produced by the command
+ */
+fun <T>getNewChess(oldChess: Chess,data : T): Chess {
+    //when the data has the list of moves, then we dont update chess
+    if(data is Iterable<*>){
+        return oldChess
+    }
+    val pair = data as Pair<*,*>
+    val chess = pair.first as Chess
+
+
+    return chess
+}
 
 
 

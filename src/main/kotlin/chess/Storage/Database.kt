@@ -75,7 +75,8 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
     override fun createGameDocumentIfItNotExists(gameId: GameName): Boolean {
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
-            if(collection.getDocument(gameId.id) == null) {
+            val doc = collection.getDocument(gameId.id)
+            if(doc == null) {
                 collection.createDocument(Document(gameId.id, listOf()))
                 return false
             }
