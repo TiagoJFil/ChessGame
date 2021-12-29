@@ -99,6 +99,7 @@ class PlayCommand(private val chess: Chess) : Commands {
     override fun execute(parameter: String?): Result {
 
 
+
         if (parameter == null || parameter.isEmpty()) return ERROR("ERROR: Missing move.")
 
         val gameId = chess.currentGameId ?: return ERROR("ERROR: Can't play without a game: try open or join commands.")
@@ -114,8 +115,8 @@ class PlayCommand(private val chess: Chess) : Commands {
             return ERROR("Piece in input doesn't match the piece at the position")
         }
 
-        val movement = canPieceMoveTo(filteredInput.filteredMove, chess.board)
-        when(movement){
+        when(canPieceMoveTo(filteredInput.filteredMove, chess.board)){
+
             MoveType.ILLEGAL -> return ERROR("Illegal move $parameter. Illegal move.");
 
             MoveType.CASTLE -> {
@@ -150,15 +151,11 @@ class PlayCommand(private val chess: Chess) : Commands {
             MoveType.REGULAR ->{ if(filteredInput.databaseMove.contains("x") || filteredInput.databaseMove.contains("="))
                return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
             }
+            else -> {}
         }
-
-
 
         chess.board = chess.board.makeMove(filteredInput.filteredMove)
         chess.dataBase.addMoveToDb(Move(filteredInput.databaseMove),gameId)
-
-
-
 
 
         return CONTINUE(Pair(chess.board,null))

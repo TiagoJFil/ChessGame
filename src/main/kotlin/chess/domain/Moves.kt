@@ -52,6 +52,12 @@ fun String.formatToPieceMove(): PieceMove{
     return PieceMove(startSquare,endSquare)
 }
 
+fun PieceMove.formatToString(board : Board) =
+    board.getPiece(startSquare).toString() +
+            startSquare.toString()+
+            endSquare.toString()
+
+
 
 /**
  * This function returns the moves for the pieces: KNIGHT, PAWN, KING,
@@ -116,13 +122,13 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
     if(isCheckMate(board,player)) return MoveType.CHECKMATE
-    return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
+    return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
+        isKingInCheck(board,pieceInfo) -> MoveType.CHECK
         false -> MoveType.ILLEGAL
         pieceAtEndSquare == null -> MoveType.REGULAR
         pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
         else -> MoveType.ILLEGAL
-}
-
+    }
 }
 
 /**
@@ -198,19 +204,25 @@ fun traceBackPawn(endPos:String, board: Board):String?{
  * @param color the color of the player
  * @return true if the king is in checkMate false otherwise
  */
-fun isCheckMate(board: Board, otherPlayer: Player): Boolean {
-    val b = board.getKingPiece(otherPlayer)
-    val possibleMoves = b.getPossibleMoves(board, board.getKingSquare(otherPlayer)).map { it.endSquare }
-    val list = board.getAllMoves(otherPlayer).filter { it.endSquare in possibleMoves }
+fun isCheckMate(board: Board, player: Player): Boolean {
+    val king = board.getKingPiece(player)
+    val possibleMoves = king.getPossibleMoves(board, board.getKingSquare(player)).map { it.endSquare }
+    val list = board.getAllMoves(!player).filter { it.endSquare in possibleMoves }
     if (list.size >= 3) return true
     return false
 }
 
-fun isKingInCheck(board: Board, otherPlayer: Player): Boolean {
-    val kingSquare = board.getKingSquare(otherPlayer)
-    val listOfEndSquares = board.getAllMoves(otherPlayer).map { it.endSquare }
+fun isKingInCheck(board: Board,pieceInfo: PieceMove): Boolean {
+    val tempBoard = board.makeMove(pieceInfo.formatToString(board))
+    val kingSquare = tempBoard.getKingSquare(board.player)
+    val listOfEndSquares = tempBoard.getAllMoves(tempBoard.player).map { it.endSquare }
     return kingSquare in listOfEndSquares
 }
+
+
+
+
+
 
 
 

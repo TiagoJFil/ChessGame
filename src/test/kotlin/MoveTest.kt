@@ -1,9 +1,7 @@
-import chess.domain.MoveType
-import chess.domain.Player
+import chess.domain.*
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
-import chess.domain.isKingInCheck
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -380,9 +378,8 @@ class KingTest {
     @Test
     fun `is king in check`(){
         val sut = Board().makeMove("Pe2e4").makeMove("pd7d5").makeMove("Ke1e2").makeMove("bc8g4")
-        assertEquals(true,isKingInCheck(sut,Player.WHITE))
+        assertEquals(true,isKingInCheck(sut,"Pd2d4".formatToPieceMove()))
     }
-
 
 
 
@@ -423,7 +420,7 @@ class QueenTest {
         val endPos = Square(Column.F, Row.Seven)
         val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
-        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+        val move = piece.canMove(sut, PieceMove(startPos,endPos))
 
         assertEquals(MoveType.CAPTURE,move)
     }
