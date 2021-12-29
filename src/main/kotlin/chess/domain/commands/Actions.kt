@@ -3,9 +3,29 @@ package chess.domain.commands
 import Board
 import chess.Chess
 import chess.GameName
+import chess.Storage.DataBase
+import chess.Storage.Move
 import chess.domain.Player
+import chess.domain.board_components.toSquare
+import chess.domain.traceBackPawn
 
-fun openAction(gameName: String,chess: Chess): Chess {
+private const val PAWN_INPUT = 2
+private const val NO_PIECE_INPUT = 4
+
+/**
+ * @param filteredMove       the Filteres move to be sent to makeMove
+ * @param databaseMove       the Filtered Move to be added to the database
+ */
+private data class Moves(val filteredMove: String, val databaseMove: String)
+
+/**
+ * Function to open a game as a player with the color WHITE and the game name received.
+ */
+fun openAction(gameName: String,chess: Chess): Result {
+    if (gameName == "") {
+        return ERROR()
+    }
+
     val gameId = GameName(gameName)
     val gameExists = chess.dataBase.createGameDocumentIfItNotExists(gameId)
 
@@ -15,15 +35,74 @@ fun openAction(gameName: String,chess: Chess): Chess {
         Board()
     }
 
-
-    return Chess(board,chess.dataBase,gameId,Player.WHITE)
+    return CONTINUE(Chess(board,chess.dataBase,gameId,Player.WHITE))
 
 }
 
-
-fun joinAction(gameName: String,chess: Chess): Chess {
+/**
+ * Function to join a game as a player with the color BLACK and the game name received.
+ */
+fun joinAction(gameName: String,chess: Chess): Result {
     val gameId = GameName(gameName)
+    if(!chess.dataBase.doesGameExist(gameId)) return ERROR()
+
     val board = updateNewBoard(chess.dataBase, gameId, Board())
 
-    return Chess(board,chess.dataBase,gameId,Player.BLACK)
+    return CONTINUE(Chess(board,chess.dataBase,gameId,Player.BLACK))
+}
+
+
+
+
+
+
+
+/**
+ * @param dataBase      the database to use
+ * @param gameId        the id of the game to update from
+ * @param board         the board to update
+ * Updates a board with the moves from the DataBase with the given gameId.
+ */
+private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board =
+    dataBase.getAllMoves(gameId).fold(board) {
+            acc, move ->
+        val moveFiltered = filterInput(move.move,board)
+        if(moveFiltered != null) {
+            acc.makeMove(moveFiltered.filteredMove)
+        }else acc
+    }
+
+
+/**
+ * @param input          the input to filter
+ * @param board          the board to filter the input on
+ * @return  A moves data class with the filtered input and the database move
+ * Allows only the moves that can be played on the board.
+ */
+private fun filterInput(input: String, board: Board): Moves? {
+    val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?")
+    val filterForPawn = Regex("([abcdefgh])([12345678])")
+    val filteredForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
+    val removableInput = Regex("x?(=([NBQR]))?")
+    val filteredMove = input.replace(removableInput,"")
+
+    if(!filter.matches(input)  && input.length == NO_PIECE_INPUT && filteredForNoPieceName.matches(input)) {
+        val piece = board.getPiece(input.substring(0, 2).toSquare())
+        if(piece != null) {
+            val filteredInput = piece.toString() + input
+            return Moves(filteredInput,input)
+        }
+        else return null
+    }
+
+    if(!filter.matches(input)  && input.length == PAWN_INPUT && !filterForPawn.matches(input)) return null
+
+    if(input.length == PAWN_INPUT && filterForPawn.matches(input)){
+        val tracePawn = traceBackPawn(input, board)
+        return if(tracePawn == null) null
+        else Moves(tracePawn,tracePawn)
+    }
+    if(!filter.matches(filteredMove)) return null
+    return Moves(filteredMove,input)
+
 }

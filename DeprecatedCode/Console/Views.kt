@@ -1,3 +1,4 @@
+import chess.Chess
 import chess.Storage.Move
 
 /**
@@ -31,11 +32,11 @@ fun boardTemplate(board: Board) {
  */
 fun printBoardAndMessage(input: Any?){
     val boardAndMessage = input as Pair<*, *>
-    val board = boardAndMessage.first as Board
+    val chess = boardAndMessage.first as Chess
     val message = boardAndMessage.second as String?
 
 
-    boardTemplate(board)
+    boardTemplate(chess.board)
     if(message != null)
         println(message)
 }
