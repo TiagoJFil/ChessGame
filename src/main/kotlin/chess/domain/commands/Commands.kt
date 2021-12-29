@@ -45,25 +45,8 @@ class OpenCommand(private val chess: Chess) : Commands {
         if (parameter == null) {
             return ERROR("ERROR: Missing game name.")
         }
-        val gameId = GameName(parameter)
-
-        val gameExists = chess.dataBase.createGameDocumentIfItNotExists(gameId)
-
-
-        val board = if (gameExists) {
-             updateNewBoard(chess.dataBase, gameId, Board())
-        }else{
-            Board()
-        }
-
-
-
-        chess.currentPlayer = Player.WHITE
-        chess.board = board
-        chess.currentGameId = gameId
-
-        //Se inicializarmos um jogo novo não há lastMove logo dá erro. Temos de arranjar isso
-//        if(chess.domain.getCheck(chess.board)) return ERROR("Your king is in check please protect or move the king")
+        val newChess =openAction(parameter,chess)
+        TODO("MAKE CHESS WITHOUT VARIABLES")
         return CONTINUE(Pair(chess.board,"Game $parameter opened. Play with white pieces."))
     }
 }
@@ -75,14 +58,10 @@ class JoinCommand(private val chess: Chess) : Commands {
     override fun execute(parameter: String?): Result {
         if (parameter == null) return ERROR("ERROR: Missing game name.")
         val gameId = GameName(parameter)
-
-
         if(!chess.dataBase.doesGameExist(gameId)) return ERROR("ERROR: Game $parameter does not exist.")
 
-        chess.currentPlayer = Player.BLACK
-        chess.board =  updateNewBoard(chess.dataBase, gameId, Board())
-        chess.currentGameId = gameId
-
+        val newChess = joinAction(parameter,chess)
+        TODO("MAKE CHESS WITHOUT VARIABLES")
         return CONTINUE(Pair(chess.board,"Join to game $parameter. Play with black pieces."))
     }
 }
@@ -219,7 +198,7 @@ class ExitCommand: Commands {
  * @param board         the board to update
  * Updates a board with the moves from the DataBase with the given gameId.
  */
-private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board =
+fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board =
     dataBase.getAllMoves(gameId).fold(board) {
         acc, move ->
         val moveFiltered = filterInput(move.move,board)

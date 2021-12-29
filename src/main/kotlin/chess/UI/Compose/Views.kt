@@ -29,6 +29,8 @@ import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
+import chess.domain.commands.joinAction
+import chess.domain.commands.openAction
 import chess.getPiecePossibleMovesFrom
 import isel.leic.tds.storage.DbMode
 import isel.leic.tds.storage.getDBConnectionInfo
@@ -39,6 +41,7 @@ private const val BACKGROUND_COLOR_1 = 0xFF789454
 private const val BACKGROUND_COLOR_2 = 0xFFfcf1e8
 private const val ORANGE = 0xFFB5651E
 private val TILE_SIZE = 75.dp
+private val FONT_SIZE = 21.sp
 private const val RESOURCE_PAWN_FILENAME = "pawn.png"
 private const val RESOURCE_ROOK_FILENAME = "rook.png"
 private const val RESOURCE_KNIGHT_FILENAME = "knight.png"
@@ -46,9 +49,10 @@ private const val RESOURCE_BISHOP_FILENAME = "bishop.png"
 private const val RESOURCE_QUEEN_FILENAME = "queen.png"
 private const val RESOURCE_KING_FILENAME = "king.png"
 private const val RESOURCE_ICON_FILENAME = "favicon.ico"
-private const val RESOURCE_SELECTED_TILE_FILENAME = "selected-tile"
+private const val RESOURCE_SELECTED_TILE_FILENAME = "tile.png"
 
 
+private enum class ACTION
 /**
  * Represents the possible Colors a tile can take
  */
@@ -98,7 +102,7 @@ fun buildBackgroundBoard(){
  * Places the pieces from the [board] received on the chessBoard.
  */
 @Composable
-private fun boardToComposable(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>){
+private fun boardToComposable(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>, showPossibleMoves : MutableState<Boolean>){
     Column {
         for(i in 8 downTo 1) {
             Row {
@@ -106,7 +110,7 @@ private fun boardToComposable(board: Board, clicked: MutableState<Clicked>, sele
                     val column = (count + 'a'.code).toChar()// convert to char
                     val square = "$column$i".toSquare()
                     val piece = board.getPiece(square)
-                    tile(piece ,clicked, square, selected)
+                    tile(piece ,clicked, square, selected,showPossibleMoves)
                 }
             }
         }
@@ -114,7 +118,7 @@ private fun boardToComposable(board: Board, clicked: MutableState<Clicked>, sele
 }
 
 @Composable
-private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square, selected: MutableState<List<Square>>){
+private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square, selected: MutableState<List<Square>>, showPossibleMoves : MutableState<Boolean> ){
     val pieceImage = remember { mutableStateOf("empty-tile")}
     if (piece != null) {
         val pieceColor = piece.player
@@ -154,22 +158,25 @@ private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square, 
                 modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
                 contentDescription = null
             )
+
         } else {
             Spacer(Modifier.size(TILE_SIZE))
         }
-    }
-
-    if(selected.value.isNotEmpty()){
-        if(selected.value.contains(square)){
-            Box(modifier = Modifier.size(TILE_SIZE)) {
-                Image(
-                    painter = painterResource(RESOURCE_SELECTED_TILE_FILENAME),
-                    modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
-                    contentDescription = null
-                )
+        if(selected.value.isNotEmpty() && showPossibleMoves.value){
+            if(selected.value.contains(square)){
+                Box(modifier = Modifier.size(TILE_SIZE)) {
+                    Image(
+                        painter = painterResource(RESOURCE_SELECTED_TILE_FILENAME),
+                        modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
+                        contentDescription = null
+                    )
+                }
             }
         }
+
     }
+
+
 
 }
 
@@ -192,10 +199,10 @@ private fun BackgroundTile(tileColor: Colors) {
  * @param clicked The state of the clicked square.
  */
 @Composable
-private fun chessBoard(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>) {
+private fun chessBoard(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>, showPossibleMoves : MutableState<Boolean>) {
     Box {
         buildBackgroundBoard()
-        boardToComposable(board,clicked,selected)
+        boardToComposable(board,clicked,selected,showPossibleMoves)
     }
 }
 
@@ -218,13 +225,14 @@ fun ApplicationScope.App(chessInfo: Chess) {
         val move = remember { mutableStateOf("") }
         val selected = remember { mutableStateOf(emptyList<Square>()) }
         val isGameOver = remember { mutableStateOf(false) }
+        val isAGameSelected = remember { mutableStateOf(false) }
 
         if (isAskingForName.value) {
             getGameName(isAskingForName, actionToDisplay, chess)
         }
         println("recomposition")
 
-        menu(actionToDisplay,isAskingForName,chess,showPossibleMoves)
+        menu(actionToDisplay,isAskingForName,showPossibleMoves)
 
         if(clicked.value is START){
             val start = clicked.value as START
@@ -282,24 +290,29 @@ TODO("NOT NEEDED BECAUSE WE ARE USING THE FILTERINPUT FROM PLAY ON COMMANDS")
                         }
                     }
                     Box {
-                        chessBoard(chess.value.board, clicked,selected)
+                        buildBackgroundBoard()
+                        if(gameId != null) {
+                            boardToComposable(chess.value.board,clicked,selected,showPossibleMoves)
+                        }
                     }
                     if (gameId != null) {
                         Text(
                             "Game:${gameId.id} | You:${chess.value.currentPlayer} | ",
-                            fontSize = 21.sp,
+                            fontSize = FONT_SIZE,
                             modifier = Modifier.padding(start = 4.dp, end = 31.dp, top = 32.dp, bottom = 4.dp)
                         )
                     }
 
 
                 }
-                Column(Modifier.padding(32.dp).height(640.dp).background(Color.White)) {
-                    Text(
-                        "TODO ON THE RIGHT",
-                        fontSize = 21.sp,
+                Column(Modifier.padding(32.dp).height(640.dp).width(240.dp) .background(Color.White)) {
+                    if(gameId != null){
+                        Text(
+                            "TODO ON THE RIGHT",
+                            fontSize = FONT_SIZE,
 
                         )
+                    }
                 }
 
             }
@@ -323,11 +336,11 @@ fun showPossibleMoves(moves:List<PieceMove>){
  * @param chess     a [chess] object that contains the current state of the game
  */
 @Composable
-fun FrameWindowScope.menu(action : MutableState<String>, askingName : MutableState<Boolean>, chess: MutableState<Chess>,showPossibleMoves : MutableState<Boolean>){
+fun FrameWindowScope.menu(action : MutableState<String>, askingName : MutableState<Boolean>,showPossibleMoves : MutableState<Boolean>){
     MenuBar {
         Menu("Game", mnemonic = 'G') {
-            Item("Open", onClick = { action.value = "open"; askingName.value = true ; chess.value.currentPlayer = Player.WHITE})
-            Item("Join", onClick = { action.value = "join"; askingName.value = true ; chess.value.currentPlayer = Player.BLACK})
+            Item("Open", onClick = { action.value = "open"; askingName.value = true })
+            Item("Join", onClick = { action.value = "join"; askingName.value = true })
         }
         Menu("Options", mnemonic = 'O') {
             CheckboxItem("Show Possible Moves",checked = showPossibleMoves.value, onCheckedChange = { showPossibleMoves.value = it })
@@ -349,6 +362,7 @@ fun selectPossiblePromotions(){
 @Composable
 fun getGameName(isAskingForName: MutableState<Boolean>,action: MutableState<String>, chess : MutableState<Chess>){
     val gameName = remember { mutableStateOf("") }
+
     Dialog(
         onCloseRequest = { isAskingForName.value = false },
         title = "Insert Game Name",
@@ -357,15 +371,20 @@ fun getGameName(isAskingForName: MutableState<Boolean>,action: MutableState<Stri
             Text("Please insert the name of the game to ${action.value}")
             TextField(
                 value = gameName.value,
-                onValueChange = { gameName.value = it; chess.value.currentGameId = GameName(it) }
+                onValueChange = { gameName.value = it; chess.value.currentGameId = GameName(it); }
             )
             Button(
-                onClick = { isAskingForName.value = false },
+                onClick = {
+                    isAskingForName.value = false
+                    if (action.value == "open") chess.value = openAction(gameName.value, chess.value)
+                    else chess.value = joinAction(gameName.value, chess.value)
+                }
             ) {
                 Text("Confirm")
             }
         }
     }
+
 }
 
 @Test

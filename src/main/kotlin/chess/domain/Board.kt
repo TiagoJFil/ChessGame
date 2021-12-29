@@ -110,15 +110,14 @@ data class Board internal constructor(
     }
 
 
-    fun doEnpassant(pieceMove: PieceMove) {
-        TODO()
-    }
+
 
     fun asList(): List<Piece?> {
         return board
     }
 
 }
+
 
 /**
  * @param square the Square where the piece to be promoted is placed
@@ -150,7 +149,7 @@ fun Board.promotePiece(square: Square, promotionType: Char = PAWN_PROMOTION_DEFA
  * Moves the king and the rook to the correct position.
  */
 fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
-
+TODO("CHANGE THE MOVE RECEIVED TO BE A PIECEMOVE")
     val rookColumnLetter = if (move.move[3] == 'c') MIN_X_LETTER else MAX_X_LETTER
 
 
@@ -172,6 +171,9 @@ fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
     return Pair(Board(newBoard, !player),moves)
 }
 
+fun Board.doEnpassant(pieceMove: PieceMove): Board {
+    TODO()
+}
 
 /**
  * Checks whether the player is moving the own piece or the opponent's
@@ -197,8 +199,6 @@ fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
 
     return pieceAtStart.toString().equals((move[0]).toString(), ignoreCase = true)
 }
-
-
 
 
 fun Board.getAllMoves(player: Player): List<PieceMove> {
