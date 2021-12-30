@@ -67,13 +67,20 @@ class Pawn (override val player: Player) : Piece  {
     private var moveCount = 0
     private var moved = false
 
+
     /**
      * Sets a piece as moved
      */
     fun setAsMoved() {
         moved = true
-        moveCount++
     }
+
+    fun moveCounter(){
+        if(moved) moveCount++
+    }
+
+    fun getCounter() = moveCount //only for test purpose
+
 
     /**
      * @return a [Boolean] value indicating whether the piece has moved or not
@@ -141,7 +148,7 @@ class Pawn (override val player: Player) : Piece  {
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-        if(isCheckMate(board,player)) return MoveType.CHECKMATE
+        if(isCheckMate(board)) return MoveType.CHECKMATE
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
             isKingInCheck(board,pieceInfo) -> MoveType.CHECK
@@ -160,7 +167,6 @@ class Pawn (override val player: Player) : Piece  {
      * @return a [Boolean] value indicating whether the piece can perform enpassant
      */
     private fun canEnpassant(board: Board, pos: PieceMove): Boolean{
-        TODO("errado porque mesmo que a peça tenha mexiado a mt tempo antes, a outra pode lhe fazer enpassant")
         val rowAdd = if(player.isWhite()) UP else DOWN
         val leftPos = pos.startSquare.addDirection(Direction(LEFT,0))
         val rightPos = pos.startSquare.addDirection(Direction(RIGHT,0))

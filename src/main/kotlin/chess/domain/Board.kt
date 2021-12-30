@@ -5,6 +5,7 @@ import chess.domain.board_components.Square
 import chess.domain.board_components.toRow
 import chess.domain.board_components.toSquare
 import chess.domain.formatToPieceMove
+import org.junit.Test
 
 
 const val BOARD_SIZE = 8
@@ -107,15 +108,17 @@ data class Board internal constructor(
             }
         }
 
+        newBoard.forEach {if(it is Pawn) it.moveCounter()}
+
         return Board(newBoard, !player)
     }
-
-
 
 
     fun asList(): List<Piece?> {
         return board
     }
+
+
 
 }
 
@@ -174,6 +177,8 @@ fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
 }
 
 
+
+
 /**
  * Does en passant movement from the given [PieceMove]
  * @param pieceMove     The piece movement to be performed
@@ -225,6 +230,9 @@ fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
 }
 
 
+
+
+
 fun Board.getAllMoves(player: Player): List<PieceMove> {
     val list = mutableListOf<PieceMove>()
     this.asList().forEachIndexed { idx, p ->
@@ -233,6 +241,8 @@ fun Board.getAllMoves(player: Player): List<PieceMove> {
     }
     return list
 }
+
+fun Board.getAllMovesLastSquare(player:Player) = getAllMoves(player).map { it.endSquare }
 
 /**
  * Checks whether the square is occupied by a piece of the player given at a square
