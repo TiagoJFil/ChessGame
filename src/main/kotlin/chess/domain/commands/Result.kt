@@ -1,4 +1,7 @@
 package chess.domain.commands
+
+import chess.Chess
+
 /**
  * Sealed class to represent the possible results of a command, it is sealed because we wont add more results.
  */
@@ -7,12 +10,7 @@ sealed class Result
 /**
  * Result produced when the user makes an action.
  */
-class CONTINUE<T>(val data: T) : Result()
-
-/**
- * Result produced when the user wants to exit the program.
- */
-class EXIT() : Result()
+class CONTINUE(val chess: Chess) : Result()
 
 /**
  * Result produced when the user makes an error.

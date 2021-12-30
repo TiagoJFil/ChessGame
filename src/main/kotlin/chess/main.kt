@@ -16,11 +16,7 @@ fun main() = application {
         if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
         else createMongoClient()
 
-
-
     val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
     this.App(chessGame,driver)
-
-
 
 }

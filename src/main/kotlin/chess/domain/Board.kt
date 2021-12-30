@@ -14,6 +14,7 @@ const val MAX_Y_NUMBER = 8
 const val MIN_ROW_NUMBER = 0
 const val MAX_ROW_NUMBER = 7
 private const val PAWN_PROMOTION_DEFAULT_PIECE_LETTER = 'q'
+private val PAWN_POSSIBLE_PROMOTIONS = listOf('q', 'r', 'b', 'n')
 
 typealias BoardList = List<Piece?>
 
@@ -104,7 +105,6 @@ data class Board internal constructor(
                 else -> it
             }
         }
-
 
         return Board(newBoard, !player)
     }
@@ -210,7 +210,19 @@ fun Board.getAllMoves(player: Player): List<PieceMove> {
     return list
 }
 
+/**
+ * Checks whether the square is occupied by a piece of the player given at a square
+ */
+fun Square.doesBelongTo(player: Player,board: Board): Boolean {
 
+    val piece = board.getPiece(this)
+
+    return (piece != null) && (piece.player == player)
+}
+
+fun Square.doesNotBelongTo(player: Player, board: Board): Boolean {
+    return !this.doesBelongTo(player,board)
+}
 
 
 /**

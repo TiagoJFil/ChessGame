@@ -1,10 +1,12 @@
 package chess
 
 import Board
+import androidx.compose.ui.window.ApplicationScope
 import chess.Storage.ChessDataBase
 import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
+import com.mongodb.client.MongoClient
 
 
 /**
@@ -14,7 +16,7 @@ import chess.domain.board_components.Square
  * @property currentGameId         the GameId of the current game, can be null if no game is running
  * @property currentPlayer         the current Player on this machine
  */
-data class Chess(var board: Board, val dataBase: ChessDataBase, val currentGameId:GameName?, val currentPlayer: Player)
+data class Chess(val board: Board, val dataBase: ChessDataBase, val currentGameId:GameName?, val currentPlayer: Player)
 
 /**
  * Represents a GameId with an identifier.
@@ -42,3 +44,10 @@ fun Chess.getPiecePossibleMovesFrom(square: Square): List<PieceMove> {
     return piece?.getPossibleMoves(this.board, square) ?: emptyList()
 }
 
+/**
+* Exits the game and closes the MongoDb driver
+*/
+fun ApplicationScope.exit(driver: MongoClient){
+    driver.close()
+    exitApplication()
+}

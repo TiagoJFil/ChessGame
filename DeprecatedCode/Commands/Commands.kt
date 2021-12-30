@@ -236,7 +236,7 @@ private fun filterInput(input: String, board: Board): Moves? {
     val removableInput = Regex("x?(=([NBQR]))?")
     val filteredMove = input.replace(removableInput,"")
 
-    if(!filter.matches(input)  && input.length == NO_PIECE_INPUT && filteredForNoPieceName.matches(input)) {
+    if(!filter.matches(filteredMove)  && filteredMove.length == NO_PIECE_INPUT && filteredForNoPieceName.matches(filteredMove)) {
         val piece = board.getPiece(input.substring(0, 2).toSquare())
         if(piece != null) {
             val filteredInput = piece.toString() + input

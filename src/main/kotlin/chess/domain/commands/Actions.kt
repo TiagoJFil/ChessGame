@@ -5,9 +5,10 @@ import chess.Chess
 import chess.GameName
 import chess.Storage.DataBase
 import chess.Storage.Move
-import chess.domain.Player
+import chess.domain.*
 import chess.domain.board_components.toSquare
-import chess.domain.traceBackPawn
+import doCastling
+import promotePiece
 
 private const val PAWN_INPUT = 2
 private const val NO_PIECE_INPUT = 4
@@ -43,6 +44,10 @@ fun openAction(gameName: String,chess: Chess): Result {
  * Function to join a game as a player with the color BLACK and the game name received.
  */
 fun joinAction(gameName: String,chess: Chess): Result {
+    if (gameName == "" ){  // PODE SE ADICIONAR  MAIS VERIFICAÇOES
+        return ERROR()
+    }
+
     val gameId = GameName(gameName)
     if(!chess.dataBase.doesGameExist(gameId)) return ERROR()
 
@@ -52,8 +57,70 @@ fun joinAction(gameName: String,chess: Chess): Result {
 }
 
 
+/**
+ * Function to move a piece on the board and update the database with the new move.
+ */
+fun playAction(move: String, chess: Chess): Result {
+
+    //if (chess.board.getPlayerColor() != chess.currentPlayer) return ERROR()
+    val gameId = chess.currentGameId
+    require(gameId != null)
+
+    val filteredInput = filterInput(move, chess.board) ?: return ERROR()
+    var newBoard : Board = chess.board
+
+    val movement = canPieceMoveTo(filteredInput.filteredMove, chess.board)
+     when (movement) {
+        MoveType.ILLEGAL -> return ERROR();
+
+        MoveType.CASTLE -> {
 
 
+            val (updatedBoard, moves) = chess.board.doCastling(Move(filteredInput.filteredMove))
+            moves.forEach {
+                chess.dataBase.addMoveToDb(it, gameId)
+            }
+
+            newBoard = updatedBoard
+
+        }
+        MoveType.PROMOTION -> {
+
+
+            if (filteredInput.databaseMove.contains("=")) {
+                newBoard = chess.board.promotePiece(
+                        filteredInput.filteredMove.substring(1, 2).toSquare(),
+                      filteredInput.filteredMove.last()
+                      )
+            }
+
+
+
+        }
+
+        MoveType.REGULAR -> {
+            newBoard = chess.board.makeMove(filteredInput.filteredMove)
+            chess.dataBase.addMoveToDb(Move(filteredInput.databaseMove),gameId )
+        }
+        MoveType.CAPTURE -> {
+            newBoard = chess.board.makeMove(filteredInput.filteredMove)
+            chess.dataBase.addMoveToDb(Move(filteredInput.databaseMove),gameId )
+        }
+    }
+
+
+
+
+
+
+
+    return CONTINUE(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer))
+}
+
+fun Board.isTheMovementPromotable(move: String): Boolean {
+    val filteredInput = filterInput(move, this) ?: return false
+    return canPieceMoveTo(filteredInput.filteredMove, this) == MoveType.PROMOTION
+}
 
 
 
@@ -86,11 +153,12 @@ private fun filterInput(input: String, board: Board): Moves? {
     val removableInput = Regex("x?(=([NBQR]))?")
     val filteredMove = input.replace(removableInput,"")
 
-    if(!filter.matches(input)  && input.length == NO_PIECE_INPUT && filteredForNoPieceName.matches(input)) {
+    if(!filter.matches(filteredMove)  && filteredMove.length == NO_PIECE_INPUT && filteredForNoPieceName.matches(filteredMove)) {
         val piece = board.getPiece(input.substring(0, 2).toSquare())
         if(piece != null) {
-            val filteredInput = piece.toString() + input
-            return Moves(filteredInput,input)
+            val filteredInput = piece.toString() + filteredMove
+            val databaseMove = piece.toString() + input
+            return Moves(filteredInput,databaseMove)
         }
         else return null
     }
