@@ -1,7 +1,8 @@
+
 import chess.Chess
 import chess.GameName
 import chess.Storage.ChessDataBase
-import chess.buildCommandHandler
+
 import chess.domain.Player
 import chess.domain.commands.CONTINUE
 import chess.domain.commands.ERROR
@@ -11,6 +12,22 @@ import isel.leic.tds.storage.mongodb.createMongoClient
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
+class ActionsTest {
+/*
+    @Test
+    fun `filterInput works when the move is something like a2a8=Q`(){
+        val input = "a2xa8=Q"
+        val expected = "Pa2a8"
+        val databaseexpected = "Pa2xa8=Q"
+        val actual = filterInput(input,Board())
+        assertEquals(expected, actual!!.filteredMove)
+        assertEquals(databaseexpected, actual!!.databaseMove)
+    }
+    */
+
+}
+
+/*
 class CommandsTest {
     @Test
     fun `when joining or opening game null name returns an error of type ERROR`() {

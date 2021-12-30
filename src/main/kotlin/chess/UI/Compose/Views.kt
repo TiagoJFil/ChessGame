@@ -27,15 +27,25 @@ import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.*
+import chess.exit
 import chess.getPiecePossibleMovesFrom
 import com.mongodb.client.MongoClient
+import doesNotBelongTo
 
 
 private const val BACKGROUND_COLOR_1 = 0xFF789454
 private const val BACKGROUND_COLOR_2 = 0xFFfcf1e8
 private const val ORANGE = 0xFFB5651E
-private val TILE_SIZE = 75.dp
-private val FONT_SIZE = 21.sp
+private val TILE_SIZE = 60.dp
+private val MOVES_TEXT_SIZE_HEIGHT = 500.dp
+private val MOVES_TEXT_SIZE_WIDTH = 200.dp
+private val COORDINATES_FONT_SIZE = 21.sp
+private val FONT_SIZE = 18.sp
+private val MENU_HEIGHT = 27.dp
+private val TEXT_BORDER_PADDING = 4.dp
+private val PADDING_BETWEEN_NUMBERS = 18.dp
+private val PADDING_BETWEEN_LETTERS = 24.dp
+
 private const val RESOURCE_PAWN_FILENAME = "pawn.png"
 private const val RESOURCE_ROOK_FILENAME = "rook.png"
 private const val RESOURCE_KNIGHT_FILENAME = "knight.png"
@@ -46,7 +56,7 @@ private const val RESOURCE_ICON_FILENAME = "favicon.ico"
 private const val RESOURCE_SELECTED_TILE_FILENAME = "tile.png"
 
 
-private enum class ACTION(){
+private enum class ACTION{
     OPEN,
     JOIN
 }
@@ -64,6 +74,82 @@ private enum class Colors {
         }
     }
 }
+
+
+/**
+ * This is the main entry point for our application, as our app starts here.
+ */
+@Composable
+fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
+    val chess = remember { mutableStateOf(chessInfo) }
+    val isAskingForName = remember { mutableStateOf(false) }
+    val actionToDisplay = remember { mutableStateOf(ACTION.OPEN) }
+    val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE()) }
+    val showPossibleMoves = remember { mutableStateOf(true) } // show possible moves starts as true by default
+    val move = remember { mutableStateOf("") }
+    val selected = remember { mutableStateOf(emptyList<Square>()) }
+    val isGameOver = remember { mutableStateOf(false) }
+    val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }
+
+    val tempValue : MutableState<Piece?> = remember { mutableStateOf(Pawn(Player.WHITE)) }
+
+    Window(onCloseRequest = {exit(driver)},
+        state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
+        icon = painterResource(RESOURCE_ICON_FILENAME),
+        title = "Chess"
+    ) {
+        if(!showPossibleMoves.value) selected.value = emptyList()
+
+        if (isAskingForName.value) {
+            getGameName(isAskingForName, actionToDisplay, chess,result)
+        }
+
+
+        println("recomposition")
+
+        menu(actionToDisplay,isAskingForName,showPossibleMoves)
+
+        if(clicked.value is START){
+            val start = clicked.value as START
+
+            val board = chess.value.board
+
+            val startSquare = start.square.toSquare()
+            val currentPlayer = chess.value.currentPlayer
+            if(startSquare.doesNotBelongTo(currentPlayer, board)){
+                clicked.value = NONE()
+            }else{
+                move.value = start.square
+                if(showPossibleMoves.value) {
+                    val moves = chess.value.getPiecePossibleMovesFrom(startSquare)
+                    if (moves.isNotEmpty()) {
+                        val possibleMoves = moves.map { it.endSquare }
+                        selected.value = possibleMoves
+                    }
+                }
+
+            }
+
+        }
+
+        if(clicked.value is FINISH){
+            dealWithMovement(clicked,selected,showPossibleMoves,chess,move,result)
+        }
+
+        if(result.value is CONTINUE){
+            val chessFromRes = (result.value as CONTINUE).chess
+            chess.value = chessFromRes
+        }
+
+
+        MaterialTheme {
+            drawVisuals(chess,clicked,selected,showPossibleMoves,move,tempValue)
+        }
+
+    }
+}
+
+
 
 /**
  * Builds the UI for the background chessboard.
@@ -99,7 +185,12 @@ private fun buildBackgroundBoard(){
  * Places the pieces from the [board] received on the chessBoard.
  */
 @Composable
-private fun boardToComposable(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>, showPossibleMoves : MutableState<Boolean>){
+private fun boardToComposable(
+    board: Board,
+    clicked: MutableState<Clicked>,
+    selected: List<Square>,
+    showPossibleMoves: Boolean,
+){
     Column {
         for(i in 8 downTo 1) {
             Row {
@@ -107,76 +198,175 @@ private fun boardToComposable(board: Board, clicked: MutableState<Clicked>, sele
                     val column = (count + 'a'.code).toChar()// convert to char
                     val square = "$column$i".toSquare()
                     val piece = board.getPiece(square)
-                    tile(piece ,clicked, square, selected,showPossibleMoves)
+
+                    val isSelected = clicked.value is START && (clicked.value as START).square == square.toString()
+                    val isAPossibleMove = showPossibleMoves && selected.contains(square)
+
+                    tile(piece ,isAPossibleMove,isSelected){
+                        clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
+                    }
                 }
             }
         }
     }
 }
 
+/**
+ * Gets a resource associated with the piece received, if it exists.
+ * @param piece The piece to get the resource for.
+ */
+private fun getResource(piece: Piece?):String?{
+    if(piece == null) return null
+    val pieceColor = piece.player
+
+    val resource = when(piece){
+        is Pawn -> RESOURCE_PAWN_FILENAME
+        is Rook -> RESOURCE_ROOK_FILENAME
+        is Knight -> RESOURCE_KNIGHT_FILENAME
+        is Bishop -> RESOURCE_BISHOP_FILENAME
+        is Queen -> RESOURCE_QUEEN_FILENAME
+        is King -> RESOURCE_KING_FILENAME
+        else -> null
+    }
+
+    val color = if (pieceColor == Player.WHITE) "w_"
+    else "b_"
+
+    return "$color$resource"
+}
+
+/**
+ * Draws a tile on the chessboard.
+ * The Tile could be a piece, or a empty square and if [showPossibleMoves] is active, also a circle.
+ * @param piece             The piece to draw on the tile, may be null(empty square).
+ * @param isAPossibleMove   If the tile is a possible move for other piece.
+ * @param isSelected        If the tile is selected by the user.
+ * @param onClick           The function to call when the tile is clicked.
+ */
 @Composable
-private fun tile(piece: Piece?, clicked: MutableState<Clicked>, square: Square, selected: MutableState<List<Square>>, showPossibleMoves : MutableState<Boolean> ){
-    val pieceImage = remember { mutableStateOf("empty-tile")}
-    if (piece != null) {
-        val pieceColor = piece.player
-        pieceImage.value = when (piece) {
-            is Pawn -> RESOURCE_PAWN_FILENAME
-            is Rook -> RESOURCE_ROOK_FILENAME
-            is Knight -> RESOURCE_KNIGHT_FILENAME
-            is Bishop -> RESOURCE_BISHOP_FILENAME
-            is Queen -> RESOURCE_QUEEN_FILENAME
-            is King -> RESOURCE_KING_FILENAME
-            else -> {"empty-tile"}
-        }
-        pieceImage.value = if (pieceColor == Player.WHITE) "w_${pieceImage.value}"
-        else "b_${pieceImage.value}"
+private fun tile(
+    piece: Piece?,
+    isAPossibleMove: Boolean,
+    isTileSelected : Boolean ,
+    onSelected: () -> Unit = { }
+){
+    val pieceImage = getResource(piece)
+    val modifier = if(isTileSelected){
+        Modifier.clickable( onClick = { onSelected() }).border(4.dp,Color.Red)
     }
-
-    val modifier = if(clicked.value is START && (clicked.value as START).square == square.toString()){
-        Modifier.clickable(
-            enabled = true,
-            onClick = {
-                clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
-            }).border(4.dp,Color.Red)
-        }
-        else {
-        Modifier.clickable(
-            enabled = true,
-            onClick = {
-                clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
-            })
+    else {
+        Modifier.clickable( onClick = { onSelected() })
     }
-
-    //if(chess.value.gameName == null) pieceImage.value = "empty-tile"
 
     Box(modifier = modifier) {
-        if (pieceImage.value != "empty-tile") {
+        if (pieceImage != null) {
             Image(
-                painter = painterResource(pieceImage.value),
+                painter = painterResource(pieceImage),
                 modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
                 contentDescription = null
             )
 
         } else {
-            Spacer(Modifier.size(TILE_SIZE))
+            Spacer(modifier = Modifier.size(TILE_SIZE))
         }
-        if(selected.value.isNotEmpty() && showPossibleMoves.value){
-            if(selected.value.contains(square)){
-                Box(modifier = Modifier.size(TILE_SIZE)) {
-                    Image(
-                        painter = painterResource(RESOURCE_SELECTED_TILE_FILENAME),
-                        modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
-                        contentDescription = null
-                    )
-                }
+        if (isAPossibleMove) {
+            Box(modifier = Modifier.size(TILE_SIZE)) {
+                Image(
+                    painter = painterResource(RESOURCE_SELECTED_TILE_FILENAME),
+                    modifier = Modifier.size(TILE_SIZE).align(Alignment.Center),
+                    contentDescription = null
+                )
             }
+        }
+    }
+
+}
+
+@Composable
+private fun dealWithMovement(
+    clicked: MutableState<Clicked>,
+    selected: MutableState<List<Square>>,
+    showPossibleMoves: MutableState<Boolean>,
+    chess: MutableState<Chess>,
+    move: MutableState<String>,
+    result: MutableState<Result>
+){
+    val promotionType = remember { mutableStateOf("") }
+    val finish = clicked.value as FINISH
+
+    val board = chess.value.board
+    val finishSquare = finish.square.toSquare()
+    val startSquare = move.value.toSquare()
+    val currentPlayer = chess.value.currentPlayer
+    val startPiece = chess.value.board.getPiece(startSquare)
+    val endPiece = chess.value.board.getPiece(finish.square.toSquare())
+    move.value = move.value + finish.square
+
+
+/*
+            if(startSquare == finishSquare) {
+                clicked.value = NONE()
+                move.value = ""
+                if(showPossibleMoves.value){
+                    selected.value = emptyList()
+                }
+
+
+            }else {
+
+                when{
+                   /*
+                    piece == null -> {
+
+                        clicked.value = START(move.value)
+
+                    }
+                    */
+
+                    finishSquare.doesBelongTo(currentPlayer,board) ->  {
+
+                        clicked.value = START(finish.square)
+                    }
+                    /*
+                    else -> {
+                        if(showPossibleMoves.value){
+                            selected.value = emptyList()
+                        }
+
+                        move.value = move.value + finish.square
+                        clicked.value = NONE()
+                    }
+                     */
+                }
+
+ */
+
+    if(board.isTheMovementPromotable(move.value)){
+        selectPossiblePromotions(promotionType)
+        move.value +=  "=" + promotionType.value
+
+
+    }else {
+        val value = playAction(move.value, chess.value)
+
+        result.value = value
+        if(value is ERROR && startSquare != finishSquare){
+            clicked.value = START(startSquare.toString())
+
+            }else{
+            clicked.value = NONE()
+            move.value = ""
+            if(showPossibleMoves.value){
+                selected.value = emptyList()
+            }
+
         }
 
     }
 
 
-
 }
+
 
 /**
  * Builds a Background Tile of the chessboard with the [Colors] received.
@@ -191,148 +381,72 @@ private fun BackgroundTile(tileColor: Colors) {
     Box(Modifier.background(color).size(TILE_SIZE))
 }
 
-/**
- * Builds the UI for the chessboard(background and the pieces).
- * @param board The board to be displayed.
- * @param clicked The state of the clicked square.
- */
+
+
 @Composable
-private fun chessBoard(board: Board, clicked: MutableState<Clicked>, selected: MutableState<List<Square>>, showPossibleMoves : MutableState<Boolean>) {
-    Box {
-        buildBackgroundBoard()
-        boardToComposable(board,clicked,selected,showPossibleMoves)
-    }
-}
+private fun drawVisuals(
+    chess: MutableState<Chess>,
+    clicked: MutableState<Clicked>,
+    selected: MutableState<List<Square>>,
+    showPossibleMoves: MutableState<Boolean>,
+    move: MutableState<String>,
+    tempValue: MutableState<Piece?>
+) {
 
-/**
- * This is the main entry point for our application, as our app starts here.
- */
-@Composable
-fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
-
-    Window(onCloseRequest = {exit(driver)},
-        state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
-        icon = painterResource(RESOURCE_ICON_FILENAME),
-        title = "Chess"
-    ) {
-        val chess = remember { mutableStateOf(chessInfo) }
-        val isAskingForName = remember { mutableStateOf(false) }
-        val actionToDisplay = remember { mutableStateOf(ACTION.OPEN) }
-        val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE()) }
-        val showPossibleMoves = remember { mutableStateOf(true) } // show possible moves starts as true by default
-        val move = remember { mutableStateOf("") }
-        val selected = remember { mutableStateOf(emptyList<Square>()) }
-        val isGameOver = remember { mutableStateOf(false) }
-        val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }
-
-        if (isAskingForName.value) {
-            getGameName(isAskingForName, actionToDisplay, chess,result)
-        }
-
-        if(result.value !is ERROR){
-            if(result.value is EXIT){
-                exit(driver)
-            }
-            if(result.value is CONTINUE<*>){
-                val chessFromRes = (result.value as CONTINUE<*>).data as Chess
-                chess.value = chessFromRes
+    val gameId = chess.value.currentGameId
+    Row(Modifier.background(Color(ORANGE))) {
+        Column(Modifier.padding(top = MENU_HEIGHT)) {
+            for (i in 8 downTo 1) {
+                Text(
+                    "$i",
+                    fontSize = COORDINATES_FONT_SIZE,
+                    modifier = Modifier.padding(top = PADDING_BETWEEN_NUMBERS, bottom = PADDING_BETWEEN_NUMBERS , start = TEXT_BORDER_PADDING, end = TEXT_BORDER_PADDING)
+                )
             }
         }
-
-
-        println("recomposition")
-
-        menu(actionToDisplay,isAskingForName,showPossibleMoves)
-
-        if(clicked.value is START){
-            val start = clicked.value as START
-            move.value = start.square
-
-            if(showPossibleMoves.value) {
-                val moves = chess.value.getPiecePossibleMovesFrom(move.value.toSquare())
-                if (moves.isNotEmpty()) {
-                    val possibleMoves = moves.map { it.endSquare }
-                    selected.value = possibleMoves
-                }else {
-                    move.value = ""
-                    clicked.value = NONE()
+        Column {
+            Row {
+                for (i in 0..7) {
+                    Text(
+                        "${(i + 'a'.code).toChar()}",
+                        fontSize = COORDINATES_FONT_SIZE,
+                        modifier = Modifier.padding(start = PADDING_BETWEEN_LETTERS, end = PADDING_BETWEEN_LETTERS, top = TEXT_BORDER_PADDING, bottom = TEXT_BORDER_PADDING)
+                    )
                 }
             }
+            Box {
+                buildBackgroundBoard()
+                if(gameId != null) {
+                    boardToComposable(chess.value.board,clicked,selected.value,showPossibleMoves.value)
+                }
+            }
+            if (gameId != null) {
+                val info = if(chess.value.board.player == chess.value.currentPlayer) "Your turn" else "Waiting..."
+                Text(
+                    "Game:${gameId.id} | You:${chess.value.currentPlayer} | $info",
+                    fontSize = FONT_SIZE,
+                    modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
+                )
+            }
+
+
         }
+        Column(Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH) .background(Color.White)) {
+            if(gameId != null){
+                val a = tempValue.value
+                Text(
+                    "move:${move.value} \n" +
+                            "clicked:${clicked.value} \n"
+                            + "selected:${a} \n",
+                    fontSize = 10.sp,
 
-        if(clicked.value is FINISH){
-            val finish = clicked.value as FINISH
-            move.value =  move.value + finish.square
-            if(showPossibleMoves.value){
-                selected.value = emptyList()
+                    )
             }
-/*
-TODO("NOT NEEDED BECAUSE WE ARE USING THE FILTERINPUT FROM PLAY ON COMMANDS")
-            val startSquare = move.value.substring(0,2).toSquare()
-            val piece = chess.value.board.getPiece(startSquare)
-            val movement = piece.toString() + move.value
-            */
-
-
-            clicked.value = NONE()
-        }
-
-        MaterialTheme {
-            val gameId = chess.value.currentGameId
-            Row(Modifier.background(Color(ORANGE))) {
-                Column(Modifier.padding(top = 32.dp)) {
-                    for (i in 8 downTo 1) {
-                        Text(
-                            "$i",
-                            fontSize = 21.sp,
-                            modifier = Modifier.padding(top = 26.dp, bottom = 25.dp, start = 6.dp, end = 6.dp)
-                        )
-                    }
-                }
-                Column {
-                    Row {
-                        for (i in 0..7) {
-                            Text(
-                                "${(i + 'a'.code).toChar()}",
-                                fontSize = 21.sp,
-                                modifier = Modifier.padding(start = 32.dp, end = 31.dp, top = 4.dp, bottom = 4.dp)
-                            )
-                        }
-                    }
-                    Box {
-                        buildBackgroundBoard()
-                        if(gameId != null) {
-                            boardToComposable(chess.value.board,clicked,selected,showPossibleMoves)
-                        }
-                    }
-                    if (gameId != null) {
-                        Text(
-                            "Game:${gameId.id} | You:${chess.value.currentPlayer} | ",
-                            fontSize = FONT_SIZE,
-                            modifier = Modifier.padding(start = 4.dp, end = 31.dp, top = 32.dp, bottom = 4.dp)
-                        )
-                    }
-
-
-                }
-                Column(Modifier.padding(32.dp).height(640.dp).width(240.dp) .background(Color.White)) {
-                    if(gameId != null){
-                        Text(
-                            "TODO ON THE RIGHT",
-                            fontSize = FONT_SIZE,
-
-                        )
-                    }
-                }
-
-            }
-
-
         }
 
     }
-}
 
+}
 
 /**
  * Makes the menu bar at the top of the screen
@@ -353,10 +467,40 @@ private fun FrameWindowScope.menu(action : MutableState<ACTION>, askingName : Mu
     }
 }
 
-@Composable
-private fun selectPossiblePromotions(){
 
+@Composable
+private fun selectPossiblePromotions(Promotion: MutableState<String>){
+    Column {
+        Row(Modifier.padding(top = 16.dp)) {
+            Button(
+                onClick = { Promotion.value = "Q" },
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text("Q", fontSize = 24.sp)
+            }
+            Button(
+                onClick = { Promotion.value = "R" },
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text("R", fontSize = 24.sp)
+            }
+            Button(
+                onClick = { Promotion.value = "B" },
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text("B", fontSize = 24.sp)
+            }
+            Button(
+                onClick = { Promotion.value = "N" },
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text("N", fontSize = 24.sp)
+            }
+        }
+    }
 }
+
+
 
 /**
  * This function asks the user for a name and saves it in the [chess] object
@@ -392,7 +536,5 @@ private fun getGameName(isAskingForName: MutableState<Boolean>,action: MutableSt
 
 }
 
-fun ApplicationScope.exit(driver: MongoClient){
-    driver.close()
-    exitApplication()
-}
+
+
