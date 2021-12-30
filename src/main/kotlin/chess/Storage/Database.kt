@@ -156,6 +156,6 @@ data class Move(val move: String){
  * @return  a [Boolean] value indicating whether the string is formatted correctly (true) or not (false)
  */
 private fun String.isFormatted(): Boolean {
-    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?")
+    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
     return filtered.matches(this)
 }

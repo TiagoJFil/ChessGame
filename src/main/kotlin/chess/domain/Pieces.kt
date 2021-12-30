@@ -1,10 +1,10 @@
 import chess.domain.*
 import chess.domain.board_components.*
 
-private const val LEFT = -1
-private const val RIGHT = 1
-private const val UP = -1
-private const val DOWN = 1
+const val LEFT = -1
+const val RIGHT = 1
+const val UP = -1
+const val DOWN = 1
 
 
 private const val PAWN_PROMOTION_ROW_WHITE = 7
@@ -159,7 +159,7 @@ class Pawn (override val player: Player) : Piece  {
      * @return a [Boolean] value indicating whether the piece can perform enpassant
      */
     private fun canEnpassant(board: Board, pos: PieceMove): Boolean{
-
+        TODO("errado porque mesmo que a peça tenha mexiado a mt tempo antes, a outra pode lhe fazer enpassant")
         val rowAdd = if(player.isWhite()) UP else DOWN
         val leftPos = pos.startSquare.addDirection(Direction(LEFT,0))
         val rightPos = pos.startSquare.addDirection(Direction(RIGHT,0))

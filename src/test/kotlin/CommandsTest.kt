@@ -6,7 +6,6 @@ import chess.Storage.ChessDataBase
 import chess.domain.Player
 import chess.domain.commands.CONTINUE
 import chess.domain.commands.ERROR
-import chess.domain.commands.filterInput
 import isel.leic.tds.storage.DbMode
 import isel.leic.tds.storage.getDBConnectionInfo
 import isel.leic.tds.storage.mongodb.createMongoClient
@@ -14,7 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class ActionsTest {
-
+/*
     @Test
     fun `filterInput works when the move is something like a2a8=Q`(){
         val input = "a2xa8=Q"
@@ -24,6 +23,8 @@ class ActionsTest {
         assertEquals(expected, actual!!.filteredMove)
         assertEquals(databaseexpected, actual!!.databaseMove)
     }
+    */
+
 }
 
 /*

@@ -2,6 +2,7 @@ import chess.Storage.Move
 import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
+import chess.domain.board_components.toRow
 import chess.domain.board_components.toSquare
 import chess.domain.formatToPieceMove
 
@@ -123,22 +124,23 @@ data class Board internal constructor(
  * @param square the Square where the piece to be promoted is placed
  * @return true if the piece is a promoted or false if it isn't
  */
-fun Board.promotePiece(square: Square, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
+fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
+    val square = move.substring(1,2).toSquare()
     val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
     if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
     else {
-        val newPiece = when(promotionType.toLowerCase()){
+        val newPiece = when (promotionType.toLowerCase()) {
             'q' -> Queen(piece.player)
             'r' -> Rook(piece.player)
             'b' -> Bishop(piece.player)
             'n' -> Knight(piece.player)
             else -> throw IllegalStateException("Invalid promotion type")
         }
-        val newBoardList = this.asList().mapIndexed{index, it ->
+        val newBoardList = this.asList().mapIndexed { index, it ->
             if (index == square.toIndex()) newPiece
             else it
         }
-        return Board(newBoardList, player)
+        return Board(newBoardList, player).makeMove(move)
     }
 }
 
@@ -149,7 +151,7 @@ fun Board.promotePiece(square: Square, promotionType: Char = PAWN_PROMOTION_DEFA
  * Moves the king and the rook to the correct position.
  */
 fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
-TODO("CHANGE THE MOVE RECEIVED TO BE A PIECEMOVE")
+//TODO("CHANGE THE MOVE RECEIVED TO BE A PIECEMOVE")
     val rookColumnLetter = if (move.move[3] == 'c') MIN_X_LETTER else MAX_X_LETTER
 
 
@@ -171,8 +173,30 @@ TODO("CHANGE THE MOVE RECEIVED TO BE A PIECEMOVE")
     return Pair(Board(newBoard, !player),moves)
 }
 
+
+/**
+ * Does en passant movement from the given [PieceMove]
+ * @param pieceMove     The piece movement to be performed
+ * @return              The new board after the movement
+ */
 fun Board.doEnpassant(pieceMove: PieceMove): Board {
-    TODO()
+    val piece = getPiece(pieceMove.startSquare) ?: throw IllegalStateException("No piece at ${pieceMove.startSquare}")
+
+    val dir = if (piece.player == Player.WHITE) UP else DOWN
+    val eatenPieceEndSquare = (pieceMove.endSquare.row.number - dir).toRow()
+    val endSquareColumn = pieceMove.endSquare.column
+
+    val eatenPieceSquare = Square(endSquareColumn,eatenPieceEndSquare)
+    val newBoard = this.asList().mapIndexed{index, it ->
+        when(index){
+            eatenPieceSquare.toIndex() -> null
+            pieceMove.startSquare.toIndex() -> null
+            pieceMove.endSquare.toIndex() -> piece
+
+            else -> it
+        }
+    }
+    return Board(newBoard, !player)
 }
 
 /**
@@ -220,6 +244,9 @@ fun Square.doesBelongTo(player: Player,board: Board): Boolean {
     return (piece != null) && (piece.player == player)
 }
 
+/**
+ * Checks whether the square is not occupied by a piece of the player given at a square
+ */
 fun Square.doesNotBelongTo(player: Player, board: Board): Boolean {
     return !this.doesBelongTo(player,board)
 }
