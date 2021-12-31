@@ -1,3 +1,2 @@
-
-}[PieceMove(startSquare=e5, endSquare=f6), PieceMove(startSquare=e5, endSquare=d6), PieceMove(startSquare=e5, endSquare=e6)]
-T[PieceMove(startSquare=e5, endSquare=f6), PieceMove(startSquare=e5, endSquare=e6)]
+/7}[PieceMove(startSquare=e5, endSquare=f6), PieceMove(startSquare=e5, endSquare=d6), PieceMove(startSquare=e5, endSquare=e6)]
+/8T[PieceMove(startSquare=e5, endSquare=f6), PieceMove(startSquare=e5, endSquare=e6)]

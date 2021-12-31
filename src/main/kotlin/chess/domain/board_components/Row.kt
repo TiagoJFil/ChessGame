@@ -1,5 +1,6 @@
 package chess.domain.board_components
 
+import BOARD_SIZE
 import MAX_ROW_NUMBER
 import MAX_Y_NUMBER
 import MIN_ROW_NUMBER
@@ -18,6 +19,11 @@ enum class Row(val number: Int) {  //BoardMap[row][column]
     Three(5),
     Two(6),
     One(7);
+
+    override fun toString(): String {
+        return "${BOARD_SIZE - this.number}"
+    }
+
 }
 
 

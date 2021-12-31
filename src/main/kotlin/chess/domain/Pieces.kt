@@ -149,10 +149,11 @@ class Pawn (override val player: Player) : Piece  {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if(isCheckMate(board)) return MoveType.CHECKMATE
+
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
-            isKingInCheck(board,pieceInfo) -> MoveType.CHECK
             canPromote(pieceInfo) -> MoveType.PROMOTION
+            isKingInCheck(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null && canEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
@@ -258,11 +259,11 @@ class King (override val player: Player) : Piece {
      */
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
         var moves = getMovesByAddingDirection(possibleDirections, pos, board)
-        if (canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0))))) {
-            moves += listOf(PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0))), PieceMove(pos, pos.addDirectionNotNull(Pair(2 * LEFT, 0))))
+        if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0))))) {
+            moves += PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0)) )
         }
-        if(canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * LEFT, 0))))) {
-            moves += PieceMove(pos, pos.addDirectionNotNull(Pair(RIGHT, 0)))
+        if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * LEFT, 0))))) {
+            moves += PieceMove(pos, pos.addDirectionNotNull(Pair(LEFT, 0)) )
         }
         return moves
     }
@@ -281,6 +282,7 @@ class King (override val player: Player) : Piece {
             isKingInCheck(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
+
             else -> MoveType.ILLEGAL
         }
     }
@@ -292,6 +294,7 @@ class King (override val player: Player) : Piece {
      * @return a [Boolean] value if the king can castle
      */
     private fun canCastle(board: Board, pieceInfo: PieceMove): Boolean {
+
         if (hasMoved()) return false
         val possibleDirections = listOf(
             Pair(RIGHT, 0),

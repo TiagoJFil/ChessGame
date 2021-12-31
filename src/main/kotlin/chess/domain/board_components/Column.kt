@@ -22,6 +22,9 @@ enum class Column(val letter: Char, val number : Int) {
         require((number + second).isAColumn())
         return values()[number + second]
     }
+    override fun toString(): String {
+        return "${this.letter}"
+    }
 }
 
 /**

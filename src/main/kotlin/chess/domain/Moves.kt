@@ -125,8 +125,8 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
     if(isCheckMate(board)) return MoveType.CHECKMATE
     return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
-        isKingInCheck(board,pieceInfo) -> MoveType.CHECK
         false -> MoveType.ILLEGAL
+        isKingInCheck(board,pieceInfo) -> MoveType.CHECK
         pieceAtEndSquare == null -> MoveType.REGULAR
         pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
         else -> MoveType.ILLEGAL

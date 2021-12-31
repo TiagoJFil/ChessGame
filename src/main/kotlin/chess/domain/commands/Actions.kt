@@ -1,7 +1,6 @@
 package chess.domain.commands
 
 import Board
-import androidx.compose.runtime.MutableState
 import chess.Chess
 import chess.GameName
 import chess.Storage.ChessDataBase
@@ -76,12 +75,8 @@ fun playAction(move: String, chess: Chess): Result {
     when (movement) {
         MoveType.ILLEGAL -> return ERROR();
         MoveType.CASTLE -> {
-            val (updatedBoard, moves) = chess.board.doCastling(Move(filteredInput.filteredMove))
-            moves.forEach {
-                chess.dataBase.addMoveToDb(it, gameId)
-            }
+            val updatedBoard = chess.board.doCastling(filteredInput.filteredMove.formatToPieceMove())
             newBoard = updatedBoard
-            return CONTINUE(Chess(newBoard, chess.dataBase, chess.currentGameId, chess.currentPlayer))
         }
         MoveType.PROMOTION -> {
             if (filteredInput.databaseMove.contains("=")) {
@@ -127,7 +122,9 @@ fun getMovesAction(gameId: GameName, database: ChessDataBase) : Iterable<Move> {
  * Receives a string and returns a [Move] to insert into the database
  */
 private fun filterToDbString(filteredMove: Moves, type: MoveType): Move {
+    //TODO("when all moves are implemented, change the when to have a else and not repeat code")
     when(type){
+        MoveType.CASTLE -> return Move(filteredMove.filteredMove)
         MoveType.REGULAR -> return Move(filteredMove.filteredMove)
         MoveType.PROMOTION -> return Move(filteredMove.databaseMove)
         MoveType.ENPASSANT ->{
@@ -136,6 +133,7 @@ private fun filterToDbString(filteredMove: Moves, type: MoveType): Move {
         MoveType.CAPTURE -> {
             return Move((filteredMove.filteredMove.substring(0, 3) + "x" + filteredMove.filteredMove.substring(3, 5)))
         }
+
     }
     //it will never return Move("") otherwise the function is used in the wrong place
     return Move("")
@@ -167,8 +165,7 @@ private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): 
 
          when (canPieceMoveTo(filteredInput.filteredMove, acc)) {
             MoveType.CASTLE -> {
-                val (updatedBoard, moves) = acc.doCastling(Move(filteredInput.filteredMove))
-                updatedBoard
+                acc.doCastling(filteredInput.filteredMove.formatToPieceMove())
             }
             MoveType.PROMOTION -> {
                 acc.promotePieceAndMove(filteredInput.filteredMove, filteredInput.databaseMove.last())

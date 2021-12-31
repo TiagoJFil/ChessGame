@@ -1,11 +1,8 @@
 import chess.Storage.Move
 import chess.domain.PieceMove
 import chess.domain.Player
-import chess.domain.board_components.Square
-import chess.domain.board_components.toRow
-import chess.domain.board_components.toSquare
+import chess.domain.board_components.*
 import chess.domain.formatToPieceMove
-import org.junit.Test
 
 
 const val BOARD_SIZE = 8
@@ -74,6 +71,7 @@ data class Board internal constructor(
      * Finds the king of the given color
      */
     fun getKingSquare(player: Player): Square {
+
         return board.indexOfFirst{ it is King && it.player == player }.toSquare()
     }
 
@@ -153,27 +151,22 @@ fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION
  * @returns     a List of Moves that happened during the castling.
  * Moves the king and the rook to the correct position.
  */
-fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
+fun Board.doCastling(move: PieceMove): Board {
 //TODO("CHANGE THE MOVE RECEIVED TO BE A PIECEMOVE")
-    val rookColumnLetter = if (move.move[3] == 'c') MIN_X_LETTER else MAX_X_LETTER
+    val rookColumnLetter = if ( move.startSquare.column == Column.C ) MIN_X_LETTER else MAX_X_LETTER
 
-
-    val rookStartPos = move.move.substring(1,3)
-    val kingStartPos = rookColumnLetter + move.move[2].toString()
-    val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d" + move.move[2] else "f" + move.move[2]
-    val newKingPos = if (rookColumnLetter == MIN_X_LETTER) "c" + move.move[2] else "g" + move.move[2]
+    val rookStartPos = Square( (MAX_X_LETTER).toColumn(), move.endSquare.row )
+    val kingStartPos = move.startSquare
+    val kingRow = kingStartPos.row.toString()
+    val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d$kingRow" else "f$kingRow"
+    val newKingPos = if (rookColumnLetter == MIN_X_LETTER) "c$kingRow" else "g$kingRow"
 
     val kingMove = "K$kingStartPos$newKingPos"
     val rookMove = "R$rookStartPos$newRookPos"
 
     val newBoard = this.makeMove(kingMove).makeMove(rookMove).asList()
 
-
-    val moves = mutableListOf<Move>()
-    moves.add(Move(kingMove))
-    moves.add(Move(rookMove))
-
-    return Pair(Board(newBoard, !player),moves)
+    return Board(newBoard, !player)
 }
 
 
