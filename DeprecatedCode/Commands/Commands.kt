@@ -91,8 +91,6 @@ class JoinCommand(private val chess: Chess) : Commands {
 class PlayCommand(private val chess: Chess) : Commands {
 
     override fun execute(parameter: String?): Result {
-        TODO("ITS WRONG BECAUSE IT DOENST UPDATE THE BOARD" +
-                "MAYBE WHEN A BOARD GOES ON CONTINUE WE CAN MAKE IT UPDATE" )
 
 
 
@@ -104,15 +102,15 @@ class PlayCommand(private val chess: Chess) : Commands {
 
         val filteredInput = filterInput(parameter,chess.board) ?: return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
 
-        if(!chess.board. isPlayerMovingOwnPieces(filteredInput.filteredMove.formatToPieceMove())) {
+        if(!chess.board.isPlayerMovingOwnPieces(filteredInput.filteredMove.formatToPieceMove())) {
             return ERROR("You can't move the other player's pieces")
         }
         if(!chess.board.isPlayerMovingTheRightPieces(filteredInput.filteredMove)) {
             return ERROR("Piece in input doesn't match the piece at the position")
         }
 
-        val movement = canPieceMoveTo(filteredInput.filteredMove, chess.board)
-        when(movement){
+        when(canPieceMoveTo(filteredInput.filteredMove, chess.board)){
+
             MoveType.ILLEGAL -> return ERROR("Illegal move $parameter. Illegal move.");
 
             MoveType.CASTLE -> {
@@ -140,19 +138,18 @@ class PlayCommand(private val chess: Chess) : Commands {
                 }
 
             }
+            MoveType.CHECKMATE -> return EXIT("You have lost, better luck next time")
+
+            MoveType.CHECK -> return ERROR("Your king is in check please protect or move the king")
 
             MoveType.REGULAR ->{ if(filteredInput.databaseMove.contains("x") || filteredInput.databaseMove.contains("="))
                return ERROR("Illegal move $parameter. Unrecognized Play. Use format: [<piece>][<from>][x]<to>[=<piece>].")
             }
+            else -> {}
         }
-
-
 
         chess.board = chess.board.makeMove(filteredInput.filteredMove)
         chess.dataBase.addMoveToDb(Move(filteredInput.databaseMove),gameId)
-
-
-
 
 
         return CONTINUE(Pair(chess.board,null))

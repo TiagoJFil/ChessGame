@@ -67,13 +67,20 @@ class Pawn (override val player: Player) : Piece  {
     private var moveCount = 0
     private var moved = false
 
+
     /**
      * Sets a piece as moved
      */
     fun setAsMoved() {
         moved = true
-        moveCount++
     }
+
+    fun moveCounter(){
+        if(moved) moveCount++
+    }
+
+    fun getCounter() = moveCount //only for test purpose
+
 
     /**
      * @return a [Boolean] value indicating whether the piece has moved or not
@@ -141,9 +148,10 @@ class Pawn (override val player: Player) : Piece  {
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-        if(isCheckMate(board,player)) return MoveType.CHECKMATE
+        if(isCheckMate(board)) return MoveType.CHECKMATE
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
+            isKingInCheck(board,pieceInfo) -> MoveType.CHECK
             canPromote(pieceInfo) -> MoveType.PROMOTION
             pieceAtEndSquare == null && canEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
@@ -270,6 +278,7 @@ class King (override val player: Player) : Piece {
         if (canCastle(board, pieceInfo)) return MoveType.CASTLE
         return when (getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
+            isKingInCheck(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
             else -> MoveType.ILLEGAL

@@ -6,6 +6,8 @@ import Pawn
 import Piece
 import chess.domain.board_components.*
 import getAllMoves
+import getAllMovesLastSquare
+import org.junit.Test
 
 
 enum class MoveType{
@@ -51,6 +53,12 @@ fun String.formatToPieceMove(): PieceMove{
 
     return PieceMove(startSquare,endSquare)
 }
+
+fun PieceMove.formatToString(board : Board) =
+    board.getPiece(startSquare).toString() +
+            startSquare.toString()+
+            endSquare.toString()
+
 
 
 /**
@@ -115,14 +123,14 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-    if(isCheckMate(board,player)) return MoveType.CHECKMATE
-    return when( getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo) ){
+    if(isCheckMate(board)) return MoveType.CHECKMATE
+    return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
+        isKingInCheck(board,pieceInfo) -> MoveType.CHECK
         false -> MoveType.ILLEGAL
         pieceAtEndSquare == null -> MoveType.REGULAR
         pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
         else -> MoveType.ILLEGAL
-}
-
+    }
 }
 
 /**
@@ -192,25 +200,49 @@ fun traceBackPawn(endPos:String, board: Board):String?{
 
 }
 
+const val KING_NUMBER_OF_POSITIONS = 8
+
 /**
  * Verifies if the opponent king is in checkMate
  * @param board game board
  * @param color the color of the player
  * @return true if the king is in checkMate false otherwise
  */
-fun isCheckMate(board: Board, otherPlayer: Player): Boolean {
-    val b = board.getKingPiece(otherPlayer)
-    val possibleMoves = b.getPossibleMoves(board, board.getKingSquare(otherPlayer)).map { it.endSquare }
-    val list = board.getAllMoves(otherPlayer).filter { it.endSquare in possibleMoves }
-    if (list.size >= 3) return true
+fun isCheckMate(board: Board): Boolean {
+    val king = board.getKingPiece(board.player)
+    val kingSquare = board.getKingSquare(board.player)
+    val possibleMoves = king.getPossibleMoves(board, kingSquare).map { it.endSquare }
+    val opponentMoves = board.getAllMovesLastSquare(!board.player)
+    val filteredOpponentMoves = opponentMoves.filter {it in possibleMoves}
+    val playerMoves = board.getAllMovesLastSquare(board.player)
+   if (filteredOpponentMoves.size >= possibleMoves.size //king cannot move check if we can protect it
+        && kingSquare in opponentMoves
+        && cannotDefendKing(possibleMoves,playerMoves)) return true
+
     return false
 }
 
-fun isKingInCheck(board: Board, otherPlayer: Player): Boolean {
-    val kingSquare = board.getKingSquare(otherPlayer)
-    val listOfEndSquares = board.getAllMoves(otherPlayer).map { it.endSquare }
+fun isKingInCheck(board: Board,pieceInfo: PieceMove): Boolean {
+    val tempBoard = board.makeMove(pieceInfo.formatToString(board))
+    val kingSquare = tempBoard.getKingSquare(board.player)
+    val listOfEndSquares = tempBoard.getAllMovesLastSquare(tempBoard.player)
     return kingSquare in listOfEndSquares
 }
+
+fun canDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>): Boolean {
+    if(possibleKingMoves.size == 1 && possibleKingMoves.first() in playerMoves) return false
+    return true
+}
+
+fun cannotDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>) =
+    !canDefendKing(possibleKingMoves, playerMoves)
+
+
+
+
+
+
+
 
 
 
