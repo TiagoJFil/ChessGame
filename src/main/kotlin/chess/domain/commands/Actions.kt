@@ -1,8 +1,10 @@
 package chess.domain.commands
 
 import Board
+import androidx.compose.runtime.MutableState
 import chess.Chess
 import chess.GameName
+import chess.Storage.ChessDataBase
 import chess.Storage.DataBase
 import chess.Storage.Move
 import chess.domain.*
@@ -86,6 +88,8 @@ fun playAction(move: String, chess: Chess): Result {
                 newBoard =
                     chess.board.promotePieceAndMove(filteredInput.filteredMove, filteredInput.databaseMove.last())
                 //val dbMove = filterToDbString(filteredInput.filteredMove,MoveType.PROMOTION)
+            }else{
+                return ERROR()
             }
         }
         MoveType.ENPASSANT -> {
@@ -112,6 +116,13 @@ fun playAction(move: String, chess: Chess): Result {
     return CONTINUE(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer))
 }
 
+
+
+fun getMovesAction(gameId: GameName, database: ChessDataBase) : Iterable<Move> {
+    return database.getAllMoves(gameId)
+}
+
+
 /**
  * Receives a string and returns a [Move] to insert into the database
  */
@@ -123,7 +134,7 @@ private fun filterToDbString(filteredMove: Moves, type: MoveType): Move {
             return Move((filteredMove.filteredMove.substring(0,3) + "x" + filteredMove.filteredMove.substring(3,5) + ".ep"))
         }
         MoveType.CAPTURE -> {
-            return Move((filteredMove.filteredMove.substring(0, 2) + "x" + filteredMove.filteredMove.substring(3, 4)))
+            return Move((filteredMove.filteredMove.substring(0, 3) + "x" + filteredMove.filteredMove.substring(3, 5)))
         }
     }
     //it will never return Move("") otherwise the function is used in the wrong place
@@ -138,6 +149,7 @@ private fun filterToDbString(filteredMove: Moves, type: MoveType): Move {
 fun Board.isTheMovementPromotable(move: String): Boolean {
     val filteredInput = filterInput(move, this) ?: return false
     return canPieceMoveTo(filteredInput.filteredMove, this) == MoveType.PROMOTION
+
 }
 
 

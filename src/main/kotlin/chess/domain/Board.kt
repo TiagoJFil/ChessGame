@@ -125,7 +125,7 @@ data class Board internal constructor(
  * @return true if the piece is a promoted or false if it isn't
  */
 fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
-    val square = move.substring(1,2).toSquare()
+    val square = move.substring(1,3).toSquare()
     val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
     if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
     else {
@@ -155,7 +155,7 @@ fun Board.doCastling(move: Move): Pair<Board,List<Move>> {
     val rookColumnLetter = if (move.move[3] == 'c') MIN_X_LETTER else MAX_X_LETTER
 
 
-    val rookStartPos = move.move.substring(1..2)
+    val rookStartPos = move.move.substring(1,3)
     val kingStartPos = rookColumnLetter + move.move[2].toString()
     val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d" + move.move[2] else "f" + move.move[2]
     val newKingPos = if (rookColumnLetter == MIN_X_LETTER) "c" + move.move[2] else "g" + move.move[2]

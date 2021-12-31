@@ -105,7 +105,7 @@ class Pawn (override val player: Player) : Piece  {
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
         val moves = mutableListOf<PieceMove>()
         val colorDirection = if (belongsToWhitePlayer())  UP else DOWN
-        if(!hasMoved() && board.getPiece(pos.addDirectionNotNull(Direction(0, 2 * colorDirection))) == null){
+        if(!hasMoved() && board.getPiece(pos.addDirectionNotNull(Direction(0, 1 * colorDirection))) == null && board.getPiece(pos.addDirectionNotNull(Direction(0, 2 * colorDirection))) == null){
             moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
         }
         val squareToDiagonalRight = pos.addDirection(Direction(LEFT,colorDirection))
@@ -159,7 +159,7 @@ class Pawn (override val player: Player) : Piece  {
      * @return a [Boolean] value indicating whether the piece can perform enpassant
      */
     private fun canEnpassant(board: Board, pos: PieceMove): Boolean{
-        TODO("errado porque mesmo que a peça tenha mexiado a mt tempo antes, a outra pode lhe fazer enpassant")
+
         val rowAdd = if(player.isWhite()) UP else DOWN
         val leftPos = pos.startSquare.addDirection(Direction(LEFT,0))
         val rightPos = pos.startSquare.addDirection(Direction(RIGHT,0))
