@@ -265,6 +265,9 @@ class King (override val player: Player) : Piece {
         if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * LEFT, 0))))) {
             moves += PieceMove(pos, pos.addDirectionNotNull(Pair(LEFT, 0)) )
         }
+        moves = moves.filter {
+            !isKingInCheck(board, it)
+        }
         return moves
     }
 

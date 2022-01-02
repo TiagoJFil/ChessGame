@@ -97,7 +97,7 @@ fun playAction(move: String, chess: Chess): Result {
             newBoard = chess.board.makeMove(filteredInput.filteredMove)
         }
         MoveType.CHECK -> {
-            newBoard = chess.board.makeMove(filteredInput.filteredMove)
+            return ERROR()
         }
 
     }
@@ -112,6 +112,11 @@ fun playAction(move: String, chess: Chess): Result {
 }
 
 
+fun refreshBoardAction(chess: Chess): Chess {
+    require(chess.currentGameId != null)
+    val board = updateNewBoard(chess.dataBase, chess.currentGameId, chess.board)
+    return Chess(board,chess.dataBase,chess.currentGameId,chess.currentPlayer)
+}
 
 fun getMovesAction(gameId: GameName, database: ChessDataBase) : Iterable<Move> {
     return database.getAllMoves(gameId)
@@ -208,33 +213,7 @@ private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): 
          */
 }
 
-/*
-/**
- * @param dataBase      the database to use
- * @param gameId        the id of the game to update from
- * @param board         the board to update
- * Updates a board with the moves from the DataBase with the given gameId.
- */
-private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board =
-    dataBase.getAllMoves(gameId).fold(board) {
-            acc, move ->
-        val moveFiltered = filterInput(move.move,board)
-        if(moveFiltered != null) {
-            if(moveFiltered.databaseMove.contains("=")) {
-                acc.promotePieceAndMove(moveFiltered.filteredMove, moveFiltered.databaseMove.last())
-            }
-            else if(moveFiltered.databaseMove.contains(".ep")) {
-                acc.doEnpassant(moveFiltered.filteredMove.formatToPieceMove())
-            }
-            else {
-                acc.makeMove(moveFiltered.filteredMove)
-            }
 
-        }else acc
-    }
-
-
- */
 
 /**
  * @param input          the input to filter

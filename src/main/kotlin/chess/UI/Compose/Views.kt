@@ -7,6 +7,7 @@ import Pawn
 import Piece
 import Queen
 import Rook
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -112,11 +113,11 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
         if (isSelectingPromotion.value) {
             selectPossiblePromotions(promotionType, isSelectingPromotion)
 
-           // finalMoveString.value += promotionType.value
-
         }
 
-        println("recomposition")
+        updateGameIfOtherPlayerMoved(chess)
+
+
 
         menu(actionToDisplay,isAskingForName,showPossibleMoves)
 
@@ -138,7 +139,6 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
         if(clicked.value is FINISH){
             dealWithMovement(clicked,selected,showPossibleMoves.value,chess,move,result,promotionType,isSelectingPromotion)
-
         }
 
 
@@ -150,6 +150,19 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
         MaterialTheme {
             drawVisuals(chess.value,clicked,selected.value,showPossibleMoves.value)
+        }
+
+    }
+}
+
+fun updateGameIfOtherPlayerMoved(chess: MutableState<Chess>) {
+    val gameId = chess.value.currentGameId
+    if(gameId != null) {
+        val pNumber = if(chess.value.currentPlayer == Player.WHITE) 0 else 1
+
+        val moveCount = chess.value.dataBase.getMoveCount(gameId)
+        if(moveCount %2 != pNumber) {
+            chess.value = refreshBoardAction(chess.value)
         }
 
     }
@@ -217,7 +230,7 @@ private fun boardToComposable(
 }
 
 /**
- * Gets a resource associated with the piece received, if it exists.
+ * Gets a resource name associated with the piece received, if it exists. else returns null.
  * @param piece The piece to get the resource for.
  */
 private fun getResource(piece: Piece?):String?{
@@ -447,6 +460,7 @@ private fun FrameWindowScope.menu(action : MutableState<ACTION>, askingName : Mu
  * Creates a Dialog that gives the user 4 options to choose the promotion piece
  */
 @Composable
+@Preview
 private fun selectPossiblePromotions(Promotion: MutableState<String>, isSelectingPromotion : MutableState<Boolean>){
     Dialog(
         onCloseRequest = { isSelectingPromotion.value = false },

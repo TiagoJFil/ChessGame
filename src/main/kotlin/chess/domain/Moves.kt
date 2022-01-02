@@ -123,9 +123,9 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-    if(isCheckMate(board)) return MoveType.CHECKMATE
     return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
+        isKingInCheck(board,pieceInfo) &&   isCheckMate(board) -> MoveType.CHECKMATE
         isKingInCheck(board,pieceInfo) -> MoveType.CHECK
         pieceAtEndSquare == null -> MoveType.REGULAR
         pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
@@ -209,16 +209,17 @@ const val KING_NUMBER_OF_POSITIONS = 8
  * @return true if the king is in checkMate false otherwise
  */
 fun isCheckMate(board: Board): Boolean {
-    val king = board.getKingPiece(board.player)
     val kingSquare = board.getKingSquare(board.player)
-    val possibleMoves = king.getPossibleMoves(board, kingSquare).map { it.endSquare }
     val opponentMoves = board.getAllMovesLastSquare(!board.player)
-    val filteredOpponentMoves = opponentMoves.filter {it in possibleMoves}
-    val playerMoves = board.getAllMovesLastSquare(board.player)
-   if (filteredOpponentMoves.size >= possibleMoves.size //king cannot move check if we can protect it
-        && kingSquare in opponentMoves
-        && cannotDefendKing(possibleMoves,playerMoves)) return true
-
+    if(kingSquare in opponentMoves){
+        val king = board.getKingPiece(board.player)
+        val possibleMoves = king.getPossibleMoves(board, kingSquare).map { it.endSquare }
+        val filteredOpponentMoves = opponentMoves.filter { it in possibleMoves }
+        val playerMoves = board.getAllMovesLastSquare(board.player)
+        if (filteredOpponentMoves.size >= possibleMoves.size //king cannot move check if we can protect it
+            && cannotDefendKing(possibleMoves, playerMoves)
+        ) return true
+    }
     return false
 }
 

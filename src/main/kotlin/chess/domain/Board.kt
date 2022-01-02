@@ -229,7 +229,7 @@ fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
 fun Board.getAllMoves(player: Player): List<PieceMove> {
     val list = mutableListOf<PieceMove>()
     this.asList().forEachIndexed { idx, p ->
-        if(p != null && p.player == player)
+        if(p != null && p.player == player && p !is King)
             list.addAll(p.getPossibleMoves(this,idx.toSquare()))
     }
     return list
