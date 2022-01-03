@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import chess.Chess
 import chess.GameName
 import chess.Storage.ChessDataBase
+import chess.Storage.Move
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.getMovesAction
@@ -18,6 +19,26 @@ fun getMovesAsString(gameId : GameName, database: ChessDataBase): String {
     var plays = 0
     var noOfPlays = 1
     moves.forEach {
+        if (plays % 2 == 1) {
+            noOfPlays++
+            res+= "- ${it.move}\n"
+
+        } else {
+            res+= "$noOfPlays. ${it.move} "
+        }
+        plays++
+    }
+    return res
+
+}
+
+fun Iterable<Move>.toAString(): String {
+
+    if (this.count() == 0) return ""
+    var res = ""
+    var plays = 0
+    var noOfPlays = 1
+    this.forEach {
         if (plays % 2 == 1) {
             noOfPlays++
             res+= "- ${it.move}\n"

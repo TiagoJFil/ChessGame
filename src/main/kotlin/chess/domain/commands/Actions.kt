@@ -37,8 +37,9 @@ fun openAction(gameName: String,chess: Chess): Result {
     }else{
         Board()
     }
+    val moves = getMovesAction(gameId, chess.dataBase)
 
-    return CONTINUE(Chess(board,chess.dataBase,gameId,Player.WHITE))
+    return CONTINUE(Chess(board,chess.dataBase,gameId,Player.WHITE),moves)
 
 }
 
@@ -55,7 +56,9 @@ fun joinAction(gameName: String,chess: Chess): Result {
 
     val board = updateNewBoard(chess.dataBase, gameId, Board())
 
-    return CONTINUE(Chess(board,chess.dataBase,gameId,Player.BLACK))
+    val moves = getMovesAction(gameId, chess.dataBase)
+
+    return CONTINUE(Chess(board,chess.dataBase,gameId,Player.BLACK),moves)
 }
 
 
@@ -97,7 +100,10 @@ fun playAction(move: String, chess: Chess): Result {
             newBoard = chess.board.makeMove(filteredInput.filteredMove)
         }
         MoveType.CHECK -> {
-            return ERROR()
+            return CHECK()
+        }
+        MoveType.CHECKMATE -> {
+            return CHECKMATE()
         }
 
     }
@@ -108,7 +114,7 @@ fun playAction(move: String, chess: Chess): Result {
 
 
 
-    return CONTINUE(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer))
+    return CONTINUE(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer),null)
 }
 
 
@@ -152,7 +158,6 @@ private fun filterToDbString(filteredMove: Moves, type: MoveType): Move {
 fun Board.isTheMovementPromotable(move: String): Boolean {
     val filteredInput = filterInput(move, this) ?: return false
     return canPieceMoveTo(filteredInput.filteredMove, this) == MoveType.PROMOTION
-
 }
 
 

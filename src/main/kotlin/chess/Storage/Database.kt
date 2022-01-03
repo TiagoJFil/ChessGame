@@ -170,6 +170,7 @@ data class Move(val move: String){
     init {
            require(move.isFormatted())
     }
+    override fun toString() = move
 }
 
 /**

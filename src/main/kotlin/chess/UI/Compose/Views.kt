@@ -24,15 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import chess.Chess
-import chess.GameName
-import chess.Storage.ChessDataBase
-import chess.Storage.Move
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.*
 import chess.exit
-import chess.getPiecePossibleMovesFrom
 import com.mongodb.client.MongoClient
 import doesBelongTo
 import doesNotBelongTo
@@ -51,6 +47,7 @@ private val MENU_HEIGHT = 27.dp
 private val TEXT_BORDER_PADDING = 4.dp
 private val PADDING_BETWEEN_NUMBERS = 18.dp
 private val PADDING_BETWEEN_LETTERS = 24.dp
+private val WINDOW_HEIGHT = 600.dp
 
 private const val RESOURCE_PAWN_FILENAME = "pawn.png"
 private const val RESOURCE_ROOK_FILENAME = "rook.png"
@@ -88,16 +85,19 @@ private enum class Colors {
 @Composable
 fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
     val chess = remember { mutableStateOf(chessInfo) }
-    val promotionType = remember { mutableStateOf("") }
-    val isSelectingPromotion = remember { mutableStateOf(false) }           // open the dialog to select a promotion
-    val isAskingForName = remember { mutableStateOf(false) }                // open the dialog to ask for a name
+    val promotionType = remember { mutableStateOf("") }                     // The type of piece the user wants to promote to
+    val isSelectingPromotion = remember { mutableStateOf(false) }           // Open the dialog to select a promotion
+    val isAskingForName = remember { mutableStateOf(false) }                // Open the dialog to ask for a name
     val actionToDisplay = remember { mutableStateOf(ACTION.OPEN) }
-    val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE()) }
-    val showPossibleMoves = remember { mutableStateOf(true) }       // show possible moves starts as true by default
+    val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE()) }    // The state of click on a tile
+    val showPossibleMoves = remember { mutableStateOf(true) }               // Show possible moves starts as true by default
     val move = remember { mutableStateOf("") }
-    val selected = remember { mutableStateOf(emptyList<Square>()) }
-    val isGameOver = remember { mutableStateOf(false) }
-    val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }
+    val possibleMovesList = remember { mutableStateOf(emptyList<Square>()) }      // List of possible moves for a piece
+    val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }      // Result produced from making an action(moving, joining, etc)
+    val showCheckInfo = remember { mutableStateOf(false) }
+    val showCheckMateInfo = remember { mutableStateOf(false) }
+    val movesPlayed = remember { mutableStateOf("") }
+    val areMovesUpdated = remember { mutableStateOf(false) }
 
 
     Window(onCloseRequest = {exit(driver)},
@@ -105,7 +105,7 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
         icon = painterResource(RESOURCE_ICON_FILENAME),
         title = "Chess"
     ) {
-        if(!showPossibleMoves.value) selected.value = emptyList()
+        if(!showPossibleMoves.value) possibleMovesList.value = emptyList()
 
         if (isAskingForName.value) {
             getGameName(isAskingForName, actionToDisplay.value, chess.value,result)
@@ -114,8 +114,7 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
             selectPossiblePromotions(promotionType, isSelectingPromotion)
         }
 
-        //TODO updateGameIfOtherPlayerMoved(chess)
-
+        updateGameIfOtherPlayerMoved(chess)
 
 
         menu(actionToDisplay,isAskingForName,showPossibleMoves)
@@ -127,32 +126,74 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
             val startSquare = start.square.toSquare()
             val currentPlayer = chess.value.currentPlayer
-            if(startSquare.doesNotBelongTo(currentPlayer, board)){
+
+            if( currentPlayer != board.player){
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
                 clicked.value = NONE()
-            }else{
-                move.value = start.square
-                getPossibleMovesIfOptionEnabled(showPossibleMoves.value,selected,chess.value,move.value)
+            }else {
+
+                if (startSquare.doesNotBelongTo(currentPlayer, board)) {
+                    clicked.value = NONE()
+                } else {
+                    move.value = start.square
+                    getPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList, chess.value, move.value)
+                }
             }
 
         }
 
         if(clicked.value is FINISH){
-            dealWithMovement(clicked,selected,showPossibleMoves.value,chess,move,result,promotionType,isSelectingPromotion)
+            dealWithMovement(clicked,possibleMovesList,showPossibleMoves.value,chess.value,move,result,promotionType,isSelectingPromotion)
+            areMovesUpdated.value = false
         }
 
-
-        if(result.value is CONTINUE){
-            val chessFromRes = (result.value as CONTINUE).chess
-            chess.value = chessFromRes
+        if(!areMovesUpdated.value) {
+            ifOtherPlayerMoved(chess.value) {
+                val gameId = chess.value.currentGameId
+                require(gameId != null)
+                movesPlayed.value = getMovesAsString(gameId, chess.value.dataBase)
+                areMovesUpdated.value = true
+            }
         }
 
+        handleResult(result,chess,showCheckInfo,showCheckMateInfo,movesPlayed)
 
         MaterialTheme {
-            drawVisuals(chess.value,clicked,selected.value,showPossibleMoves.value)
+            drawVisuals(chess.value,clicked,possibleMovesList.value,showPossibleMoves.value,showCheckInfo.value,showCheckMateInfo.value,movesPlayed.value)
         }
 
     }
 }
+
+fun handleResult(
+    result: MutableState<Result>,
+    chess: MutableState<Chess>,
+    showCheckInfo: MutableState<Boolean>,
+    showCheckMateInfo: MutableState<Boolean>,
+    movesPlayed: MutableState<String>
+) {
+
+    when (result.value) {
+        is CONTINUE -> {
+            val res = (result.value as CONTINUE)
+            chess.value = res.chess
+            if (res.moves != null) {
+                movesPlayed.value = res.moves.toAString()
+            }
+            result.value = ERROR()
+            showCheckInfo.value = false
+            showCheckMateInfo.value = false
+        }
+        is CHECK -> {
+            showCheckInfo.value = true
+        }
+        is CHECKMATE -> {
+            showCheckMateInfo.value = true
+        }
+    }
+
+}
+
 @Composable
 fun updateGameIfOtherPlayerMoved(chess: MutableState<Chess>) {
     ifOtherPlayerMoved(chess.value){
@@ -163,16 +204,13 @@ fun updateGameIfOtherPlayerMoved(chess: MutableState<Chess>) {
 @Composable
 fun ifOtherPlayerMoved(chess: Chess,block: @Composable () -> Unit){
     val gameId = chess.currentGameId
-    if(gameId != null) {
-        val pNumber = if(chess.currentPlayer == Player.WHITE) 0 else 1
+    if(gameId != null && chess.currentPlayer != chess.board.player) {
 
+        val pNumber = if(chess.currentPlayer == Player.WHITE) 0 else 1
         val moveCount = chess.dataBase.getMoveCount(gameId)
 
-        if(moveCount %2 == pNumber) {
-            block()
-
-
-        }
+        if(moveCount %2 != pNumber)
+                block()
 
     }
 }
@@ -313,9 +351,9 @@ private fun tile(
 @Composable
 private fun dealWithMovement(
     clicked: MutableState<Clicked>,
-    selected: MutableState<List<Square>>,
+    possibleMovesList: MutableState<List<Square>>,
     showPossibleMoves: Boolean,
-    chess: MutableState<Chess>,
+    chess: Chess,
     move: MutableState<String>,
     result: MutableState<Result>,
     promotionType: MutableState<String>,
@@ -323,11 +361,11 @@ private fun dealWithMovement(
 
     ) {
     val finish = clicked.value as FINISH
-    val board = chess.value.board
+    val board = chess.board
     val finishSquare = finish.square.toSquare()
     val startSquare = move.value.toSquare()
-    val currentPlayer = chess.value.currentPlayer
-    val endPiece = chess.value.board.getPiece(finish.square.toSquare())
+    val currentPlayer = chess.currentPlayer
+    val endPiece = chess.board.getPiece(finish.square.toSquare())
     val finalMoveString = remember { mutableStateOf("") }
     if(promotionType.value != ""){
         finalMoveString.value =move.value + finish.square + "=" + promotionType.value
@@ -335,39 +373,34 @@ private fun dealWithMovement(
         finalMoveString.value = move.value + finish.square
     }
 
-
-
-        val value = playAction(finalMoveString.value, chess.value)
+        val value = playAction(finalMoveString.value, chess)
 
         result.value = value
         when {
             value is ERROR && board.isTheMovementPromotable(finalMoveString.value) -> {
                 isSelectingPromotion.value = true
-
             }
             value is ERROR && startSquare == finishSquare -> {
                 clicked.value = NONE()
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, selected)
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
-            value is ERROR && finishSquare.doesBelongTo(currentPlayer, chess.value.board) -> {
+            value is ERROR && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
                 clicked.value = START(finish.square)
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, selected)
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
             value is ERROR && endPiece != null && endPiece.player != currentPlayer -> {
                 clicked.value = NONE()
                 move.value = ""
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, selected)
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
-            value is ERROR && !selected.value.contains(finishSquare) -> clicked.value = START(startSquare.toString())
+            value is ERROR && !possibleMovesList.value.contains(finishSquare) -> clicked.value = START(startSquare.toString())
             else -> {
                 clicked.value = NONE()
-                move.value = ""
-                promotionType.value = ""
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, selected)
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
-
         }
-
+    move.value = ""
+    promotionType.value = ""
 }
 
 
@@ -423,15 +456,18 @@ private fun drawVisuals(
     chess: Chess,
     clicked: MutableState<Clicked>,
     selected: List<Square>,
-    showPossibleMoves: Boolean
+    showPossibleMoves: Boolean,
+    showCheckInfo: Boolean,
+    showCheckMateInfo: Boolean,
+    movesPlayed: String
 ) {
 
     val gameId = chess.currentGameId
-    Row(Modifier.background(Color(ORANGE))) {
+    Row(Modifier.background(Color(ORANGE)).height(WINDOW_HEIGHT)) {
 
         drawCoordinateNumbers()
 
-        Column {
+        Column{
 
             drawCoordinateLetters()
 
@@ -441,6 +477,7 @@ private fun drawVisuals(
                     boardToComposable(chess.board, clicked, selected, showPossibleMoves)
                 }
             }
+
             if (gameId != null) {
                 val info = if (chess.board.player == chess.currentPlayer) "Your turn" else "Waiting..."
                 Text(
@@ -448,26 +485,36 @@ private fun drawVisuals(
                     fontSize = INFO_FONT_SIZE,
                     modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
                 )
-            }
 
+                if(showCheckInfo){
+                    Text(
+                        "CHECK",
+                        fontSize = INFO_FONT_SIZE,
+                        modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
+                    )
+                }
+
+                if(showCheckMateInfo){
+                    Text(
+                        "CHECKMATE",
+                        fontSize = INFO_FONT_SIZE,
+                        modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
+                    )
+                }
+
+            }
 
         }
         Column(
             Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(Color.White)
         ) {
-        /*
-        TODO
-            ifOtherPlayerMoved(chess) {
-                require(gameId != null)
-                val moves = getMovesAsString(gameId, chess.dataBase)
+            if(gameId != null){
                 Text(
-                    moves,
+                    movesPlayed,
                     fontSize = MOVES_FONT_SIZE,
                 )
             }
 
-
-         */
         }
     }
 
