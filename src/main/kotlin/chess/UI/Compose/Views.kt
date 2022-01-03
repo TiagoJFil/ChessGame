@@ -112,10 +112,9 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
         }
         if (isSelectingPromotion.value) {
             selectPossiblePromotions(promotionType, isSelectingPromotion)
-
         }
 
-        //updateGameIfOtherPlayerMoved(chess)
+        //TODO updateGameIfOtherPlayerMoved(chess)
 
 
 
@@ -154,20 +153,29 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
     }
 }
-
+@Composable
 fun updateGameIfOtherPlayerMoved(chess: MutableState<Chess>) {
-    val gameId = chess.value.currentGameId
-    if(gameId != null) {
-        val pNumber = if(chess.value.currentPlayer == Player.WHITE) 0 else 1
+    ifOtherPlayerMoved(chess.value){
+        chess.value = refreshBoardAction(chess.value)
+    }
 
-        val moveCount = chess.value.dataBase.getMoveCount(gameId)
-        if(moveCount %2 != pNumber) {
-            chess.value = refreshBoardAction(chess.value)
+}
+@Composable
+fun ifOtherPlayerMoved(chess: Chess,block: @Composable () -> Unit){
+    val gameId = chess.currentGameId
+    if(gameId != null) {
+        val pNumber = if(chess.currentPlayer == Player.WHITE) 0 else 1
+
+        val moveCount = chess.dataBase.getMoveCount(gameId)
+
+        if(moveCount %2 == pNumber) {
+            block()
+
+
         }
 
     }
 }
-
 
 
 
@@ -420,17 +428,21 @@ private fun drawVisuals(
 
     val gameId = chess.currentGameId
     Row(Modifier.background(Color(ORANGE))) {
+
         drawCoordinateNumbers()
+
         Column {
+
             drawCoordinateLetters()
+
             Box {
                 buildBackgroundBoard()
-                if(gameId != null) {
-                    boardToComposable(chess.board,clicked,selected,showPossibleMoves)
+                if (gameId != null) {
+                    boardToComposable(chess.board, clicked, selected, showPossibleMoves)
                 }
             }
             if (gameId != null) {
-                val info = if(chess.board.player == chess.currentPlayer) "Your turn" else "Waiting..."
+                val info = if (chess.board.player == chess.currentPlayer) "Your turn" else "Waiting..."
                 Text(
                     "Game:${gameId.id} | You:${chess.currentPlayer} | $info",
                     fontSize = INFO_FONT_SIZE,
@@ -440,26 +452,28 @@ private fun drawVisuals(
 
 
         }
-        Column(Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH) .background(Color.White)) {
-            if(gameId != null){
-                /*
-                TODO("always getting the moves is causing lag")
-               val moves =  getMovesAsString(gameId,chess.dataBase)
+        Column(
+            Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(Color.White)
+        ) {
+        /*
+        TODO
+            ifOtherPlayerMoved(chess) {
+                require(gameId != null)
+                val moves = getMovesAsString(gameId, chess.dataBase)
                 Text(
                     moves,
                     fontSize = MOVES_FONT_SIZE,
-                    )
-
-                 */
+                )
             }
-        }
 
+
+         */
+        }
     }
+
 
 }
 
-//fun ifOtherPlayerMoved(block:Block )
-//fun if_else(condition:Boolean,block:Block,block2:Block)
 
 
 
