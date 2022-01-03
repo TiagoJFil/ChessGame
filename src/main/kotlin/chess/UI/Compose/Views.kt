@@ -115,7 +115,7 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
         }
 
-        updateGameIfOtherPlayerMoved(chess)
+        //updateGameIfOtherPlayerMoved(chess)
 
 
 
@@ -167,6 +167,8 @@ fun updateGameIfOtherPlayerMoved(chess: MutableState<Chess>) {
 
     }
 }
+
+
 
 
 /**
@@ -377,6 +379,38 @@ private fun BackgroundTile(tileColor: Colors) {
 
 
 @Composable
+private fun drawCoordinateNumbers() {
+    Column(Modifier.padding(top = MENU_HEIGHT)) {
+        for (i in 8 downTo 1) {
+            Text(
+                "$i",
+                fontSize = COORDINATES_FONT_SIZE,
+                modifier = Modifier.padding(
+                    top = PADDING_BETWEEN_NUMBERS,
+                    bottom = PADDING_BETWEEN_NUMBERS,
+                    start = TEXT_BORDER_PADDING,
+                    end = TEXT_BORDER_PADDING
+                )
+            )
+
+        }
+    }
+}
+
+@Composable
+private fun drawCoordinateLetters(){
+    Row {
+        for (i in 0..7) {
+            Text(
+                "${(i + 'a'.code).toChar()}",
+                fontSize = COORDINATES_FONT_SIZE,
+                modifier = Modifier.padding(start = PADDING_BETWEEN_LETTERS, end = PADDING_BETWEEN_LETTERS, top = TEXT_BORDER_PADDING, bottom = TEXT_BORDER_PADDING)
+            )
+        }
+    }
+}
+
+@Composable
 private fun drawVisuals(
     chess: Chess,
     clicked: MutableState<Clicked>,
@@ -386,25 +420,9 @@ private fun drawVisuals(
 
     val gameId = chess.currentGameId
     Row(Modifier.background(Color(ORANGE))) {
-        Column(Modifier.padding(top = MENU_HEIGHT)) {
-            for (i in 8 downTo 1) {
-                Text(
-                    "$i",
-                    fontSize = COORDINATES_FONT_SIZE,
-                    modifier = Modifier.padding(top = PADDING_BETWEEN_NUMBERS, bottom = PADDING_BETWEEN_NUMBERS , start = TEXT_BORDER_PADDING, end = TEXT_BORDER_PADDING)
-                )
-            }
-        }
+        drawCoordinateNumbers()
         Column {
-            Row {
-                for (i in 0..7) {
-                    Text(
-                        "${(i + 'a'.code).toChar()}",
-                        fontSize = COORDINATES_FONT_SIZE,
-                        modifier = Modifier.padding(start = PADDING_BETWEEN_LETTERS, end = PADDING_BETWEEN_LETTERS, top = TEXT_BORDER_PADDING, bottom = TEXT_BORDER_PADDING)
-                    )
-                }
-            }
+            drawCoordinateLetters()
             Box {
                 buildBackgroundBoard()
                 if(gameId != null) {
@@ -424,16 +442,24 @@ private fun drawVisuals(
         }
         Column(Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH) .background(Color.White)) {
             if(gameId != null){
+                /*
+                TODO("always getting the moves is causing lag")
+               val moves =  getMovesAsString(gameId,chess.dataBase)
                 Text(
-                    getMovesAsString(gameId,chess.dataBase),
+                    moves,
                     fontSize = MOVES_FONT_SIZE,
                     )
+
+                 */
             }
         }
 
     }
 
 }
+
+//fun ifOtherPlayerMoved(block:Block )
+//fun if_else(condition:Boolean,block:Block,block2:Block)
 
 
 

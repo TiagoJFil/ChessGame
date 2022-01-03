@@ -17,3 +17,14 @@ class CONTINUE(val chess: Chess) : Result()
  */
 class ERROR() : Result()
 
+/**
+ * Result produced a user makes a CHECK.
+ */
+class CHECK() : Result()
+
+/**
+ * Result produced a user makes a CHECKMATE.
+ */
+class CHECKMATE() : Result()
+
+
