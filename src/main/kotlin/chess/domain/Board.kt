@@ -28,7 +28,7 @@ data class Board internal constructor(
             in 56..63 -> makePiecesRow(Player.WHITE)[it - 56]
             else -> null
         }
-                                                                         },
+    },
     val player: Player = Player.WHITE
 ) {
     companion object {
