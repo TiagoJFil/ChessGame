@@ -5,8 +5,6 @@ import Direction
 import Pawn
 import Piece
 import chess.domain.board_components.*
-import getAllMoves
-import getAllMovesLastSquare
 import org.junit.Test
 
 
@@ -209,13 +207,12 @@ const val KING_NUMBER_OF_POSITIONS = 8
  * @return true if the king is in checkMate false otherwise
  */
 fun isCheckMate(board: Board): Boolean {
-    val kingSquare = board.getKingSquare(board.player)
-    val opponentMoves = board.getAllMovesLastSquare(!board.player)
-    if(kingSquare in opponentMoves){
-        val king = board.getKingPiece(board.player)
-        val possibleMoves = king.getPossibleMoves(board, kingSquare).map { it.endSquare }
+    val king = board.getKing(board.player)
+    val opponentMoves = board.playerMoves(!board.player)
+    if(king.square in opponentMoves){
+        val possibleMoves = king.piece.getPossibleMoves(board, king.square).map { it.endSquare }
         val filteredOpponentMoves = opponentMoves.filter { it in possibleMoves }
-        val playerMoves = board.getAllMovesLastSquare(board.player)
+        val playerMoves = board.playerMoves(board.player)
         if (filteredOpponentMoves.size >= possibleMoves.size //king cannot move check if we can protect it
             && cannotDefendKing(possibleMoves, playerMoves)
         ) return true
@@ -226,7 +223,7 @@ fun isCheckMate(board: Board): Boolean {
 fun isKingInCheck(board: Board,pieceInfo: PieceMove): Boolean {
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
     val kingSquare = tempBoard.getKingSquare(board.player)
-    val listOfEndSquares = tempBoard.getAllMovesLastSquare(tempBoard.player)
+    val listOfEndSquares = tempBoard.playerMoves(tempBoard.player)
     return kingSquare in listOfEndSquares
 }
 

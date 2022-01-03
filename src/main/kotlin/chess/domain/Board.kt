@@ -3,6 +3,7 @@ import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.*
 import chess.domain.formatToPieceMove
+import org.junit.Test
 
 
 const val BOARD_SIZE = 8
@@ -118,7 +119,57 @@ data class Board internal constructor(
 
 
 
+
+    //moves functions
+    private fun getAllBoardMoves(): Pair<List<PieceMove>,List<PieceMove>>{
+        val playerMoves = mutableListOf<PieceMove>()
+        val opponentMoves = mutableListOf<PieceMove>()
+        this.asList().forEachIndexed { idx, p ->
+            if(p != null && p.player == player)
+                playerMoves.addAll(p.getPossibleMoves(this,idx.toSquare()))
+            if(p!= null && p.player != player)
+                opponentMoves.addAll(p.getPossibleMoves(this,idx.toSquare()))
+        }
+        return Pair(playerMoves,opponentMoves)
+    }
+
+    private val allMoves = getAllBoardMoves()
+    private val playerMoves = allMoves.first.map {it.endSquare}
+    private val opponentMoves = allMoves.second.map {it.endSquare}
+
+    fun playerMoves(p: Player): List<Square> {
+        return if(p == player) playerMoves
+        else opponentMoves
+    }
+
+    fun allMoves() = playerMoves + opponentMoves
+
+
+    //king functions
+    data class PieceAndSquare(val piece:Piece, val square: Square)
+
+    private val playerKing = PieceAndSquare(getKingPiece(player),getKingSquare(player))
+    private val opponentKing = PieceAndSquare(getKingPiece(!player),getKingSquare(!player))
+
+    fun getKing(p: Player): PieceAndSquare {
+        return if(p == player) playerKing
+        else opponentKing
+    }
+
 }
+
+
+
+@Test
+fun main(){
+    val b = Board()
+    println(b.allMoves())
+    val c = Board().makeMove("Pa2a3")
+    println(c.allMoves())
+}
+
+
+
 
 
 /**
@@ -222,20 +273,6 @@ fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
     return pieceAtStart.toString().equals((move[0]).toString(), ignoreCase = true)
 }
 
-
-
-
-
-fun Board.getAllMoves(player: Player): List<PieceMove> {
-    val list = mutableListOf<PieceMove>()
-    this.asList().forEachIndexed { idx, p ->
-        if(p != null && p.player == player && p !is King)
-            list.addAll(p.getPossibleMoves(this,idx.toSquare()))
-    }
-    return list
-}
-
-fun Board.getAllMovesLastSquare(player:Player) = getAllMoves(player).map { it.endSquare }
 
 /**
  * Checks whether the square is occupied by a piece of the player given at a square
