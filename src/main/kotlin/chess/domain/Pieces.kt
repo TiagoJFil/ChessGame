@@ -258,15 +258,12 @@ class King (override val player: Player) : Piece {
      * @return the list of possible directions for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
-        var moves = getMovesByAddingDirection(possibleDirections, pos, board)
+        val moves = getMovesByAddingDirection(possibleDirections, pos, board).toMutableList()
         if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0))))) {
-            moves += PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0)) )
+            moves.add(PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0))))
         }
         if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * LEFT, 0))))) {
-            moves += PieceMove(pos, pos.addDirectionNotNull(Pair(LEFT, 0)) )
-        }
-        moves = moves.filter {
-            !isKingInCheck(board, it)
+            moves.add(PieceMove(pos, pos.addDirectionNotNull(Pair(LEFT, 0))))
         }
         return moves
     }
