@@ -135,8 +135,10 @@ class Pawn (override val player: Player) : Piece  {
             if(canEnpassant(board,PieceMove(pos,squareToDiagonalRight )))
                 moves.add(PieceMove(pos, squareToDiagonalRight))
         }
-
-        return moves + getMovesByAddingDirection(possibleDirections, pos, board)
+        if(pos.addDirection(possibleDirections[0]) != null && board.getPiece(pos.addDirectionNotNull(possibleDirections[0])) == null){
+            moves.add(PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
+        }
+        return moves
     }
 
 
@@ -151,11 +153,12 @@ class Pawn (override val player: Player) : Piece  {
 
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
-            canPromote(pieceInfo) -> MoveType.PROMOTION
             isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null && canEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
+            canPromote(pieceInfo) -> MoveType.PROMOTION
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
+
             else -> MoveType.ILLEGAL
         }
     }
@@ -195,7 +198,7 @@ class Pawn (override val player: Player) : Piece  {
      * @return a [Boolean] value indicating whether the piece can promote
      */
     private fun canPromote(pieceInfo: PieceMove): Boolean{
-        if(pieceInfo.endSquare.row.number == PAWN_PROMOTION_ROW_BLACK || pieceInfo.endSquare.row.number == PAWN_PROMOTION_ROW_WHITE  )
+        if(pieceInfo.endSquare.row.number == PAWN_PROMOTION_ROW_BLACK || pieceInfo.endSquare.row.number == PAWN_PROMOTION_ROW_WHITE )
             return true
         return false
     }

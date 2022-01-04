@@ -8,7 +8,7 @@ import Piece
 import chess.domain.board_components.*
 import org.junit.Test
 
-
+//TODO : add a movetype for promotion and capture or change into sealed class and the promotion to have values
 enum class MoveType{
     REGULAR,
     CAPTURE,

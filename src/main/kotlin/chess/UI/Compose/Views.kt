@@ -144,6 +144,7 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
         if(clicked.value is FINISH){
             dealWithMovement(clicked,possibleMovesList,showPossibleMoves.value,chess.value,move,result,promotionType,isSelectingPromotion)
+
             areMovesUpdated.value = false
         }
 
@@ -386,20 +387,22 @@ private fun dealWithMovement(
             }
             value is ERROR && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
                 clicked.value = START(finish.square)
+
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
             value is ERROR && endPiece != null && endPiece.player != currentPlayer -> {
                 clicked.value = NONE()
-                move.value = ""
+
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
             value is ERROR && !possibleMovesList.value.contains(finishSquare) -> clicked.value = START(startSquare.toString())
             else -> {
                 clicked.value = NONE()
+
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
         }
-    move.value = ""
+
     promotionType.value = ""
 }
 
