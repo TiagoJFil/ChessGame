@@ -6,6 +6,7 @@ import chess.Storage.ChessDataBase
 import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
+import chess.domain.filterPiecesMoves
 import com.mongodb.client.MongoClient
 
 
@@ -37,11 +38,10 @@ data class GameName(val id:String){
  * @return a list of possible moves for the piece at the given square or an empty list if there is no piece at the given square or the piece is not movable
  */
 fun Chess.getPiecePossibleMovesFrom(square: Square): List<PieceMove> {
-
     val piece = this.board.getPiece(square)
     if(piece != null && piece.player != this.currentPlayer)
         return emptyList()
-    return piece?.getPossibleMoves(this.board, square) ?: emptyList()
+    return filterPiecesMoves(this.board,piece?.getPossibleMoves(this.board, square), piece)  ?: emptyList()
 }
 
 /**
