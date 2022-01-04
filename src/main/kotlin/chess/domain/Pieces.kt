@@ -200,12 +200,6 @@ class Pawn (override val player: Player) : Piece  {
             return true
         return false
     }
-
-    fun traceBackPawn(endPos:String, board: Board){
-        TODO("Not yet implemented")
-    }
-
-
 }
 
 /**
@@ -251,7 +245,6 @@ class King (override val player: Player) : Piece {
         return if (player.isWhite()) "K" else "k"
     }
 
-
     /**
      * @param pos      the position of the piece
      * @param board    the board where the piece is
@@ -267,7 +260,6 @@ class King (override val player: Player) : Piece {
         }
         return moves
     }
-
 
     /**
      * @param board         the board to check the movement on
@@ -320,10 +312,6 @@ class King (override val player: Player) : Piece {
         }
         return false
     }
-
-
-
-
 }
 
 /**
@@ -472,6 +460,7 @@ class Knight (override val player: Player) : Piece {
  * Represents a bishop piece
  */
 class Bishop (override val player: Player) : Piece {
+
     /**
      * The possible offset this piece can move to
      */
@@ -481,6 +470,7 @@ class Bishop (override val player: Player) : Piece {
         Pair(LEFT, DOWN),
         Pair(LEFT, UP)
     )
+
     /**
      * @return the piece as a string with the correspondent color
      */
@@ -494,7 +484,6 @@ class Bishop (override val player: Player) : Piece {
      * @return the list of possible moves for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(board, pos, possibleDirections)
-
 
     /**
      * @param board         the board to check the movement on
