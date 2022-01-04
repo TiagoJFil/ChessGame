@@ -20,6 +20,7 @@ enum class MoveType{
     ILLEGAL;
 }
 
+
 private const val UP = -1
 private const val DOWN = 1
 private const val LEFT = -1
