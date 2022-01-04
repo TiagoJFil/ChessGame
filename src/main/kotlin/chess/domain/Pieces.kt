@@ -16,6 +16,7 @@ private const val G_COLUMN_NUMBER = 6
  * @param first the x direction AKA [Column]
  * @param second the y direction AKA [Row]
  */
+
 typealias Direction = Pair<Int, Int>
 
 /**
@@ -63,19 +64,20 @@ sealed interface Piece {
  */
 class Pawn (override val player: Player) : Piece  {
 
-    private var moveCount = 0
-    private var moved = false
+    private var moveCount: Int = 0
+    private var moved: Boolean = false
+
 
 
     /**
      * Sets a piece as moved
      */
     fun setAsMoved() {
-        moved = true
+        this.moved = true
     }
 
     fun moveCounter(){
-        if(moved) moveCount++
+        if(this.moved) this.moveCount++
     }
 
     fun getCounter() = moveCount //only for test purpose
@@ -85,15 +87,14 @@ class Pawn (override val player: Player) : Piece  {
      * @return a [Boolean] value indicating whether the piece has moved or not
      */
      fun hasMoved(): Boolean {
-        return moved
+        return this.moved
      }
 
     /**
      * The possible offset this piece can move to
      */
-    private val possibleDirections = if(this.player.isWhite()) listOf(Direction(0, UP))
-                                        else listOf(Direction(0, DOWN))
-
+    private val possibleDirections  : List<Direction> = if(player.isWhite()) listOf(Direction(0, UP))
+                                                            else listOf(Direction(0, DOWN))
 
     /**
      * @return the piece as a string with the correspondent color
@@ -166,7 +167,7 @@ class Pawn (override val player: Player) : Piece  {
     /**
      * Checks whether the piece can perform the enpassant move or not
      * @param board        the board to check the movement on
-     * @param pieceInfo    the piece to movement to check
+     * @param pos    the piece to movement to check
      * @return a [Boolean] value indicating whether the piece can perform enpassant
      */
     private fun canEnpassant(board: Board, pos: PieceMove): Boolean{
@@ -203,10 +204,6 @@ class Pawn (override val player: Player) : Piece  {
         return false
     }
 
-    fun traceBackPawn(endPos:String, board: Board){
-        TODO("Not yet implemented")
-    }
-
 
 }
 
@@ -236,14 +233,14 @@ class King (override val player: Player) : Piece {
      * The possible offset this piece can move to
      */
     private val possibleDirections = listOf(
-        Pair(RIGHT,0),
-        Pair(LEFT ,0),
-        Pair(0    ,DOWN),
-        Pair(0    ,UP),
-        Pair(RIGHT,DOWN),
-        Pair(RIGHT,UP),
-        Pair(LEFT ,DOWN),
-        Pair(LEFT ,UP)
+        Direction(RIGHT,0),
+        Direction(LEFT ,0),
+        Direction(0    ,DOWN),
+        Direction(0    ,UP),
+        Direction(RIGHT,DOWN),
+        Direction(RIGHT,UP),
+        Direction(LEFT ,DOWN),
+        Direction(LEFT ,UP)
     )
 
     /**
@@ -261,11 +258,11 @@ class King (override val player: Player) : Piece {
      */
     override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
         val moves = getMovesByAddingDirection(possibleDirections, pos, board).toMutableList()
-        if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0))))) {
-            moves.add(PieceMove(pos, pos.addDirectionNotNull(Pair(2 * RIGHT, 0))))
+        if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))) {
+            moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
         }
-        if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Pair(2 * LEFT, 0))))) {
-            moves.add(PieceMove(pos, pos.addDirectionNotNull(Pair(LEFT, 0))))
+        if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * LEFT, 0))))) {
+            moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(LEFT, 0))))
         }
         return moves
     }
@@ -299,8 +296,8 @@ class King (override val player: Player) : Piece {
 
         if (hasMoved()) return false
         val possibleDirections = listOf(
-            Pair(RIGHT, 0),
-            Pair(LEFT, 0)
+            Direction(RIGHT, 0),
+            Direction(LEFT, 0)
         )
         val possibleMovesUnfiltered = getMoves(board, pieceInfo.startSquare, possibleDirections)
         val possibleCastleMoves = possibleMovesUnfiltered.filter { it.endSquare.column.number - it.startSquare.column.number == 2 }
@@ -311,9 +308,9 @@ class King (override val player: Player) : Piece {
         for (move in possibleCastleMoves) {
             val newSquare: Square =
                 if (move.endSquare.column.number == G_COLUMN_NUMBER) {
-                    move.endSquare.addDirection(Pair(RIGHT, 0)) ?: return false
+                    move.endSquare.addDirection(Direction(RIGHT, 0)) ?: return false
                 } else {
-                    move.endSquare.addDirection(Pair(LEFT, 0)) ?: return false
+                    move.endSquare.addDirection(Direction(LEFT, 0)) ?: return false
                 }
             val rook = board.getPiece(newSquare) ?: return false
             if (rook is Rook && !rook.hasMoved() && rook.player == this.player) {
@@ -338,14 +335,14 @@ class Queen (override val player: Player) : Piece {
      * The possible offset this piece can move to
      */
     private val possibleDirections = listOf(
-        Pair(RIGHT, 0),
-        Pair(0    , DOWN),
-        Pair(LEFT , 0),
-        Pair(0    , UP),
-        Pair(RIGHT, DOWN),
-        Pair(RIGHT, UP),
-        Pair(LEFT , DOWN),
-        Pair(LEFT , UP)
+        Direction(RIGHT, 0),
+        Direction(0    , DOWN),
+        Direction(LEFT , 0),
+        Direction(0    , UP),
+        Direction(RIGHT, DOWN),
+        Direction(RIGHT, UP),
+        Direction(LEFT , DOWN),
+        Direction(LEFT , UP)
     )
 
     /**
@@ -383,10 +380,10 @@ class Rook (override val player: Player) : Piece {
      * The possible offset this piece can move to
      */
     private val possibleDirections = listOf(
-        Pair(RIGHT, 0),
-        Pair(0    , DOWN),
-        Pair(LEFT , 0),
-        Pair(0    , UP)
+        Direction(RIGHT, 0),
+        Direction(0    , DOWN),
+        Direction(LEFT , 0),
+        Direction(0    , UP)
     )
 
     /**
@@ -436,14 +433,14 @@ class Knight (override val player: Player) : Piece {
      * The possible offset this piece can move to
      */
     private val possibleDirections = listOf(
-        Pair(RIGHT, 2 * DOWN),
-        Pair(2 * RIGHT, DOWN),
-        Pair(2 * RIGHT, UP),
-        Pair(RIGHT, 2 * UP),
-        Pair(LEFT, 2 * UP),
-        Pair(2 * LEFT, UP),
-        Pair(2 * LEFT, DOWN),
-        Pair(LEFT, 2 * DOWN)
+        Direction(RIGHT, 2 * DOWN),
+        Direction(2 * RIGHT, DOWN),
+        Direction(2 * RIGHT, UP),
+        Direction(RIGHT, 2 * UP),
+        Direction(LEFT, 2 * UP),
+        Direction(2 * LEFT, UP),
+        Direction(2 * LEFT, DOWN),
+        Direction(LEFT, 2 * DOWN)
     )
 
     /**
@@ -478,10 +475,10 @@ class Bishop (override val player: Player) : Piece {
      * The possible offset this piece can move to
      */
     private val possibleDirections = listOf(
-        Pair(RIGHT, DOWN),
-        Pair(RIGHT, UP),
-        Pair(LEFT, DOWN),
-        Pair(LEFT, UP)
+        Direction(RIGHT, DOWN),
+        Direction(RIGHT, UP),
+        Direction(LEFT, DOWN),
+        Direction(LEFT, UP)
     )
     /**
      * @return the piece as a string with the correspondent color

@@ -95,7 +95,7 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
     val moves = mutableListOf<PieceMove>()
     val piece = board.getPiece(pos) ?: throw IllegalArgumentException("No piece at position $pos")
     val color = piece.player
-    possibleDirections.forEach { it ->
+    possibleDirections.forEach {
         var newPos : Square? = pos.addDirection(it)
         while(newPos != null ){
             val pieceAtEndSquare = board.getPiece(newPos)
@@ -209,6 +209,7 @@ const val KING_NUMBER_OF_POSITIONS = 8
  * @return true if the king is in checkMate false otherwise
  */
 fun isCheckMate(board: Board): Boolean {
+    /*
     val king = board.getKing(board.player)
     val opponentMoves = board.playerMoves(!board.player)
     if(kingIsInCheck(board)){
@@ -219,24 +220,31 @@ fun isCheckMate(board: Board): Boolean {
             && cannotDefendKing(possibleMoves, playerMoves)
         ) return true
     }
+    */
     return false
 }
 
 fun isKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean {
+    /*
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
     val king = tempBoard.getKing(board.player)
     val listOfEndSquares = tempBoard.playerMoves(tempBoard.player)
     return king.square in listOfEndSquares
+    */
+    return false
 }
 
-fun kingIsInCheck(board: Board) = board.getKing(board.player).square in board.lastMoveEndSquares
+fun kingIsInCheck(board: Board) = false //board.getKing(board.player).square in board.lastMoveEndSquares
 
 
 fun filterPiecesMoves(board: Board, moves: List<PieceMove>?, piece: Piece?): List<PieceMove>? {
+    /*
     if(kingIsInCheck(board) && moves != null && piece !is King)
         return moves.filter { it -> it.endSquare in board.lastMoveEndSquares && !isKingInCheckPostMove(board,it)}
     if(kingIsInCheck(board) && moves != null && piece is King) return moves.filter { it.endSquare !in board.lastMoveEndSquares} //certo
     return moves
+    */
+    return listOf()
 }
 
 
@@ -247,16 +255,6 @@ fun canDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>): 
 
 fun cannotDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>) =
     !canDefendKing(possibleKingMoves, playerMoves)
-
-
-@Test
-fun main(){
-    val b = Board()
-    println(b.lastMoves)
-    val c = Board().makeMove("Pa2a3")
-    println(c.lastMoves)
-}
-
 
 
 

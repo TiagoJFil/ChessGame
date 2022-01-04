@@ -157,7 +157,7 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
             }
         }
 
-        handleResult(result,chess,showCheckInfo,showCheckMateInfo,movesPlayed)
+        handleResult(result,chess,showCheckInfo,showCheckMateInfo,movesPlayed,showPossibleMoves,possibleMovesList)
 
         MaterialTheme {
             drawVisuals(chess.value,clicked,possibleMovesList.value,showPossibleMoves.value,showCheckInfo.value,showCheckMateInfo.value,movesPlayed.value)
@@ -171,7 +171,9 @@ fun handleResult(
     chess: MutableState<Chess>,
     showCheckInfo: MutableState<Boolean>,
     showCheckMateInfo: MutableState<Boolean>,
-    movesPlayed: MutableState<String>
+    movesPlayed: MutableState<String>,
+    showPossibleMoves: MutableState<Boolean>,
+    possibleMovesList: MutableState<List<Square>>
 ) {
 
     when (result.value) {
@@ -184,6 +186,7 @@ fun handleResult(
             result.value = ERROR()
             showCheckInfo.value = false
             showCheckMateInfo.value = false
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
         }
         is CHECK -> {
             showCheckInfo.value = true

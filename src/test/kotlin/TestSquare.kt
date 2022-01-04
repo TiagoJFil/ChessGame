@@ -23,18 +23,18 @@ class TestSquare {
     }
     @Test
     fun `addDirection works with sum`() {
-        val newSquare ="b2".toSquare().addDirection(Pair(1,-1))
+        val newSquare ="b2".toSquare().addDirection(Direction(1,-1))
         assertEquals("c3".toSquare(), newSquare)
     }
     @Test
     fun `addDirection works with subtraction`() {
-        val newSquare ="b2".toSquare().addDirection(Pair(-1,1))
+        val newSquare ="b2".toSquare().addDirection(Direction(-1,1))
         assertEquals("a1".toSquare(), newSquare)
     }
 
     @Test
     fun `addDirection returns null when out of board`() {
-        val newSquare ="b2".toSquare().addDirection(Pair(-3,-3))
+        val newSquare ="b2".toSquare().addDirection(Direction(-3,-3))
         assertEquals(null, newSquare)
     }
 
@@ -50,23 +50,23 @@ class TestSquare {
 
     @Test
     fun `add direction, out of board`() {
-        val newSquare ="a1".toSquare().addDirection(Pair(-1,0)) // out of board left
+        val newSquare ="a1".toSquare().addDirection(Direction(-1,0)) // out of board left
         assertEquals(null, newSquare)
-        val newSquare2 ="a1".toSquare().addDirection(Pair(0,1)) // out of board down
+        val newSquare2 ="a1".toSquare().addDirection(Direction(0,1)) // out of board down
         assertEquals(null, newSquare2)
-        val newSquare3 ="h8".toSquare().addDirection(Pair(1,0)) // out of board right
+        val newSquare3 ="h8".toSquare().addDirection(Direction(1,0)) // out of board right
         assertEquals(null, newSquare3)
-        val newSquare4 ="h8".toSquare().addDirection(Pair(0,-1)) // out of board up
+        val newSquare4 ="h8".toSquare().addDirection(Direction(0,-1)) // out of board up
         assertEquals(null, newSquare4)
     }
 
     @Test
     fun `add directionNotNull, out of the board returns error`(){
         assertThrows(IllegalArgumentException::class.java) {
-            "a1".toSquare().addDirectionNotNull(Pair(-1,0)) // out of board left
-            "a1".toSquare().addDirectionNotNull(Pair(0,1)) // out of board down
-            "h8".toSquare().addDirectionNotNull(Pair(1,0)) // out of board right
-            "h8".toSquare().addDirectionNotNull(Pair(0,-1)) // out of board up
+            "a1".toSquare().addDirectionNotNull(Direction(-1,0)) // out of board left
+            "a1".toSquare().addDirectionNotNull(Direction(0,1)) // out of board down
+            "h8".toSquare().addDirectionNotNull(Direction(1,0)) // out of board right
+            "h8".toSquare().addDirectionNotNull(Direction(0,-1)) // out of board up
         }
     }
 

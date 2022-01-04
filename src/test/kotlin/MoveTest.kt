@@ -152,12 +152,17 @@ class PawnTest {
     fun `After moving pawn counter should be equal to one`(){
         val sut = Board().makeMove("Pa2a4")
         val endPos = Square(Column.A, Row.Four)
-        val piece = sut.getPiece(endPos)
-        if(piece is Pawn) assertEquals(1,piece.getCounter())
+        val p2 = sut.getPiece(Square(Column.B, Row.Two))
+        val sut2 = sut.makeMove("Pb2b4")
+        val piece = sut2.getPiece(endPos)
+
+        if(piece is Pawn) assertEquals(2,piece.getCounter())
+
+        if(p2 is Pawn) assertEquals(1,p2.getCounter())
     }
 
     @Test
-    fun `After moving pawn counter should be equal to two`(){
+    fun `After moving pawn twice counter should be equal to two`(){
         val sut = Board().makeMove("Pa2a4").makeMove("pa7a5")
         val endPos = Square(Column.A, Row.Four)
         val piece = sut.getPiece(endPos)

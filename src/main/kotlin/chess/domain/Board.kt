@@ -101,25 +101,32 @@ data class Board internal constructor(
             is Rook -> piece.setAsMoved()
         }
         val newBoard: BoardList = board.mapIndexed { index, it ->
+            if (it is Pawn) it.moveCounter()
             when (index) {
                 pieceMovement.startSquare.toIndex() -> null
                 pieceMovement.endSquare.toIndex() -> piece
                 else -> it
             }
         }
-
         updateLastMove(move)
-        newBoard.forEach { if (it is Pawn) it.moveCounter() }
+
         return Board(newBoard, !player)
     }
 
-
+    /**
+     * Returns the board as a list of pieces
+     */
     fun asList(): List<Piece?> {
         return board
     }
 
 
-    //moves functions
+
+
+}
+
+/*
+//moves functions
     private fun getAllBoardMoves(): Pair<List<PieceMove>, List<PieceMove>> {
         val playerMoves = mutableListOf<PieceMove>()
         val opponentMoves = mutableListOf<PieceMove>()
@@ -170,16 +177,7 @@ data class Board internal constructor(
         return if(p == player) playerKing
         else opponentKing
     }
-
-}
-
-@Test
-fun main(){
-    val b = Board()
-    println(b.allMoves())
-    val c = Board().makeMove("Pa2a3")
-    println(c.allMoves())
-}
+ */
 
 
 private var lastMove = ""
