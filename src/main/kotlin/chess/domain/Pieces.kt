@@ -47,6 +47,7 @@ sealed interface Piece {
 
 
 
+
     /**
      * @return a [Boolean] value if the piece belongs to the white player(true) or false if it belongs to the black player
      */
@@ -152,7 +153,7 @@ class Pawn (override val player: Player) : Piece  {
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
             canPromote(pieceInfo) -> MoveType.PROMOTION
-            isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
+            isKingInCheck(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null && canEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
@@ -270,7 +271,7 @@ class King (override val player: Player) : Piece {
         if (canCastle(board, pieceInfo)) return MoveType.CASTLE
         return when (getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
-            isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
+            isKingInCheck(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
 

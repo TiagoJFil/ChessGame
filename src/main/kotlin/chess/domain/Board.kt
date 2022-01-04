@@ -46,7 +46,6 @@ data class Board internal constructor(
         return string
     }
 
-
     /**
      * @return the current player color.
      */
@@ -72,20 +71,20 @@ data class Board internal constructor(
      * @return the square were the king is positioned
      * Finds the king of the given color
      */
-    private fun getKingSquare(player: Player): Square {
-        return board.indexOfFirst { it is King && it.player == player }.toSquare()
+    fun getKingSquare(player: Player): Square {
+
+        return board.indexOfFirst{ it is King && it.player == player }.toSquare()
     }
 
     /**
      * @param player current player's color
      * @return the king piece
      */
-    private fun getKingPiece(player: Player): Piece {
-        val king = board.find { it is King && it.player == player }
+    fun getKingPiece(player: Player):Piece{
+        val king = board.find {it is King && it.player == player}
         checkNotNull(king)
         return king
     }
-
 
     /**
      * @param move the [Move] we want to make
@@ -94,22 +93,22 @@ data class Board internal constructor(
      */
     fun makeMove(move: String): Board {
         val pieceMovement = move.formatToPieceMove()
-        val piece = getPiece(pieceMovement.startSquare) ?: throw IllegalStateException("no piece at startingSquare")
-        when (piece) {
+        val piece =getPiece(pieceMovement.startSquare) ?: throw IllegalStateException("no piece at startingSquare")
+        when(piece) {
             is Pawn -> piece.setAsMoved()
             is King -> piece.setAsMoved()
             is Rook -> piece.setAsMoved()
         }
-        val newBoard: BoardList = board.mapIndexed { index, it ->
-            when (index) {
+        val newBoard : BoardList = board.mapIndexed{index, it ->
+            when(index){
                 pieceMovement.startSquare.toIndex() -> null
                 pieceMovement.endSquare.toIndex() -> piece
                 else -> it
             }
         }
 
-        updateLastMove(move)
-        newBoard.forEach { if (it is Pawn) it.moveCounter() }
+        newBoard.forEach {if(it is Pawn) it.moveCounter()}
+
         return Board(newBoard, !player)
     }
 
@@ -119,43 +118,29 @@ data class Board internal constructor(
     }
 
 
+
+
     //moves functions
-    private fun getAllBoardMoves(): Pair<List<PieceMove>, List<PieceMove>> {
+    private fun getAllBoardMoves(): Pair<List<PieceMove>,List<PieceMove>>{
         val playerMoves = mutableListOf<PieceMove>()
         val opponentMoves = mutableListOf<PieceMove>()
         this.asList().forEachIndexed { idx, p ->
-            if (p != null) {
-                if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
-                else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
-            }
+            if(p != null && p.player == player)
+                playerMoves.addAll(p.getPossibleMoves(this,idx.toSquare()))
+            if(p!= null && p.player != player)
+                opponentMoves.addAll(p.getPossibleMoves(this,idx.toSquare()))
         }
-        return Pair(playerMoves, opponentMoves)
+        return Pair(playerMoves,opponentMoves)
     }
 
     private val allMoves = getAllBoardMoves()
-    private val playerMoves = allMoves.first.map { it.endSquare }
-    private val opponentMoves = allMoves.second.map { it.endSquare }
-
+    private val playerMoves = allMoves.first.map {it.endSquare}
+    private val opponentMoves = allMoves.second.map {it.endSquare}
 
     fun playerMoves(p: Player): List<Square> {
-        return if (p == player) playerMoves
+        return if(p == player) playerMoves
         else opponentMoves
     }
-
-
-
-    private fun getLastPieceMoves(): List<PieceMove> {
-        if(lastMove != "") {
-            val piece = getPiece(lastMove.formatToPieceMove().endSquare)
-            if(piece != null)
-            return piece.getPossibleMoves(this, lastMove.formatToPieceMove().endSquare)
-        }
-        return listOf<PieceMove>()
-    }
-
-    val lastMoves = getLastPieceMoves()
-
-    val lastMoveEndSquares = lastMoves.map { it.endSquare }
 
     fun allMoves() = playerMoves + opponentMoves
 
@@ -163,8 +148,8 @@ data class Board internal constructor(
     //king functions
     data class PieceAndSquare(val piece:Piece, val square: Square)
 
-    private var playerKing = PieceAndSquare(getKingPiece(player),getKingSquare(player))
-    private var opponentKing = PieceAndSquare(getKingPiece(!player),getKingSquare(!player))
+    private val playerKing = PieceAndSquare(getKingPiece(player),getKingSquare(player))
+    private val opponentKing = PieceAndSquare(getKingPiece(!player),getKingSquare(!player))
 
     fun getKing(p: Player): PieceAndSquare {
         return if(p == player) playerKing
@@ -172,6 +157,8 @@ data class Board internal constructor(
     }
 
 }
+
+
 
 @Test
 fun main(){
@@ -182,8 +169,7 @@ fun main(){
 }
 
 
-private var lastMove = ""
-private fun updateLastMove(move : String){lastMove = move}
+
 
 
 /**
@@ -233,6 +219,8 @@ fun Board.doCastling(move: PieceMove): Board {
 
     return Board(newBoard, !player)
 }
+
+
 
 
 /**
