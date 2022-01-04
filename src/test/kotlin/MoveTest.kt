@@ -442,7 +442,7 @@ class KingTest {
     @Test
     fun `is king in check`(){
         val sut = Board().makeMove("Pe2e4").makeMove("pd7d5").makeMove("Ke1e2").makeMove("bc8g4")
-        assertEquals(true,isKingInCheck(sut,"Pd2d4".formatToPieceMove()))
+        assertEquals(true,isKingInCheckPostMove(sut,"Pd2d4".formatToPieceMove()))
     }
 
 
