@@ -7,6 +7,7 @@ import isel.leic.tds.storage.mongodb.*
 
 class ChessGameAccessException(cause: Exception): Exception(cause)
 private const val COLLECTION_NAME = "Games"
+
 /**
  * Contract to be supported by the database using MongoDB storage
  */
@@ -52,6 +53,9 @@ interface DataBase {
     fun doesGameExist(gameId: GameName): Boolean
 }
 
+/**
+ * Implementation of the [DataBase] contract using MongoDB
+ */
 class ChessDataBase(private val db: MongoDatabase) : DataBase {
 
     /**

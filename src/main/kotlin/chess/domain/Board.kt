@@ -176,7 +176,7 @@ fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION
  * Moves the king and the rook to the correct position.
  */
 fun Board.doCastling(move: PieceMove): Board {
-//TODO("CHANGE THE MOVE RECEIVED TO BE A PIECEMOVE")
+
     val rookColumnLetter = if ( move.startSquare.column == Column.C ) MIN_X_LETTER else MAX_X_LETTER
 
     val rookStartPos = Square( (MAX_X_LETTER).toColumn(), move.endSquare.row )
@@ -217,31 +217,6 @@ fun Board.doEnpassant(pieceMove: PieceMove): Board {
         }
     }
     return Board(newBoard, !player)
-}
-
-/**
- * Checks whether the player is moving the own piece or the opponent's
- * @param move the [Move] we want to make
- * @return true if the player is moving his own piece, false otherwise
- */
-fun Board.isPlayerMovingOwnPieces(move: PieceMove): Boolean {
-
-    val startingSquare = Square(move.startSquare.column, move.startSquare.row)
-    val pieceAtStart = getPiece(startingSquare) ?: return false
-
-    return pieceAtStart.player == getPlayerColor()
-}
-
-/**
- * Checks whether the player is moving the the same piece time of piece as he is trying to move
- *
- */
-fun Board.isPlayerMovingTheRightPieces(move: String): Boolean {
-    val pieceMovement = move.formatToPieceMove()
-    val startingSquare = Square(pieceMovement.startSquare.column, pieceMovement.startSquare.row)
-    val pieceAtStart = getPiece(startingSquare) ?: return false
-
-    return pieceAtStart.toString().equals((move[0]).toString(), ignoreCase = true)
 }
 
 

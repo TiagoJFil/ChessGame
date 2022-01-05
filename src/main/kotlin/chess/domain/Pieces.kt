@@ -297,7 +297,7 @@ class King (override val player: Player) : Piece {
             Direction(RIGHT, 0),
             Direction(LEFT, 0)
         )
-        val possibleMovesUnfiltered = getMoves(board, pieceInfo.startSquare, possibleDirections)
+        val possibleMovesUnfiltered = getMoves(possibleDirections, pieceInfo.startSquare, board)
         val possibleCastleMoves = possibleMovesUnfiltered.filter { it.endSquare.column.number - it.startSquare.column.number == 2 }
 
         if (!possibleCastleMoves.contains(pieceInfo)) return false
@@ -355,7 +355,7 @@ class Queen (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(board, pos, possibleDirections)
+    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(possibleDirections, pos, board)
 
     /**
      * @param board         the board to check the movement on
@@ -410,7 +410,7 @@ class Rook (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(board, pos, possibleDirections)
+    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(possibleDirections, pos, board)
 
     /**
      * @param board         the board to check the movement on
@@ -478,6 +478,7 @@ class Bishop (override val player: Player) : Piece {
         Direction(LEFT, DOWN),
         Direction(LEFT, UP)
     )
+
     /**
      * @return the piece as a string with the correspondent color
      */
@@ -490,7 +491,7 @@ class Bishop (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible moves for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(board, pos, possibleDirections)
+    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(possibleDirections, pos, board)
 
 
     /**

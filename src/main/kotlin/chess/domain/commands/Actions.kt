@@ -218,7 +218,6 @@ private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): 
  */
 private fun filterInput(input: String, board: Board): Moves? {
     val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
-    val filterForPawn = Regex("([abcdefgh])([12345678])")
     val filteredForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
     val removableInput = Regex("x?(=([NBQR]))?(.ep)?")
     val filteredMove = input.replace(removableInput,"")
@@ -233,13 +232,6 @@ private fun filterInput(input: String, board: Board): Moves? {
         else return null
     }
 
-    if(!filter.matches(input)  && input.length == PAWN_INPUT && !filterForPawn.matches(input)) return null
-
-    if(input.length == PAWN_INPUT && filterForPawn.matches(input)){
-        val tracePawn = traceBackPawn(input, board)
-        return if(tracePawn == null) null
-        else Moves(tracePawn,tracePawn)
-    }
     if(!filter.matches(filteredMove)) return null
     return Moves(filteredMove,input)
 

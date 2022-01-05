@@ -1,14 +1,16 @@
 package chess.UI.Compose
 
+import Board
 import androidx.compose.runtime.MutableState
 import chess.Chess
 import chess.GameName
 import chess.Storage.ChessDataBase
 import chess.Storage.Move
+import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.getMovesAction
-import chess.getPiecePossibleMovesFrom
+import chess.domain.getPiecePossibleMovesFrom
 
 
 fun getMovesAsString(gameId : GameName, database: ChessDataBase): String {
@@ -57,12 +59,13 @@ fun clearPossibleMovesIfOptionEnabled(showPossibleMoves: Boolean, selected: Muta
     if(showPossibleMoves) selected.value = emptyList()
 }
 
-fun getPossibleMovesIfOptionEnabled(showPossibleMoves: Boolean, selected: MutableState<List<Square>>, chess: Chess, move: String){
+fun getPossibleMovesIfOptionEnabled(showPossibleMoves: Boolean, selected: MutableState<List<Square>>, board: Board,currentPlayer : Player, move: String) {
     if(showPossibleMoves) {
-        val moves = chess.getPiecePossibleMovesFrom(move.toSquare())
+        val moves = move.toSquare().getPiecePossibleMovesFrom(board,currentPlayer)
         if (moves.isNotEmpty()) {
             val possibleMoves = moves.map { it.endSquare }
             selected.value = possibleMoves
         }
-    }
+    }else listOf<Square>()
+
 }

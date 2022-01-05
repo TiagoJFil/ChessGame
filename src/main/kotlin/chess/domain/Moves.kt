@@ -21,12 +21,6 @@ enum class MoveType{
 }
 
 
-private const val UP = -1
-private const val DOWN = 1
-private const val LEFT = -1
-private const val RIGHT = 1
-
-
 private const val POSITION_FROM_LETTER = 1
 private const val POSITION_FROM_NUMBER = 2
 private const val POSITION_TO_LETTER = 3
@@ -35,20 +29,16 @@ private const val POSITION_TO_NUMBER = 4
 
 /**
  * @param startSquare       the square where the piece is placed
- * @param endSquare         the square where the piece is moved to.
+ * @param endSquare         the square where the piece wants to move to.
  * Represents the piece movement.
  */
 data class PieceMove(val startSquare: Square, val endSquare: Square)
 
 /**
- * receives the move input and transforms to a data class of coordinates
- * @param String  input to make move ex: Pe2e4
- * @return  the Movement as a data class [PieceMove]
+ * Receives a move input as a [String] and transforms it into a [PieceMove]
  **/
 fun String.formatToPieceMove(): PieceMove{
-
     val startSquare = Square((this[POSITION_FROM_LETTER]).toColumn(), (this[POSITION_FROM_NUMBER]).toRow())
-
     val endSquare = Square((this[POSITION_TO_LETTER]).toColumn(), (this[POSITION_TO_NUMBER]).toRow())
 
     return PieceMove(startSquare,endSquare)
@@ -62,13 +52,13 @@ fun PieceMove.formatToString(board : Board) =
 
 
 /**
- * This function returns the moves for the pieces: KNIGHT, PAWN, KING,
- * @param possibleDirections     List of directions to verify
- * @param pos                    the position of the piece
- * @return the list of possible moves for the piece given
+ * This function returns the moves for the pieces: KNIGHT, KING.
+ * @param possibleDirections     List of [Direction] to verify
+ * @param pos                    the [Square] of the piece
+ * @param board                  the [Board] to verify the moves on
+ * @return the list of possible [PieceMove] for the piece given
  */
-fun getMovesByAddingDirection(possibleDirections : List<Direction> ,pos: Square,board : Board): List<PieceMove> {
-
+fun getMovesByAddingDirection(possibleDirections : List<Direction> , pos : Square, board : Board): List<PieceMove> {
     val startingPiece = board.getPiece(pos) ?: return emptyList()
     return possibleDirections.mapNotNull {
         val newPos = pos.addDirection(it)
@@ -86,12 +76,12 @@ fun getMovesByAddingDirection(possibleDirections : List<Direction> ,pos: Square,
 
 /**
  * This function returns the moves for the pieces: ROOK, BISHOP, QUEEN,
- * @param possibleDirections     List of directions to verify
- * @param pos                    the position of the piece
- * @param board                  the board where the piece is
+ * @param possibleDirections     List of [Direction] to verify
+ * @param pos                    the [Square] of the piece
+ * @param board                  the [Board] to verify the moves on
  * @return the list of possible moves for the piece given
  */
-fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): List<PieceMove> {
+fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ): List<PieceMove> {
     val moves = mutableListOf<PieceMove>()
     val piece = board.getPiece(pos) ?: throw IllegalArgumentException("No piece at position $pos")
     val color = piece.player
@@ -117,9 +107,9 @@ fun getMoves( board: Board, pos: Square,possibleDirections : List<Direction> ): 
 }
 
 /**
- * @param board                  the board where the piece is
+ * @param board                  the board to verify the move on
  * @param pieceInfo              the [PieceMove] on the move to verify
- * @return the type of the movement for the piece given
+ * @return the [MoveType] of move the piece wants to make
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
@@ -149,58 +139,19 @@ fun canPieceMoveTo(moveString:String,board: Board): MoveType {
 
 
 /**
- * @param endPos        The position where the piece will be moved to.
- * @param board         The board to perform the move on.
- * @returns a full string with the Piece, the start position and the end position or null if there is no move possible.
+ * Gets the possible moves for the piece at the given square
+ * @param square the square where the piece is located
+ * @return a list of possible moves for the piece at the given square or an empty list if there is no piece at the given square or the piece is not movable
  */
-fun traceBackPawn(endPos:String, board: Board):String?{
+fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMove> {
+    val piece = board.getPiece(this) ?: return emptyList()
+    if(piece.player != player)
+        return emptyList()
 
-    val column = endPos[0]
-    val row = endPos[1]
-    var pieceCapturingRight : Piece? = null
-    var pieceCapturingLeft : Piece? = null
-    var pieceRowBehind : Piece? = null
-    var pieceTwoRowsBehind : Piece? = null
-
-    val direction : Int = if(board.getPlayerColor().isWhite()) DOWN else UP
-
-    if((column + 1).isAColumn() && (row - direction).isARow())  pieceCapturingRight = board.getPiece(
-        Square((column + 1).toColumn(), (row - direction).toRow()
-        )
-    )
-    if((column - 1).isAColumn() && (row - direction).isARow())  pieceCapturingLeft =  board.getPiece(
-        Square((column - 1).toColumn(), (row - direction).toRow()
-        )
-    )
-    if((row - direction).isARow() && column.isAColumn()) pieceRowBehind = board.getPiece(
-        Square((column).toColumn(), (row - direction).toRow()
-        )
-    )
-    if((row -(direction + direction)).isARow() && column.isAColumn()) pieceTwoRowsBehind = board.getPiece(
-        Square((column).toColumn(), (row - (direction + direction)).toRow())
-    )
-
-    var tracedPawn : String? = "P"
-
-
-    val endPosPiece = board.getPiece(Square((endPos[0]).toColumn(), (endPos[1]).toRow()))
-
-    tracedPawn = if(endPosPiece == null) {
-        if(pieceRowBehind!= null && pieceRowBehind   is Pawn) tracedPawn + column + (row - direction)
-        else if(pieceTwoRowsBehind!= null && pieceTwoRowsBehind is Pawn && !pieceTwoRowsBehind.hasMoved()) tracedPawn + column + (row - (direction*2))
-        else null
-    }
-    else{
-        if(pieceCapturingRight!= null && pieceCapturingRight is Pawn) tracedPawn + (column+1) + (row - direction)
-        else if(pieceCapturingLeft != null && pieceCapturingLeft is Pawn) tracedPawn + (column-1) + (row - direction)
-        else null
-    }
-
-    return if(tracedPawn == null) tracedPawn else tracedPawn + endPos
-
+    return filterCheckMoves(board,piece.getPossibleMoves(board, this), piece)  ?: emptyList()
 }
 
-const val KING_NUMBER_OF_POSITIONS = 8
+
 
 /**
  * Verifies if the opponent king is in checkMate
@@ -236,8 +187,8 @@ fun kingIsInCheck(board: Board) = board.getKingSquare(board.player) in board.pla
 
 fun filterCheckMoves(board: Board, moves: List<PieceMove>?, piece: Piece?): List<PieceMove>? {
     if(kingIsInCheck(board) && moves != null && piece !is King)
-        return moves.filter { it.endSquare in board.playerMoves(!board.player) && !isKingInCheckPostMove(board,it)}
-    if(kingIsInCheck(board) && moves != null && piece is King) return moves.filter { it.endSquare !in board.playerMoves(!board.player)}
+        return moves.filter { it.endSquare in board.playerMoves(!board.player) && !isKingInCheckPostMove(board,it) }
+    if(kingIsInCheck(board) && moves != null && piece is King) return moves.filter { it.endSquare !in board.playerMoves(!board.player)  && !isKingInCheckPostMove(board,it)}
     return moves
 }
 
@@ -249,14 +200,3 @@ fun canDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>): 
 
 fun cannotDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>) =
     !canDefendKing(possibleKingMoves, playerMoves)
-
-
-
-
-
-
-
-
-
-
-

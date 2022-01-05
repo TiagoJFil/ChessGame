@@ -29,9 +29,11 @@ import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.*
+import chess.domain.getPiecePossibleMovesFrom
 import chess.toGameNameOrNull
 import doesBelongTo
 import doesNotBelongTo
+import kotlinx.coroutines.delay
 
 
 private const val BACKGROUND_COLOR_1 = 0xFF789454
@@ -96,7 +98,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
     val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }      // Result produced from making an action(moving, joining, etc)
     val showCheckInfo = remember { mutableStateOf(false) }
     val showCheckMateInfo = remember { mutableStateOf(false) }
-    val movesPlayed = remember { mutableStateOf("") }
+    val movesToDisplay = remember { mutableStateOf("") }
     val areMovesUpdated = remember { mutableStateOf(false) }
 
 
@@ -109,13 +111,14 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
         menu(onClickOpen = {
             actionToDisplay.value = ACTION.OPEN; isAskingForName.value = true
-        },
+            },
             onClickJoin = {
                 actionToDisplay.value = ACTION.JOIN; isAskingForName.value = true
             },
             onClickShowMoves = {
                 showPossibleMoves.value = it
-            })
+            }
+        )
 
 
         if (!showPossibleMoves.value) possibleMovesList.value = emptyList()
@@ -132,19 +135,28 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 }
                 isAskingForName.value = false
             }
-
         }
+
         if (isSelectingPromotion.value) {
-            selectPossiblePromotions(isSelectingPromotion, onClose = { isSelectingPromotion.value = false }) {
+            selectPossiblePromotions(isSelectingPromotion,
+                onClose = { isSelectingPromotion.value = false }) {
                 promotionType.value = it
                 isSelectingPromotion.value = false
             }
         }
 
-        updateGameIfOtherPlayerMoved(chess)
+        LaunchedEffect(Unit) {
+            while(true) {
+                if(chess.value.currentGameId != null && chess.value.currentPlayer != chess.value.board.player) {
+                    chess.value = refreshBoardAction(chess.value)
+                    areMovesUpdated.value = false
+                }
+                delay(3000)
+            }
+        }
 
-
-
+        //above here is all confirmed
+        //from down here the things must still be checked
         if (clicked.value is START) {
             val start = clicked.value as START
 
@@ -162,7 +174,14 @@ fun ApplicationScope.App(chessInfo: Chess) {
                     clicked.value = NONE()
                 } else {
                     move.value = start.square
-                    getPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList, chess.value, move.value)
+                    if(showPossibleMoves.value) {
+                        val moves = move.value.toSquare().getPiecePossibleMovesFrom(board,currentPlayer)
+                        if (moves.isNotEmpty()) {
+                            val possibleMoves = moves.map { it.endSquare }
+                            possibleMovesList.value = possibleMoves
+                        }
+                    }
+                    //getPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList, chess.value.board,chess.value.currentPlayer, move.value)
                 }
             }
 
@@ -184,18 +203,17 @@ fun ApplicationScope.App(chessInfo: Chess) {
         }
 
         if (!areMovesUpdated.value) {
-            ifOtherPlayerMoved(chess.value) {
-                val gameId = chess.value.currentGameId
-                require(gameId != null)
-                movesPlayed.value = getMovesAsString(gameId, chess.value.dataBase)
+            val gameId = chess.value.currentGameId
+            if(gameId != null ) {
+                movesToDisplay.value = getMovesAsString(gameId, chess.value.dataBase)
                 areMovesUpdated.value = true
             }
         }
 
-        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesPlayed, showPossibleMoves, possibleMovesList)
+        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesToDisplay, showPossibleMoves, possibleMovesList)
 
         MaterialTheme {
-            drawVisuals(chess.value,showCheckInfo.value,showCheckMateInfo.value,movesPlayed.value,
+            drawVisuals(chess.value,showCheckInfo.value,showCheckMateInfo.value,movesToDisplay.value,
                 checkIfisAPossibleMove = { square ->
                     showPossibleMoves.value && possibleMovesList.value.contains(square)
                                          },
@@ -243,13 +261,7 @@ fun handleResult(
 
 }
 
-@Composable
-fun updateGameIfOtherPlayerMoved(chess: MutableState<Chess>) {
-    ifOtherPlayerMoved(chess.value){
-        chess.value = refreshBoardAction(chess.value)
-    }
 
-}
 @Composable
 fun ifOtherPlayerMoved(chess: Chess,block: @Composable () -> Unit){
     val gameId = chess.currentGameId
