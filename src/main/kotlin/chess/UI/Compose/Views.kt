@@ -1,5 +1,4 @@
 package chess.UI.Compose
-
 import Bishop
 import Board
 import King
@@ -35,11 +34,6 @@ import doesNotBelongTo
 import kotlinx.coroutines.delay
 
 
-/**
- * TGESTETGBHKTNGYBI;
- */
-
-
 private const val BACKGROUND_COLOR_1 = 0xFF789454
 private const val BACKGROUND_COLOR_2 = 0xFFfcf1e8
 private const val ORANGE = 0xFFB5651E
@@ -64,11 +58,11 @@ private const val RESOURCE_KING_FILENAME = "king.png"
 private const val RESOURCE_ICON_FILENAME = "favicon.ico"
 private const val RESOURCE_SELECTED_TILE_FILENAME = "tile.png"
 
+
 private enum class ACTION(val text: String) {
     OPEN("Open"),
     JOIN("Join")
 }
-
 /**
  * Represents the possible Colors a tile can take
  */
@@ -84,46 +78,37 @@ private enum class Colors {
     }
 }
 
+
 /**
  * This is the main entry point for our application, as our app starts here.
  */
 @Composable
 fun ApplicationScope.App(chessInfo: Chess) {
     val chess = remember { mutableStateOf(chessInfo) }
-    val promotionType =
-        remember { mutableStateOf("") }                     // The type of piece the user wants to promote to
+    val promotionType = remember { mutableStateOf("") }                     // The type of piece the user wants to promote to
     val isSelectingPromotion = remember { mutableStateOf(false) }           // Open the dialog to select a promotion
     val isAskingForName = remember { mutableStateOf(false) }                // Open the dialog to ask for a name
     val actionToDisplay = remember { mutableStateOf(ACTION.OPEN) }
-    val clicked: MutableState<Clicked> = remember { mutableStateOf(NONE()) }    // The state of click on a tile
-    val showPossibleMoves =
-        remember { mutableStateOf(true) }               // Show possible moves starts as true by default
+    val clicked : MutableState<Clicked> = remember { mutableStateOf(NONE()) }    // The state of click on a tile
+    val showPossibleMoves = remember { mutableStateOf(true) }               // Show possible moves starts as true by default
     val move = remember { mutableStateOf("") }
     val possibleMovesList = remember { mutableStateOf(emptyList<Square>()) }      // List of possible moves for a piece
-    val result: MutableState<Result> =
-        remember { mutableStateOf(ERROR()) }      // Result produced from making an action(moving, joining, etc)
+    val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }      // Result produced from making an action(moving, joining, etc)
     val showCheckInfo = remember { mutableStateOf(false) }
     val showCheckMateInfo = remember { mutableStateOf(false) }
     val movesToDisplay = remember { mutableStateOf("") }
     val areMovesUpdated = remember { mutableStateOf(false) }
 
 
-    Window(
-        onCloseRequest = ::exitApplication,
+    Window(onCloseRequest = ::exitApplication,
         state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
         icon = painterResource(RESOURCE_ICON_FILENAME),
         title = "Chess",
         resizable = false
     ) {
 
-<<<<<<< Updated upstream
         menu(onClickOpen = {
             actionToDisplay.value = ACTION.OPEN; isAskingForName.value = true
-=======
-        menu(
-            onClickOpen = {
-                actionToDisplay.value = ACTION.OPEN; isAskingForName.value = true
->>>>>>> Stashed changes
             },
             onClickJoin = {
                 actionToDisplay.value = ACTION.JOIN; isAskingForName.value = true
@@ -151,7 +136,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
         }
 
         if (isSelectingPromotion.value) {
-<<<<<<< Updated upstream
             selectPossiblePromotions(isSelectingPromotion,
                 onClose = { isSelectingPromotion.value = false }) {
                 promotionType.value = it
@@ -171,21 +155,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
         //above here is all confirmed
         //from down here the things must still be checked
-=======
-            selectPossiblePromotions(
-                chessInfo.currentPlayer,
-                isSelectingPromotion,
-                onClose = { isSelectingPromotion.value = false },
-                updateValue = {
-                    promotionType.value = it
-                    isSelectingPromotion.value = false
-                }
-            )
-        }
-
-        updateGameIfOtherPlayerMoved(chess)
-
->>>>>>> Stashed changes
         if (clicked.value is START) {
             val start = clicked.value as START
 
@@ -242,15 +211,11 @@ fun ApplicationScope.App(chessInfo: Chess) {
         handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesToDisplay, showPossibleMoves, possibleMovesList)
 
         MaterialTheme {
-<<<<<<< Updated upstream
             drawVisuals(chess.value,showCheckInfo.value,showCheckMateInfo.value,movesToDisplay.value,
-=======
-            drawVisuals(chess.value, showCheckInfo.value, showCheckMateInfo.value, movesPlayed.value,
->>>>>>> Stashed changes
                 checkIfisAPossibleMove = { square ->
                     showPossibleMoves.value && possibleMovesList.value.contains(square)
-                },
-                checkIfTileIsSelected = { square ->
+                                         },
+                checkIfTileIsSelected =   { square ->
                     clicked.value is START && (clicked.value as START).square == square.toString()
                 }
             ) { square ->
@@ -294,26 +259,17 @@ fun handleResult(
 
 }
 
-<<<<<<< Updated upstream
-=======
-@Composable
-fun updateGameIfOtherPlayerMoved(chess: MutableState<Chess>) {
-    ifOtherPlayerMoved(chess.value) {
-        chess.value = refreshBoardAction(chess.value)
-    }
-}
->>>>>>> Stashed changes
 
 @Composable
-fun ifOtherPlayerMoved(chess: Chess, block: @Composable () -> Unit) {
+fun ifOtherPlayerMoved(chess: Chess,block: @Composable () -> Unit){
     val gameId = chess.currentGameId
-    if (gameId != null && chess.currentPlayer != chess.board.player) {
+    if(gameId != null && chess.currentPlayer != chess.board.player) {
 
-        val pNumber = if (chess.currentPlayer == Player.WHITE) 0 else 1
+        val pNumber = if(chess.currentPlayer == Player.WHITE) 0 else 1
         val moveCount = chess.dataBase.getMoveCount(gameId)
 
-        if (moveCount % 2 != pNumber)
-            block()
+        if(moveCount %2 != pNumber)
+                block()
     }
 }
 
@@ -321,9 +277,9 @@ fun ifOtherPlayerMoved(chess: Chess, block: @Composable () -> Unit) {
  * Builds the UI for the background chessboard.
  */
 @Composable
-private fun buildBackgroundBoard() {
-    Row {
-        for (i in 1..8) {
+private fun buildBackgroundBoard(){
+    Row{
+        for(i in 1..8) {
             if (i % 2 == 0)
                 Column {
                     for (count in 1..8) {
@@ -333,7 +289,7 @@ private fun buildBackgroundBoard() {
                         BackgroundTile(tileColor)
                     }
                 }
-            else {
+            else{
                 Column {
                     for (count in 1..8) {
                         val tileColor =
@@ -353,19 +309,19 @@ private fun buildBackgroundBoard() {
 @Composable
 private fun boardToComposable(
     board: Board,
-    checkIfisAPossibleMove: (square: Square) -> Boolean,
+    checkIfisAPossibleMove : (square: Square) -> Boolean,
     checkIfTileIsSelected: (square: Square) -> Boolean,
-    OnTileClicked: (square: Square) -> Unit
-) {
+    OnTileClicked : (square: Square) -> Unit
+){
     Column {
-        for (i in 8 downTo 1) {
+        for(i in 8 downTo 1) {
             Row {
                 for (count in 0..7) {
                     val column = (count + 'a'.code).toChar()// convert to char
                     val square = "$column$i".toSquare()
                     val piece = board.getPiece(square)
 
-                    tile(piece, square, checkIfisAPossibleMove, checkIfTileIsSelected) {
+                    tile(piece, square, checkIfisAPossibleMove, checkIfTileIsSelected){
                         OnTileClicked(square)
                     }
                 }
@@ -378,11 +334,11 @@ private fun boardToComposable(
  * Gets a resource name associated with the piece received, if it exists. else returns null.
  * @param piece The piece to get the resource for.
  */
-private fun getResource(piece: Piece?): String? {
-    if (piece == null) return null
+private fun getResource(piece: Piece?):String?{
+    if(piece == null) return null
     val pieceColor = piece.player
 
-    val resource = when (piece) {
+    val resource = when(piece){
         is Pawn -> RESOURCE_PAWN_FILENAME
         is Rook -> RESOURCE_ROOK_FILENAME
         is Knight -> RESOURCE_KNIGHT_FILENAME
@@ -409,16 +365,17 @@ private fun getResource(piece: Piece?): String? {
 @Composable
 private fun tile(
     piece: Piece?,
-    square: Square,
-    checkIfIsAPossibleMove: (square: Square) -> Boolean,
+    square : Square ,
+    checkIfisAPossibleMove : (square: Square) -> Boolean,
     checkIfTileIsSelected: (square: Square) -> Boolean,
     onSelected: () -> Unit = { }
-) {
+){
     val pieceImage = getResource(piece)
-    val modifier = if (checkIfTileIsSelected(square)) {
-        Modifier.clickable(onClick = { onSelected() }).border(4.dp, Color.Red)
-    } else {
-        Modifier.clickable(onClick = { onSelected() })
+    val modifier = if(checkIfTileIsSelected(square)){
+        Modifier.clickable( onClick = { onSelected() }).border(4.dp,Color.Red)
+    }
+    else {
+        Modifier.clickable( onClick = { onSelected() })
     }
 
     Box(modifier = modifier) {
@@ -432,7 +389,7 @@ private fun tile(
         } else {
             Spacer(modifier = Modifier.size(TILE_SIZE))
         }
-        if (checkIfIsAPossibleMove(square)) {
+        if (checkIfisAPossibleMove(square)) {
             Box(modifier = Modifier.size(TILE_SIZE)) {
                 Image(
                     painter = painterResource(RESOURCE_SELECTED_TILE_FILENAME),
@@ -454,7 +411,7 @@ private fun dealWithMovement(
     result: MutableState<Result>,
     promotionType: MutableState<String>,
     isSelectingPromotion: MutableState<Boolean>,
-) {
+){
     val finish = clicked.value as FINISH
     val board = chess.board
     val finishSquare = finish.square.toSquare()
@@ -462,42 +419,40 @@ private fun dealWithMovement(
     val currentPlayer = chess.currentPlayer
     val endPiece = chess.board.getPiece(finish.square.toSquare())
     val finalMoveString = remember { mutableStateOf("") }
-
-    if (promotionType.value != "") {
-        finalMoveString.value = move.value + finish.square + "=" + promotionType.value
-    } else {
+    if(promotionType.value != ""){
+        finalMoveString.value =move.value + finish.square + "=" + promotionType.value
+    }
+    else {
         finalMoveString.value = move.value + finish.square
     }
-    val value = playAction(finalMoveString.value, chess)
+        val value = playAction(finalMoveString.value, chess)
 
-    result.value = value
+        result.value = value
+        when {
+            value is ERROR && board.isTheMovementPromotable(finalMoveString.value) -> {
+                isSelectingPromotion.value = true
+            }
+            value is ERROR && startSquare == finishSquare -> {
+                clicked.value = NONE()
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+            }
+            value is ERROR && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
+                clicked.value = START(finish.square)
 
-    when {
-        value is ERROR && board.isTheMovementPromotable(finalMoveString.value) -> {
-            isSelectingPromotion.value = true
-        }
-        value is ERROR && startSquare == finishSquare -> {
-            clicked.value = NONE()
-            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-        }
-        value is ERROR && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
-            clicked.value = START(finish.square)
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+            }
+            value is ERROR && endPiece != null && endPiece.player != currentPlayer -> {
+                clicked.value = NONE()
 
-            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-        }
-        value is ERROR && endPiece != null && endPiece.player != currentPlayer -> {
-            clicked.value = NONE()
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+            }
+            value is ERROR && !possibleMovesList.value.contains(finishSquare) -> clicked.value = START(startSquare.toString())
+            else -> {
+                clicked.value = NONE()
 
-            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+            }
         }
-        value is ERROR && !possibleMovesList.value.contains(finishSquare) -> clicked.value =
-            START(startSquare.toString())
-        else -> {
-            clicked.value = NONE()
-
-            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-        }
-    }
     promotionType.value = ""
 }
 
@@ -535,18 +490,13 @@ private fun drawCoordinateNumbers() {
 }
 
 @Composable
-private fun drawCoordinateLetters() {
+private fun drawCoordinateLetters(){
     Row {
         for (i in 0..7) {
             Text(
                 "${(i + 'a'.code).toChar()}",
                 fontSize = COORDINATES_FONT_SIZE,
-                modifier = Modifier.padding(
-                    start = PADDING_BETWEEN_LETTERS,
-                    end = PADDING_BETWEEN_LETTERS,
-                    top = TEXT_BORDER_PADDING,
-                    bottom = TEXT_BORDER_PADDING
-                )
+                modifier = Modifier.padding(start = PADDING_BETWEEN_LETTERS, end = PADDING_BETWEEN_LETTERS, top = TEXT_BORDER_PADDING, bottom = TEXT_BORDER_PADDING)
             )
         }
     }
@@ -558,9 +508,9 @@ private fun drawVisuals(
     showCheckInfo: Boolean,
     showCheckMateInfo: Boolean,
     movesPlayed: String,
-    checkIfisAPossibleMove: (square: Square) -> Boolean,
+    checkIfisAPossibleMove : (square: Square) -> Boolean,
     checkIfTileIsSelected: (square: Square) -> Boolean,
-    OnTileClicked: (square: Square) -> Unit
+    OnTileClicked : (square: Square) -> Unit
 ) {
 
     val gameId = chess.currentGameId
@@ -568,14 +518,14 @@ private fun drawVisuals(
 
         drawCoordinateNumbers()
 
-        Column {
+        Column{
 
             drawCoordinateLetters()
 
             Box {
                 buildBackgroundBoard()
                 if (gameId != null) {
-                    boardToComposable(chess.board, checkIfisAPossibleMove, checkIfTileIsSelected, OnTileClicked)
+                    boardToComposable( chess.board, checkIfisAPossibleMove, checkIfTileIsSelected, OnTileClicked)
                 }
             }
 
@@ -587,7 +537,7 @@ private fun drawVisuals(
                     modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
                 )
 
-                if (showCheckInfo) {
+                if(showCheckInfo){
                     Text(
                         "CHECK",
                         fontSize = INFO_FONT_SIZE,
@@ -595,7 +545,7 @@ private fun drawVisuals(
                     )
                 }
 
-                if (showCheckMateInfo) {
+                if(showCheckMateInfo){
                     Text(
                         "CHECKMATE",
                         fontSize = INFO_FONT_SIZE,
@@ -609,7 +559,7 @@ private fun drawVisuals(
         Column(
             Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(Color.White)
         ) {
-            if (gameId != null) {
+            if(gameId != null){
                 Text(
                     movesPlayed,
                     fontSize = MOVES_FONT_SIZE,
@@ -618,6 +568,8 @@ private fun drawVisuals(
 
         }
     }
+
+
 }
 
 /**
@@ -627,11 +579,10 @@ private fun drawVisuals(
  * @param showPossibleMoves     a [Boolean] that tells if the user wants to see possible moves
  */
 @Composable
-private fun FrameWindowScope.menu(
-    onClickOpen: () -> Unit,
-    onClickJoin: () -> Unit,
-    onClickShowMoves: (value: Boolean) -> Unit,
-) {
+private fun FrameWindowScope.menu(onClickOpen : () -> Unit,
+                                  onClickJoin : () -> Unit,
+                                  onClickShowMoves : (value : Boolean) -> Unit,
+){
     val showMovesOption = remember { mutableStateOf(true) }
     MenuBar {
         Menu("Game", mnemonic = 'G') {
@@ -639,14 +590,7 @@ private fun FrameWindowScope.menu(
             Item("Join", onClick = { onClickJoin() })
         }
         Menu("Options", mnemonic = 'O') {
-            CheckboxItem(
-                "Show Possible Moves",
-                checked = showMovesOption.value,
-                onCheckedChange = {
-                    onClickShowMoves(showMovesOption.value)
-                    showMovesOption.value = it
-                }
-            )
+            CheckboxItem("Show Possible Moves",checked = showMovesOption.value, onCheckedChange = { onClickShowMoves(showMovesOption.value) ; showMovesOption.value = it })
         }
     }
 }
@@ -656,95 +600,39 @@ private fun FrameWindowScope.menu(
  */
 @Composable
 @Preview
-private fun selectPossiblePromotions(
-    currPlayer: Player,
-    isSelectingPromotion: MutableState<Boolean>,
-    onClose: () -> Unit,
-    updateValue: (promotionPiece: String) -> Unit
-) {
+private fun selectPossiblePromotions(isSelectingPromotion : MutableState<Boolean>,
+                                     onClose : () -> Unit,
+                                     updateValue : (promotionPiece: String) -> Unit){
 
     Dialog(
         onCloseRequest = { onClose() },
-        title = "Promotion",
-        state = DialogState(size = DpSize(400.dp, 150.dp))
+        title = "Select the piece you want to promote to",
     ) {
         Column {
-
-            Text(
-                "Select promotion piece",
-                modifier = Modifier.align(alignment = Alignment.CenterHorizontally).absoluteOffset(x = 15.dp,15.dp),
-                fontSize = 20.sp
-            )
-
-            Row(Modifier.padding(top = 1.dp).absoluteOffset(x = 25.dp, y = 10.dp)) {
+            Row(Modifier.padding(top = 16.dp)) {
                 Button(
                     onClick = { updateValue("Q") },
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
-
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_queen.png"),
-                            "queen",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_queen.png"),
-                            "queen",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    Text("Q", fontSize = 24.sp)
                 }
                 Button(
                     onClick = { updateValue("R") },
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_rook.png"),
-                            "rook",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_rook.png"),
-                            "rook",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    Text("R", fontSize = 24.sp)
                 }
                 Button(
                     onClick = { updateValue("B") },
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_bishop.png"),
-                            "bishop",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_bishop.png"),
-                            "bishop",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    Text("B", fontSize = 24.sp)
                 }
                 Button(
                     onClick = { updateValue("N") },
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_knight.png"),
-                            "knight",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_knight.png"),
-                            "knight",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    Text("N", fontSize = 24.sp)
                 }
             }
         }
@@ -759,28 +647,28 @@ private fun selectPossiblePromotions(
  */
 @Composable
 private fun getGameName(
-    onClose: () -> Unit,
-    Action: (name: GameName) -> Unit
-) {
+    onClose : () -> Unit,
+    Action : (name : GameName) -> Unit
+){
     val input = remember { mutableStateOf("") }
 
     val filterGameName = {
         val gameId = input.value.toGameNameOrNull()
-        if (gameId != null) {
+        if(gameId != null){
             Action(gameId)
-        } else {
+        }else{
             input.value = ""
         }
 
     }
     Dialog(
-        onCloseRequest = { onClose() },
+        onCloseRequest = {onClose() },
         title = "Insert Game Name",
         resizable = false,
         state = DialogState(size = DpSize(width = 400.dp, height = 200.dp))
 
     ) {
-        Column {
+        Column{
             Text(
                 "Please insert the name of the game to enter",
                 fontSize = 19.sp,
@@ -793,7 +681,7 @@ private fun getGameName(
             )
             Button(
                 onClick = { filterGameName() },
-                modifier = Modifier.absoluteOffset(150.dp, 5.dp).size(100.dp, 50.dp)
+                modifier = Modifier.absoluteOffset(150.dp,5.dp).size(100.dp,50.dp)
             ) {
                 Text("Confirm")
             }
