@@ -19,9 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import chess.Chess
 import chess.GameName
@@ -272,11 +270,8 @@ fun ifOtherPlayerMoved(chess: Chess,block: @Composable () -> Unit){
 
         if(moveCount %2 != pNumber)
                 block()
-
     }
 }
-
-
 
 /**
  * Builds the UI for the background chessboard.
@@ -404,7 +399,6 @@ private fun tile(
             }
         }
     }
-
 }
 
 @Composable
@@ -417,8 +411,7 @@ private fun dealWithMovement(
     result: MutableState<Result>,
     promotionType: MutableState<String>,
     isSelectingPromotion: MutableState<Boolean>,
-
-    ) {
+){
     val finish = clicked.value as FINISH
     val board = chess.board
     val finishSquare = finish.square.toSquare()
@@ -428,10 +421,10 @@ private fun dealWithMovement(
     val finalMoveString = remember { mutableStateOf("") }
     if(promotionType.value != ""){
         finalMoveString.value =move.value + finish.square + "=" + promotionType.value
-    }else {
+    }
+    else {
         finalMoveString.value = move.value + finish.square
     }
-
         val value = playAction(finalMoveString.value, chess)
 
         result.value = value
@@ -460,7 +453,6 @@ private fun dealWithMovement(
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
         }
-
     promotionType.value = ""
 }
 
@@ -477,8 +469,6 @@ private fun BackgroundTile(tileColor: Colors) {
 
     Box(Modifier.background(color).size(TILE_SIZE))
 }
-
-
 
 @Composable
 private fun drawCoordinateNumbers() {
@@ -582,9 +572,6 @@ private fun drawVisuals(
 
 }
 
-
-
-
 /**
  * Makes the menu bar at the top of the screen
  * @param action    the action to display
@@ -678,16 +665,23 @@ private fun getGameName(
         onCloseRequest = {onClose() },
         title = "Insert Game Name",
         resizable = false,
+        state = DialogState(size = DpSize(width = 400.dp, height = 200.dp))
 
     ) {
         Column{
-            Text("Please insert the name of the game to enter")
+            Text(
+                "Please insert the name of the game to enter",
+                fontSize = 19.sp,
+                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+            )
             TextField(
                 value = input.value,
-                onValueChange = { input.value = it }
+                onValueChange = { input.value = it },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp)
             )
             Button(
-                onClick = { filterGameName() }
+                onClick = { filterGameName() },
+                modifier = Modifier.absoluteOffset(150.dp,5.dp).size(100.dp,50.dp)
             ) {
                 Text("Confirm")
             }
