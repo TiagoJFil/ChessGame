@@ -32,6 +32,7 @@ data class GameName(val id: String){
         return id
     }
 }
+
 private fun isAValidGameName(id: String) = id.isNotEmpty() && id.all { !it.isWhitespace() }
 
 /**
