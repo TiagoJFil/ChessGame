@@ -6,7 +6,7 @@ import chess.Storage.ChessDataBase
 import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
-import chess.domain.filterPiecesMoves
+import chess.domain.filterCheckMoves
 import com.mongodb.client.MongoClient
 
 
@@ -46,6 +46,6 @@ fun Chess.getPiecePossibleMovesFrom(square: Square): List<PieceMove> {
     val piece = this.board.getPiece(square)
     if(piece != null && piece.player != this.currentPlayer)
         return emptyList()
-    return filterPiecesMoves(this.board,piece?.getPossibleMoves(this.board, square), piece)  ?: emptyList()
+    return filterCheckMoves(this.board,piece?.getPossibleMoves(this.board, square), piece)  ?: emptyList()
 }
 

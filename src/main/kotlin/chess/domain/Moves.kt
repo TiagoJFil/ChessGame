@@ -209,42 +209,36 @@ const val KING_NUMBER_OF_POSITIONS = 8
  * @return true if the king is in checkMate false otherwise
  */
 fun isCheckMate(board: Board): Boolean {
-    /*
-    val king = board.getKing(board.player)
+
+    val king = board.getKingPiece(board.player)
+    val kingSquare = board.getKingSquare(board.player)
     val opponentMoves = board.playerMoves(!board.player)
     if(kingIsInCheck(board)){
-        val possibleMoves = king.piece.getPossibleMoves(board, king.square).map { it.endSquare }
+        val possibleMoves = king.getPossibleMoves(board, kingSquare).map { it.endSquare }
         val filteredOpponentMoves = opponentMoves.filter { it in possibleMoves }
         val playerMoves = board.playerMoves(board.player)
-        if (filteredOpponentMoves.size >= possibleMoves.size //king cannot move check if we can protect it
+        if (filteredOpponentMoves.size >= possibleMoves.size
             && cannotDefendKing(possibleMoves, playerMoves)
         ) return true
     }
-    */
     return false
 }
 
 fun isKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean {
-    /*
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-    val king = tempBoard.getKing(board.player)
+    val king = tempBoard.getKingSquare(board.player)
     val listOfEndSquares = tempBoard.playerMoves(tempBoard.player)
-    return king.square in listOfEndSquares
-    */
-    return false
+    return king in listOfEndSquares
 }
 
-fun kingIsInCheck(board: Board) = false //board.getKing(board.player).square in board.lastMoveEndSquares
+fun kingIsInCheck(board: Board) = board.getKingSquare(board.player) in board.playerMoves(!board.player)
 
 
-fun filterPiecesMoves(board: Board, moves: List<PieceMove>?, piece: Piece?): List<PieceMove>? {
-    /*
+fun filterCheckMoves(board: Board, moves: List<PieceMove>?, piece: Piece?): List<PieceMove>? {
     if(kingIsInCheck(board) && moves != null && piece !is King)
-        return moves.filter { it -> it.endSquare in board.lastMoveEndSquares && !isKingInCheckPostMove(board,it)}
-    if(kingIsInCheck(board) && moves != null && piece is King) return moves.filter { it.endSquare !in board.lastMoveEndSquares} //certo
+        return moves.filter { it.endSquare in board.playerMoves(!board.player) && !isKingInCheckPostMove(board,it)}
+    if(kingIsInCheck(board) && moves != null && piece is King) return moves.filter { it.endSquare !in board.playerMoves(!board.player)}
     return moves
-    */
-    return listOf()
 }
 
 

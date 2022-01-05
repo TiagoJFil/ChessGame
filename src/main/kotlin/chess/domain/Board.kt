@@ -72,7 +72,7 @@ data class Board internal constructor(
      * @return the square were the king is positioned
      * Finds the king of the given color
      */
-    private fun getKingSquare(player: Player): Square {
+    fun getKingSquare(player: Player): Square {
         return board.indexOfFirst { it is King && it.player == player }.toSquare()
     }
 
@@ -80,7 +80,7 @@ data class Board internal constructor(
      * @param player current player's color
      * @return the king piece
      */
-    private fun getKingPiece(player: Player): Piece {
+    fun getKingPiece(player: Player): Piece {
         val king = board.find { it is King && it.player == player }
         checkNotNull(king)
         return king
@@ -119,13 +119,6 @@ data class Board internal constructor(
         return board
     }
 
-
-
-
-}
-
-/*
-//moves functions
     private fun getAllBoardMoves(): Pair<List<PieceMove>, List<PieceMove>> {
         val playerMoves = mutableListOf<PieceMove>()
         val opponentMoves = mutableListOf<PieceMove>()
@@ -149,36 +142,7 @@ data class Board internal constructor(
     }
 
 
-
-    private fun getLastPieceMoves(): List<PieceMove> {
-        if(lastMove != "") {
-            val piece = getPiece(lastMove.formatToPieceMove().endSquare)
-            if(piece != null)
-            return piece.getPossibleMoves(this, lastMove.formatToPieceMove().endSquare)
-        }
-        return listOf<PieceMove>()
-    }
-
-    val lastMoves = getLastPieceMoves()
-
-    val lastMoveEndSquares = lastMoves.map { it.endSquare }
-
-    fun allMoves() = playerMoves + opponentMoves
-
-
-    //king functions
-    data class PieceAndSquare(val piece:Piece, val square: Square)
-
-    private var playerKing = PieceAndSquare(getKingPiece(player),getKingSquare(player))
-    private var opponentKing = PieceAndSquare(getKingPiece(!player),getKingSquare(!player))
-
-    fun getKing(p: Player): PieceAndSquare {
-        return if(p == player) playerKing
-        else opponentKing
-    }
- */
-
-
+}
 
 
 /**
@@ -190,7 +154,7 @@ fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION
     val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
     if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
     else {
-        val newPiece = when (promotionType.toLowerCase()) {
+        val newPiece = when (promotionType.lowercaseChar()) {
             'q' -> Queen(piece.player)
             'r' -> Rook(piece.player)
             'b' -> Bishop(piece.player)

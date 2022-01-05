@@ -80,8 +80,6 @@ class Pawn (override val player: Player) : Piece  {
         if(this.moved) this.moveCount++
     }
 
-    fun getCounter() = moveCount //only for test purpose
-
 
     /**
      * @return a [Boolean] value indicating whether the piece has moved or not
@@ -118,7 +116,7 @@ class Pawn (override val player: Player) : Piece  {
         val squareToDiagonalRight = pos.addDirection(Direction(LEFT,colorDirection))
         val squareToDiagonalLeft = pos.addDirection(Direction(RIGHT,colorDirection))
 
-        if(squareToDiagonalLeft != null ){
+        if(squareToDiagonalLeft != null){
             val piece = board.getPiece(squareToDiagonalLeft)
             if(piece != null && piece.player != this.player){
                 moves.add(PieceMove(pos, squareToDiagonalLeft))
@@ -133,7 +131,7 @@ class Pawn (override val player: Player) : Piece  {
             if(piece != null && piece.player != this.player){
                 moves.add(PieceMove(pos, squareToDiagonalRight))
             }
-            if(canEnpassant(board,PieceMove(pos,squareToDiagonalRight )))
+            if(canEnpassant(board,PieceMove(pos,squareToDiagonalRight)))
                 moves.add(PieceMove(pos, squareToDiagonalRight))
         }
         if(pos.addDirection(possibleDirections[0]) != null && board.getPiece(pos.addDirectionNotNull(possibleDirections[0])) == null){
@@ -172,7 +170,7 @@ class Pawn (override val player: Player) : Piece  {
      */
     private fun canEnpassant(board: Board, pos: PieceMove): Boolean{
 
-        val rowAdd = if(player.isWhite()) UP else DOWN
+         val rowAdd = if(player.isWhite()) UP else DOWN
         val leftPos = pos.startSquare.addDirection(Direction(LEFT,0))
         val rightPos = pos.startSquare.addDirection(Direction(RIGHT,0))
         if(leftPos != null){
@@ -180,14 +178,14 @@ class Pawn (override val player: Player) : Piece  {
 
             val bellowLeftPiece = leftPos.addDirection(Direction(0,rowAdd))
             if(pos.endSquare == bellowLeftPiece)
-                return (leftPiece is Pawn && leftPiece.moveCount == 1 && leftPiece.player != player)
+                return (leftPiece is Pawn && leftPiece.moveCount == 2 && leftPiece.player != player)
         }
         if(rightPos != null){
             val rightPiece = board.getPiece(rightPos)
 
             val bellowRightPiece = rightPos.addDirection(Direction(0,rowAdd))
             if(pos.endSquare == bellowRightPiece)
-                return (rightPiece is Pawn && rightPiece.moveCount == 1 && rightPiece.player != player)
+                return (rightPiece is Pawn && rightPiece.moveCount == 2 && rightPiece.player != player)
         }
 
         return false
