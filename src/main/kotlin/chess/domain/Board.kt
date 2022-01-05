@@ -108,7 +108,6 @@ data class Board internal constructor(
                 else -> it
             }
         }
-        updateLastMove(move)
 
         return Board(newBoard, !player)
     }
@@ -180,8 +179,6 @@ data class Board internal constructor(
  */
 
 
-private var lastMove = ""
-private fun updateLastMove(move : String){lastMove = move}
 
 
 /**

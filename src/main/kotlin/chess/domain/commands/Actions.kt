@@ -24,12 +24,7 @@ private data class Moves(val filteredMove: String, val databaseMove: String)
 /**
  * Function to open a game as a player with the color WHITE and the game name received.
  */
-fun openAction(gameName: String,chess: Chess): Result {
-    if (gameName == "") {
-        return ERROR()
-    }
-
-    val gameId = GameName(gameName)
+fun openAction(gameId: GameName,chess: Chess): Result {
     val gameExists = chess.dataBase.createGameDocumentIfItNotExists(gameId)
 
     val board = if (gameExists) {
@@ -46,12 +41,7 @@ fun openAction(gameName: String,chess: Chess): Result {
 /**
  * Function to join a game as a player with the color BLACK and the game name received.
  */
-fun joinAction(gameName: String,chess: Chess): Result {
-    if (gameName == "" ){  // PODE SE ADICIONAR  MAIS VERIFICAÇOES
-        return ERROR()
-    }
-
-    val gameId = GameName(gameName)
+fun joinAction(gameId: GameName,chess: Chess): Result {
     if(!chess.dataBase.doesGameExist(gameId)) return ERROR()
 
     val board = updateNewBoard(chess.dataBase, gameId, Board())

@@ -24,12 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import chess.Chess
+import chess.GameName
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.*
-import chess.exit
-import com.mongodb.client.MongoClient
+import chess.toGameNameOrNull
 import doesBelongTo
 import doesNotBelongTo
 
@@ -83,7 +83,7 @@ private enum class Colors {
  * This is the main entry point for our application, as our app starts here.
  */
 @Composable
-fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
+fun ApplicationScope.App(chessInfo: Chess) {
     val chess = remember { mutableStateOf(chessInfo) }
     val promotionType = remember { mutableStateOf("") }                     // The type of piece the user wants to promote to
     val isSelectingPromotion = remember { mutableStateOf(false) }           // Open the dialog to select a promotion
@@ -100,26 +100,52 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
     val areMovesUpdated = remember { mutableStateOf(false) }
 
 
-    Window(onCloseRequest = {exit(driver)},
+    Window(onCloseRequest = ::exitApplication,
         state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
         icon = painterResource(RESOURCE_ICON_FILENAME),
-        title = "Chess"
+        title = "Chess",
+        resizable = false
     ) {
-        if(!showPossibleMoves.value) possibleMovesList.value = emptyList()
+
+        menu(onClickOpen = {
+            actionToDisplay.value = ACTION.OPEN; isAskingForName.value = true
+        },
+            onClickJoin = {
+                actionToDisplay.value = ACTION.JOIN; isAskingForName.value = true
+            },
+            onClickShowMoves = {
+                showPossibleMoves.value = it
+            })
+
+
+        if (!showPossibleMoves.value) possibleMovesList.value = emptyList()
 
         if (isAskingForName.value) {
-            getGameName(isAskingForName, actionToDisplay.value, chess.value,result)
+            getGameName(
+                onClose = { isAskingForName.value = false }
+            ) {
+                if (actionToDisplay.value == ACTION.JOIN) {
+                    result.value = joinAction(it, chess.value)
+
+                } else {
+                    result.value = openAction(it, chess.value)
+                }
+                isAskingForName.value = false
+            }
+
         }
         if (isSelectingPromotion.value) {
-            selectPossiblePromotions(promotionType, isSelectingPromotion)
+            selectPossiblePromotions(isSelectingPromotion, onClose = { isSelectingPromotion.value = false }) {
+                promotionType.value = it
+                isSelectingPromotion.value = false
+            }
         }
 
         updateGameIfOtherPlayerMoved(chess)
 
 
-        menu(actionToDisplay,isAskingForName,showPossibleMoves)
 
-        if(clicked.value is START){
+        if (clicked.value is START) {
             val start = clicked.value as START
 
             val board = chess.value.board
@@ -127,10 +153,10 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
             val startSquare = start.square.toSquare()
             val currentPlayer = chess.value.currentPlayer
 
-            if( currentPlayer != board.player){
+            if (currentPlayer != board.player) {
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
                 clicked.value = NONE()
-            }else {
+            } else {
 
                 if (startSquare.doesNotBelongTo(currentPlayer, board)) {
                     clicked.value = NONE()
@@ -142,13 +168,22 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
 
         }
 
-        if(clicked.value is FINISH){
-            dealWithMovement(clicked,possibleMovesList,showPossibleMoves.value,chess.value,move,result,promotionType,isSelectingPromotion)
+        if (clicked.value is FINISH) {
+            dealWithMovement(
+                clicked,
+                possibleMovesList,
+                showPossibleMoves.value,
+                chess.value,
+                move,
+                result,
+                promotionType,
+                isSelectingPromotion
+            )
 
             areMovesUpdated.value = false
         }
 
-        if(!areMovesUpdated.value) {
+        if (!areMovesUpdated.value) {
             ifOtherPlayerMoved(chess.value) {
                 val gameId = chess.value.currentGameId
                 require(gameId != null)
@@ -157,10 +192,19 @@ fun ApplicationScope.App(chessInfo: Chess, driver: MongoClient) {
             }
         }
 
-        handleResult(result,chess,showCheckInfo,showCheckMateInfo,movesPlayed,showPossibleMoves,possibleMovesList)
+        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesPlayed, showPossibleMoves, possibleMovesList)
 
         MaterialTheme {
-            drawVisuals(chess.value,clicked,possibleMovesList.value,showPossibleMoves.value,showCheckInfo.value,showCheckMateInfo.value,movesPlayed.value)
+            drawVisuals(chess.value,showCheckInfo.value,showCheckMateInfo.value,movesPlayed.value,
+                checkIfisAPossibleMove = { square ->
+                    showPossibleMoves.value && possibleMovesList.value.contains(square)
+                                         },
+                checkIfTileIsSelected =   { square ->
+                    clicked.value is START && (clicked.value as START).square == square.toString()
+                }
+            ) { square ->
+                clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
+            }
         }
 
     }
@@ -189,6 +233,7 @@ fun handleResult(
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
         }
         is CHECK -> {
+            //TODO fix this, somewhere its wrong
             showCheckInfo.value = true
         }
         is CHECKMATE -> {
@@ -257,9 +302,9 @@ private fun buildBackgroundBoard(){
 @Composable
 private fun boardToComposable(
     board: Board,
-    clicked: MutableState<Clicked>,
-    selected: List<Square>,
-    showPossibleMoves: Boolean,
+    checkIfisAPossibleMove : (square: Square) -> Boolean,
+    checkIfTileIsSelected: (square: Square) -> Boolean,
+    OnTileClicked : (square: Square) -> Unit
 ){
     Column {
         for(i in 8 downTo 1) {
@@ -269,11 +314,8 @@ private fun boardToComposable(
                     val square = "$column$i".toSquare()
                     val piece = board.getPiece(square)
 
-                    val isSelected = clicked.value is START && (clicked.value as START).square == square.toString()
-                    val isAPossibleMove = showPossibleMoves && selected.contains(square)
-
-                    tile(piece ,isAPossibleMove,isSelected){
-                        clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
+                    tile(piece, square, checkIfisAPossibleMove, checkIfTileIsSelected){
+                        OnTileClicked(square)
                     }
                 }
             }
@@ -316,12 +358,13 @@ private fun getResource(piece: Piece?):String?{
 @Composable
 private fun tile(
     piece: Piece?,
-    isAPossibleMove: Boolean,
-    isTileSelected : Boolean ,
+    square : Square ,
+    checkIfisAPossibleMove : (square: Square) -> Boolean,
+    checkIfTileIsSelected: (square: Square) -> Boolean,
     onSelected: () -> Unit = { }
 ){
     val pieceImage = getResource(piece)
-    val modifier = if(isTileSelected){
+    val modifier = if(checkIfTileIsSelected(square)){
         Modifier.clickable( onClick = { onSelected() }).border(4.dp,Color.Red)
     }
     else {
@@ -339,7 +382,7 @@ private fun tile(
         } else {
             Spacer(modifier = Modifier.size(TILE_SIZE))
         }
-        if (isAPossibleMove) {
+        if (checkIfisAPossibleMove(square)) {
             Box(modifier = Modifier.size(TILE_SIZE)) {
                 Image(
                     painter = painterResource(RESOURCE_SELECTED_TILE_FILENAME),
@@ -460,12 +503,12 @@ private fun drawCoordinateLetters(){
 @Composable
 private fun drawVisuals(
     chess: Chess,
-    clicked: MutableState<Clicked>,
-    selected: List<Square>,
-    showPossibleMoves: Boolean,
     showCheckInfo: Boolean,
     showCheckMateInfo: Boolean,
-    movesPlayed: String
+    movesPlayed: String,
+    checkIfisAPossibleMove : (square: Square) -> Boolean,
+    checkIfTileIsSelected: (square: Square) -> Boolean,
+    OnTileClicked : (square: Square) -> Unit
 ) {
 
     val gameId = chess.currentGameId
@@ -480,7 +523,7 @@ private fun drawVisuals(
             Box {
                 buildBackgroundBoard()
                 if (gameId != null) {
-                    boardToComposable(chess.board, clicked, selected, showPossibleMoves)
+                    boardToComposable( chess.board, checkIfisAPossibleMove, checkIfTileIsSelected, OnTileClicked)
                 }
             }
 
@@ -537,14 +580,18 @@ private fun drawVisuals(
  * @param showPossibleMoves     a [Boolean] that tells if the user wants to see possible moves
  */
 @Composable
-private fun FrameWindowScope.menu(action : MutableState<ACTION>, askingName : MutableState<Boolean>,showPossibleMoves : MutableState<Boolean>){
+private fun FrameWindowScope.menu(onClickOpen : () -> Unit,
+                                  onClickJoin : () -> Unit,
+                                  onClickShowMoves : (value : Boolean) -> Unit,
+){
+    val showMovesOption = remember { mutableStateOf(true) }
     MenuBar {
         Menu("Game", mnemonic = 'G') {
-            Item("Open", onClick = { action.value = ACTION.OPEN; askingName.value = true })
-            Item("Join", onClick = { action.value = ACTION.JOIN; askingName.value = true })
+            Item("Open", onClick = { onClickOpen() })
+            Item("Join", onClick = { onClickJoin() })
         }
         Menu("Options", mnemonic = 'O') {
-            CheckboxItem("Show Possible Moves",checked = showPossibleMoves.value, onCheckedChange = { showPossibleMoves.value = it })
+            CheckboxItem("Show Possible Moves",checked = showMovesOption.value, onCheckedChange = { onClickShowMoves(showMovesOption.value) ; showMovesOption.value = it })
         }
     }
 }
@@ -554,33 +601,36 @@ private fun FrameWindowScope.menu(action : MutableState<ACTION>, askingName : Mu
  */
 @Composable
 @Preview
-private fun selectPossiblePromotions(Promotion: MutableState<String>, isSelectingPromotion : MutableState<Boolean>){
+private fun selectPossiblePromotions(isSelectingPromotion : MutableState<Boolean>,
+                                     onClose : () -> Unit,
+                                     updateValue : (promotionPiece: String) -> Unit){
+
     Dialog(
-        onCloseRequest = { isSelectingPromotion.value = false },
+        onCloseRequest = { onClose() },
         title = "Select the piece you want to promote to",
     ) {
         Column {
             Row(Modifier.padding(top = 16.dp)) {
                 Button(
-                    onClick = { Promotion.value = "Q" ; isSelectingPromotion.value = false },
+                    onClick = { updateValue("Q") },
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
                     Text("Q", fontSize = 24.sp)
                 }
                 Button(
-                    onClick = { Promotion.value = "R" ; isSelectingPromotion.value = false },
+                    onClick = { updateValue("R") },
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
                     Text("R", fontSize = 24.sp)
                 }
                 Button(
-                    onClick = { Promotion.value = "B"  ; isSelectingPromotion.value = false },
+                    onClick = { updateValue("B") },
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
                     Text("B", fontSize = 24.sp)
                 }
                 Button(
-                    onClick = { Promotion.value = "N" ; isSelectingPromotion.value = false },
+                    onClick = { updateValue("N") },
                     modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
                 ) {
                     Text("N", fontSize = 24.sp)
@@ -598,29 +648,34 @@ private fun selectPossiblePromotions(Promotion: MutableState<String>, isSelectin
  */
 @Composable
 private fun getGameName(
-    isAskingForName: MutableState<Boolean>,
-    action: ACTION,
-    chess: Chess,
-    result: MutableState<Result>
+    onClose : () -> Unit,
+    Action : (name : GameName) -> Unit
 ){
-    val gameName = remember { mutableStateOf("") }
+    val input = remember { mutableStateOf("") }
 
+    val filterGameName = {
+        val gameId = input.value.toGameNameOrNull()
+        if(gameId != null){
+            Action(gameId)
+        }else{
+            input.value = ""
+        }
+
+    }
     Dialog(
-        onCloseRequest = { isAskingForName.value = false },
+        onCloseRequest = {onClose() },
         title = "Insert Game Name",
+        resizable = false,
+
     ) {
         Column{
-            Text("Please insert the name of the game to ${action.text}")
+            Text("Please insert the name of the game to enter")
             TextField(
-                value = gameName.value,
-                onValueChange = { gameName.value = it }
+                value = input.value,
+                onValueChange = { input.value = it }
             )
             Button(
-                onClick = {
-                    isAskingForName.value = false
-                    if (action == ACTION.OPEN) result.value = openAction(gameName.value,chess)
-                    else result.value = joinAction(gameName.value,chess)
-                }
+                onClick = { filterGameName() }
             ) {
                 Text("Confirm")
             }

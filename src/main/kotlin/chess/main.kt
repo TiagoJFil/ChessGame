@@ -10,13 +10,19 @@ import isel.leic.tds.storage.getDBConnectionInfo
 import isel.leic.tds.storage.mongodb.createMongoClient
 
 
-fun main() = application {
+fun main() {
     val dbInfo = getDBConnectionInfo()
     val driver =
         if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
         else createMongoClient()
 
-    val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
-    this.App(chessGame,driver)
+
+    driver.use {
+        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
+        application {
+            App(chessGame)
+        }
+
+    }
 
 }

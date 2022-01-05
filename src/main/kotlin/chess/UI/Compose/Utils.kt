@@ -53,6 +53,7 @@ fun Iterable<Move>.toAString(): String {
 }
 
 fun clearPossibleMovesIfOptionEnabled(showPossibleMoves: Boolean, selected: MutableState<List<Square>>){
+    //TODO see if this is removed, kinda useless
     if(showPossibleMoves) selected.value = emptyList()
 }
 

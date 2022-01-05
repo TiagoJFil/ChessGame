@@ -17,19 +17,24 @@ import com.mongodb.client.MongoClient
  * @property currentGameId         the GameId of the current game, can be null if no game is running
  * @property currentPlayer         the current Player on this machine
  */
-data class Chess(val board: Board, val dataBase: ChessDataBase, val currentGameId:GameName?, val currentPlayer: Player)
+data class Chess(val board: Board, val dataBase: ChessDataBase, val currentGameId: GameName?, val currentPlayer: Player)
 
 /**
  * Represents a GameId with an identifier.
  * @param id        the identifier of the game
  * Blank characters are not allowed.
  */
-data class GameName(val id:String){
+data class GameName(val id: String){
     init {
-        require(isAValidGameName())
+        require(isAValidGameName(id))
     }
-    private fun isAValidGameName() = this.id.isNotEmpty() && this.id.all { !it.isWhitespace() }
+    override fun toString(): String {
+        return id
+    }
 }
+private fun isAValidGameName(id: String) = id.isNotEmpty() && id.all { !it.isWhitespace() }
+
+fun String.toGameNameOrNull() = if(isAValidGameName(this)) GameName(this) else null
 
 
 /**
@@ -44,10 +49,3 @@ fun Chess.getPiecePossibleMovesFrom(square: Square): List<PieceMove> {
     return filterPiecesMoves(this.board,piece?.getPossibleMoves(this.board, square), piece)  ?: emptyList()
 }
 
-/**
-* Exits the game and closes the MongoDb driver
-*/
-fun ApplicationScope.exit(driver: MongoClient){
-    driver.close()
-    exitApplication()
-}
