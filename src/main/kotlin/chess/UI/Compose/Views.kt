@@ -136,7 +136,9 @@ fun ApplicationScope.App(chessInfo: Chess) {
         }
 
         if (isSelectingPromotion.value) {
-            selectPossiblePromotions(isSelectingPromotion,
+            selectPossiblePromotions(
+                chessInfo.currentPlayer,
+                isSelectingPromotion,
                 onClose = { isSelectingPromotion.value = false }) {
                 promotionType.value = it
                 isSelectingPromotion.value = false
@@ -600,39 +602,95 @@ private fun FrameWindowScope.menu(onClickOpen : () -> Unit,
  */
 @Composable
 @Preview
-private fun selectPossiblePromotions(isSelectingPromotion : MutableState<Boolean>,
-                                     onClose : () -> Unit,
-                                     updateValue : (promotionPiece: String) -> Unit){
+private fun selectPossiblePromotions(
+    currPlayer: Player,
+    isSelectingPromotion: MutableState<Boolean>,
+    onClose: () -> Unit,
+    updateValue: (promotionPiece: String) -> Unit
+) {
 
     Dialog(
         onCloseRequest = { onClose() },
-        title = "Select the piece you want to promote to",
+        title = "Promotion",
+        state = DialogState(size = DpSize(400.dp, 150.dp))
     ) {
         Column {
-            Row(Modifier.padding(top = 16.dp)) {
+
+            Text(
+                "Select promotion piece",
+                modifier = Modifier.align(alignment = Alignment.CenterHorizontally).absoluteOffset(x = 15.dp,15.dp),
+                fontSize = 20.sp
+            )
+
+            Row(Modifier.padding(top = 1.dp).absoluteOffset(x = 25.dp, y = 10.dp)) {
                 Button(
                     onClick = { updateValue("Q") },
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    Text("Q", fontSize = 24.sp)
+
+                    if (currPlayer.isWhite()) {
+                        Image(
+                            painter = painterResource(resourcePath = "w_queen.png"),
+                            "queen",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
+                    } else
+                        Image(
+                            painter = painterResource(resourcePath = "b_queen.png"),
+                            "queen",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
                 }
                 Button(
                     onClick = { updateValue("R") },
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    Text("R", fontSize = 24.sp)
+                    if (currPlayer.isWhite()) {
+                        Image(
+                            painter = painterResource(resourcePath = "w_rook.png"),
+                            "rook",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
+                    } else
+                        Image(
+                            painter = painterResource(resourcePath = "b_rook.png"),
+                            "rook",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
                 }
                 Button(
                     onClick = { updateValue("B") },
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    Text("B", fontSize = 24.sp)
+                    if (currPlayer.isWhite()) {
+                        Image(
+                            painter = painterResource(resourcePath = "w_bishop.png"),
+                            "bishop",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
+                    } else
+                        Image(
+                            painter = painterResource(resourcePath = "b_bishop.png"),
+                            "bishop",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
                 }
                 Button(
                     onClick = { updateValue("N") },
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    Text("N", fontSize = 24.sp)
+                    if (currPlayer.isWhite()) {
+                        Image(
+                            painter = painterResource(resourcePath = "w_knight.png"),
+                            "knight",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
+                    } else
+                        Image(
+                            painter = painterResource(resourcePath = "b_knight.png"),
+                            "knight",
+                            modifier = Modifier.size(50.dp, 50.dp)
+                        )
                 }
             }
         }
