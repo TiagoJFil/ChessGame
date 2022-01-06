@@ -93,7 +93,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
     val showPossibleMoves = remember { mutableStateOf(true) }               // Show possible moves starts as true by default
     val move = remember { mutableStateOf("") }
     val possibleMovesList = remember { mutableStateOf(emptyList<Square>()) }      // List of possible moves for a piece
-    val result : MutableState<Result> = remember { mutableStateOf(ERROR()) }      // Result produced from making an action(moving, joining, etc)
+    val result : MutableState<Result> = remember { mutableStateOf(ERROR) }      // Result produced from making an action(moving, joining, etc)
     val showCheckInfo = remember { mutableStateOf(false) }
     val showCheckMateInfo = remember { mutableStateOf(false) }
     val movesToDisplay = remember { mutableStateOf("") }
@@ -158,7 +158,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 delay(3000)
             }
         }
-
+    //TODO on open or join game chess board isnt uopdating after the game is deleted from db
         //above here is all confirmed
         //from down here the things must still be checked
         if (clicked.value is START) {
@@ -200,7 +200,8 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 move,
                 result,
                 promotionType,
-                isSelectingPromotion
+                isSelectingPromotion,
+
             )
 
             areMovesUpdated.value = false
@@ -249,7 +250,7 @@ fun handleResult(
             if (res.moves != null) {
                 movesPlayed.value = res.moves.toAString()
             }
-            result.value = ERROR()
+            result.value = ERROR
             showCheckInfo.value = false
             showCheckMateInfo.value = false
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
@@ -416,7 +417,7 @@ private fun dealWithMovement(
     move: MutableState<String>,
     result: MutableState<Result>,
     promotionType: MutableState<String>,
-    isSelectingPromotion: MutableState<Boolean>,
+    isSelectingPromotion: MutableState<Boolean>
 ){
     val finish = clicked.value as FINISH
     val board = chess.board
@@ -431,6 +432,7 @@ private fun dealWithMovement(
     else {
         finalMoveString.value = move.value + finish.square
     }
+
         val value = playAction(finalMoveString.value, chess)
 
         result.value = value

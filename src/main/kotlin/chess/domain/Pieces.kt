@@ -55,6 +55,30 @@ sealed interface Piece {
         return player.isWhite()
     }
 
+    fun copy() : Piece {
+        return when(this) {
+            is Pawn -> {
+                this.copy()
+            }
+            is Rook -> {
+                val newRook = Rook(player)
+                if(this.hasMoved()) newRook.setAsMoved()
+                newRook
+            }
+            is Knight -> Knight(player)
+            is Bishop -> Bishop(player)
+            is Queen -> Queen(player)
+            is King -> {
+                val newKing = King(player)
+                if(this.hasMoved()) newKing.setAsMoved()
+                newKing
+            }
+            else -> throw IllegalArgumentException("Piece type not supported")
+        }
+    }
+
+
+
 
 }
 
@@ -113,8 +137,8 @@ class Pawn (override val player: Player) : Piece  {
         if(!hasMoved() && board.getPiece(pos.addDirectionNotNull(Direction(0, 1 * colorDirection))) == null && board.getPiece(pos.addDirectionNotNull(Direction(0, 2 * colorDirection))) == null){
             moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
         }
-        val squareToDiagonalRight = pos.addDirection(Direction(LEFT,colorDirection))
-        val squareToDiagonalLeft = pos.addDirection(Direction(RIGHT,colorDirection))
+        val squareToDiagonalRight = pos.addDirection(Direction(RIGHT,colorDirection))
+        val squareToDiagonalLeft = pos.addDirection(Direction(LEFT,colorDirection))
 
         if(squareToDiagonalLeft != null){
             val piece = board.getPiece(squareToDiagonalLeft)
@@ -176,16 +200,16 @@ class Pawn (override val player: Player) : Piece  {
         if(leftPos != null){
             val leftPiece = board.getPiece(leftPos)
 
-            val bellowLeftPiece = leftPos.addDirection(Direction(0,rowAdd))
-            if(pos.endSquare == bellowLeftPiece)
-                return (leftPiece is Pawn && leftPiece.moveCount == 2 && leftPiece.player != player)
+            val squareAfterLeftPiece = leftPos.addDirection(Direction(0,rowAdd))
+            if(pos.endSquare == squareAfterLeftPiece)
+                return (leftPiece is Pawn && leftPiece.moveCount == 1 && leftPiece.player != player)
         }
         if(rightPos != null){
             val rightPiece = board.getPiece(rightPos)
 
             val bellowRightPiece = rightPos.addDirection(Direction(0,rowAdd))
             if(pos.endSquare == bellowRightPiece)
-                return (rightPiece is Pawn && rightPiece.moveCount == 2 && rightPiece.player != player)
+                return (rightPiece is Pawn && rightPiece.moveCount == 1 && rightPiece.player != player)
         }
 
         return false
@@ -202,6 +226,17 @@ class Pawn (override val player: Player) : Piece  {
         return false
     }
 
+    /**
+     * Adds the ability to copy a piece
+     */
+    override fun copy() : Pawn {
+        val newPawn = Pawn(player)
+        if(this.hasMoved()) newPawn.setAsMoved()
+        for(count in 0 until this.moveCount){
+            newPawn.moveCounter()
+        }
+        return newPawn
+    }
 
 }
 
@@ -209,7 +244,7 @@ class Pawn (override val player: Player) : Piece  {
  * @property player    the player that owns this piece
  * Represents a king piece
  */
-class King (override val player: Player) : Piece {
+data class King (override val player: Player) : Piece {
 
     private var moved = false
 
@@ -327,7 +362,7 @@ class King (override val player: Player) : Piece {
  * @property player    the player that owns this piece
  * Represents a queen piece
  */
-class Queen (override val player: Player) : Piece {
+data class Queen (override val player: Player) : Piece {
 
     /**
      * The possible offset this piece can move to
@@ -370,7 +405,7 @@ class Queen (override val player: Player) : Piece {
  * @property player    the player that owns this piece
  * Represents a rook piece
  */
-class Rook (override val player: Player) : Piece {
+data class Rook (override val player: Player) : Piece {
 
     private var moved = false
 
@@ -425,7 +460,7 @@ class Rook (override val player: Player) : Piece {
  * @property player    the player that owns this piece
  * Represents a knight piece
  */
-class Knight (override val player: Player) : Piece {
+data class Knight (override val player: Player) : Piece {
 
     /**
      * The possible offset this piece can move to
@@ -468,7 +503,7 @@ class Knight (override val player: Player) : Piece {
  * @property player    the player that owns this piece
  * Represents a bishop piece
  */
-class Bishop (override val player: Player) : Piece {
+data class Bishop (override val player: Player) : Piece {
     /**
      * The possible offset this piece can move to
      */

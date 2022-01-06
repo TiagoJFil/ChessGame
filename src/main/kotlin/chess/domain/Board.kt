@@ -94,18 +94,28 @@ data class Board internal constructor(
      */
     fun makeMove(move: String): Board {
         val pieceMovement = move.formatToPieceMove()
-        val piece = getPiece(pieceMovement.startSquare) ?: throw IllegalStateException("no piece at startingSquare")
-        when (piece) {
-            is Pawn -> piece.setAsMoved()
-            is King -> piece.setAsMoved()
-            is Rook -> piece.setAsMoved()
+        val oldPiece = getPiece(pieceMovement.startSquare) ?: throw IllegalStateException("no piece at startingSquare")
+        val newPiece = oldPiece.copy()
+
+        when (newPiece) {
+            is Pawn -> {
+                newPiece.setAsMoved()
+                newPiece.moveCounter()  //its needed here because this piece wont get affected by the if on the map
+            }
+            is King -> newPiece.setAsMoved()
+            is Rook -> newPiece.setAsMoved()
         }
+
         val newBoard: BoardList = board.mapIndexed { index, it ->
-            if (it is Pawn) it.moveCounter()
+
             when (index) {
                 pieceMovement.startSquare.toIndex() -> null
-                pieceMovement.endSquare.toIndex() -> piece
-                else -> it
+                pieceMovement.endSquare.toIndex() -> newPiece
+                else -> {
+                    val piece = it?.copy()
+                    if (piece is Pawn) piece.moveCounter()
+                    piece
+                }
             }
         }
 

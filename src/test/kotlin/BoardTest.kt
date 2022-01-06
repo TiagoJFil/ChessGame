@@ -36,21 +36,21 @@ class BoardTest {
         assertEquals ("K", sut.getPiece(square).toString())
     }
 
-    /*
+
     @Test
     fun `getKingSquare for white returns the king square`(){
         val sut = Board()
-        val king = sut.getKing(sut.player)
-        assertEquals ("e1".toSquare(), king.square)
+        val king = sut.getKingSquare(sut.player)
+        assertEquals ("e1".toSquare(), king)
     }
 
     @Test
     fun `getKingSquare for black returns the king square`(){
         val sut = Board()
-        val king = sut.getKing(!sut.player)
-        assertEquals ("e8".toSquare(), king.square)
+        val king = sut.getKingSquare(!sut.player)
+        assertEquals ("e8".toSquare(), king)
     }
-    */
+
 /*
     @Test
     fun `empty board equals empty board`(){
@@ -60,6 +60,5 @@ class BoardTest {
         val Boar = Board()
     }
 */
-
 
 }

@@ -148,48 +148,20 @@ class PawnTest {
         assertEquals(MoveType.ILLEGAL,move)
     }
 
-    @Test
-    fun `After moving pawn counter should be equal to one`(){
-        val sut = Board().makeMove("Pa2a4")
-        val endPos = Square(Column.A, Row.Four)
-        val p2 = sut.getPiece(Square(Column.B, Row.Two))
-        val sut2 = sut.makeMove("Pb2b4")
-        val piece = sut2.getPiece(endPos)
 
-        if(piece is Pawn) assertEquals(2,piece.getCounter())
-
-        if(p2 is Pawn) assertEquals(1,p2.getCounter())
-    }
 
     @Test
-    fun `After moving pawn twice counter should be equal to two`(){
-        val sut = Board().makeMove("Pa2a4").makeMove("pa7a5")
-        val endPos = Square(Column.A, Row.Four)
-        val piece = sut.getPiece(endPos)
-        if(piece is Pawn) assertEquals(2,piece.getCounter())
-
-    }
-
-    @Test
-    fun `After moving black pawn counter should be equal to one`(){
-        val sut = Board().makeMove("Pa2a4").makeMove("pa7a5")
-        val endPos = Square(Column.A, Row.Five)
-        val piece = sut.getPiece(endPos)
-        if(piece is Pawn) assertEquals(1,piece.getCounter())
-
-    }
-
-    @Test
-    fun `Testing canEmpassant algorithm`(){
-        val sut = Board().makeMove("Pe2e4").makeMove("ph7h6").makeMove("Pe4e5").makeMove("pd7d5")
+    fun `Testing canEnpassant algorithm`(){
+         val sut = Board().makeMove("Pe2e4").makeMove("ph7h6").makeMove("Pe4e5").makeMove("pd7d5")
         val endPos = Square(Column.E, Row.Five)
         val piece = sut.getPiece(endPos)
         val moves = piece!!.getPossibleMoves(sut,endPos)
+        println(moves)
         assert(moves.contains(PieceMove((Square(Column.E,Row.Five)),(Square(Column.D,Row.Six)))))
     }
 
     @Test
-    fun `Testing canEmpassant algorithm2`(){
+    fun `Testing canEnpassant algorithm2`(){
         val sut = Board().makeMove("Pe2e4").makeMove("ph7h6").makeMove("Pe4e5").makeMove("pf7f6").makeMove("Ph2h3").makeMove("pd7d5")
         val endPos = Square(Column.E, Row.Five)
         val piece = sut.getPiece(endPos)
@@ -199,7 +171,7 @@ class PawnTest {
     }
 
     @Test
-    fun `Testing canEmpassant algorithm3`(){
+    fun `Testing canEnpassant algorithm3`(){
         val sut = Board().makeMove("Pe2e4").makeMove("ph7h6").makeMove("Pe4e5").makeMove("pd7d5").makeMove("Ph2h3").makeMove("pf7f6")
         val endPos = Square(Column.E, Row.Five)
         val piece = sut.getPiece(endPos)

@@ -42,7 +42,7 @@ fun openAction(gameId: GameName,chess: Chess): Result {
  * Function to join a game as a player with the color BLACK and the game name received.
  */
 fun joinAction(gameId: GameName,chess: Chess): Result {
-    if(!chess.dataBase.doesGameExist(gameId)) return ERROR()
+    if(!chess.dataBase.doesGameExist(gameId)) return ERROR
 
     val board = updateNewBoard(chess.dataBase, gameId, Board())
 
@@ -57,16 +57,16 @@ fun joinAction(gameId: GameName,chess: Chess): Result {
  */
 fun playAction(move: String, chess: Chess): Result {
 
-    if (chess.board.getPlayerColor() != chess.currentPlayer) return ERROR()
+    if (chess.board.getPlayerColor() != chess.currentPlayer) return ERROR
     val gameId = chess.currentGameId
     require(gameId != null)
 
-    val filteredInput = filterInput(move, chess.board) ?: return ERROR()
+    val filteredInput = filterInput(move, chess.board) ?: return ERROR
     var newBoard : Board = chess.board
 
     val movement = canPieceMoveTo(filteredInput.filteredMove, chess.board)
     when (movement) {
-        MoveType.ILLEGAL -> return ERROR();
+        MoveType.ILLEGAL -> return ERROR;
         MoveType.CASTLE -> {
             val updatedBoard = chess.board.doCastling(filteredInput.filteredMove.formatToPieceMove())
             newBoard = updatedBoard
@@ -77,7 +77,7 @@ fun playAction(move: String, chess: Chess): Result {
                     chess.board.promotePieceAndMove(filteredInput.filteredMove, filteredInput.databaseMove.last())
                 //val dbMove = filterToDbString(filteredInput.filteredMove,MoveType.PROMOTION)
             }else{
-                return ERROR()
+                return ERROR
             }
         }
         MoveType.ENPASSANT -> {
@@ -90,10 +90,10 @@ fun playAction(move: String, chess: Chess): Result {
             newBoard = chess.board.makeMove(filteredInput.filteredMove)
         }
         MoveType.CHECK -> {
-            return CHECK()
+            return CHECK
         }
         MoveType.CHECKMATE -> {
-            return CHECKMATE()
+            return CHECKMATE
         }
 
     }

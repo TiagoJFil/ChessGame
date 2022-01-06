@@ -4,8 +4,7 @@ import chess.GameName
 import chess.Storage.ChessDataBase
 
 import chess.domain.Player
-import chess.domain.commands.CONTINUE
-import chess.domain.commands.ERROR
+
 import isel.leic.tds.storage.DbMode
 import isel.leic.tds.storage.getDBConnectionInfo
 import isel.leic.tds.storage.mongodb.createMongoClient

@@ -16,14 +16,14 @@ class CONTINUE(val chess: Chess, val moves: Iterable<Move>? ) : Result()
 /**
  * Result produced when the user makes an error.
  */
-class ERROR() : Result()
+object ERROR : Result()
 
 /**
  * Result produced a user makes a CHECK.
  */
-class CHECK() : Result()
+object CHECK : Result()
 
 /**
  * Result produced a user makes a CHECKMATE.
  */
-class CHECKMATE() : Result()
+object CHECKMATE : Result()
