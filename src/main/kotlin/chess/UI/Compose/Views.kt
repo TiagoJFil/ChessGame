@@ -100,14 +100,16 @@ fun ApplicationScope.App(chessInfo: Chess) {
     val areMovesUpdated = remember { mutableStateOf(false) }
 
 
-    Window(onCloseRequest = ::exitApplication,
+    Window(
+        onCloseRequest = ::exitApplication,
         state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
         icon = painterResource(RESOURCE_ICON_FILENAME),
         title = "Chess",
         resizable = false
     ) {
 
-        menu(onClickOpen = {
+        menu(
+            onClickOpen = {
             actionToDisplay.value = ACTION.OPEN; isAskingForName.value = true
             },
             onClickJoin = {
@@ -123,6 +125,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
         if (isAskingForName.value) {
             getGameName(
+                actionToDisplay.value.text,
                 onClose = { isAskingForName.value = false }
             ) {
                 if (actionToDisplay.value == ACTION.JOIN) {
@@ -137,12 +140,13 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
         if (isSelectingPromotion.value) {
             selectPossiblePromotions(
-                chessInfo.currentPlayer,
+                chess.value.currentPlayer,
                 isSelectingPromotion,
-                onClose = { isSelectingPromotion.value = false }) {
-                promotionType.value = it
-                isSelectingPromotion.value = false
-            }
+                onClose = { isSelectingPromotion.value = false }
+            ) {
+                    promotionType.value = it
+                    isSelectingPromotion.value = false
+                }
         }
 
         LaunchedEffect(Unit) {
@@ -603,11 +607,13 @@ private fun FrameWindowScope.menu(onClickOpen : () -> Unit,
 @Composable
 @Preview
 private fun selectPossiblePromotions(
-    currPlayer: Player,
+    currentPlayer: Player,
     isSelectingPromotion: MutableState<Boolean>,
     onClose: () -> Unit,
     updateValue: (promotionPiece: String) -> Unit
 ) {
+
+    val colorExtension = if(currentPlayer.isWhite()) "w_" else "b_"
 
     Dialog(
         onCloseRequest = { onClose() },
@@ -627,70 +633,50 @@ private fun selectPossiblePromotions(
                     onClick = { updateValue("Q") },
                     modifier = Modifier.padding(bottom = 8.dp)
                 ) {
+                   val piece = "queen"
 
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_queen.png"),
-                            "queen",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_queen.png"),
-                            "queen",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    Image(
+                        painter = painterResource(resourcePath = "$colorExtension$piece.png"),
+                        contentDescription = piece,
+                        modifier = Modifier.size(50.dp, 50.dp)
+                    )
+
                 }
                 Button(
                     onClick = { updateValue("R") },
                     modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_rook.png"),
-                            "rook",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_rook.png"),
-                            "rook",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    val piece = "rook"
+
+                    Image(
+                        painter = painterResource(resourcePath = "$colorExtension$piece.png"),
+                        contentDescription = piece,
+                        modifier = Modifier.size(50.dp, 50.dp)
+                    )
                 }
                 Button(
                     onClick = { updateValue("B") },
                     modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_bishop.png"),
-                            "bishop",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_bishop.png"),
-                            "bishop",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    val piece = "bishop"
+
+                    Image(
+                        painter = painterResource(resourcePath = "$colorExtension$piece.png"),
+                        contentDescription = piece,
+                        modifier = Modifier.size(50.dp, 50.dp)
+                    )
                 }
                 Button(
                     onClick = { updateValue("N") },
                     modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    if (currPlayer.isWhite()) {
-                        Image(
-                            painter = painterResource(resourcePath = "w_knight.png"),
-                            "knight",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
-                    } else
-                        Image(
-                            painter = painterResource(resourcePath = "b_knight.png"),
-                            "knight",
-                            modifier = Modifier.size(50.dp, 50.dp)
-                        )
+                    val piece = "knight"
+
+                    Image(
+                        painter = painterResource(resourcePath = "$colorExtension$piece.png"),
+                        contentDescription = piece,
+                        modifier = Modifier.size(50.dp, 50.dp)
+                    )
                 }
             }
         }
@@ -705,6 +691,7 @@ private fun selectPossiblePromotions(
  */
 @Composable
 private fun getGameName(
+    actionName : String,
     onClose : () -> Unit,
     Action : (name : GameName) -> Unit
 ){
@@ -728,7 +715,7 @@ private fun getGameName(
     ) {
         Column{
             Text(
-                "Please insert the name of the game to enter",
+                "Please insert the name of the game to $actionName",
                 fontSize = 19.sp,
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
             )
