@@ -452,7 +452,8 @@ private fun dealWithMovement(
 
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
             }
-            value is ERROR && !possibleMovesList.value.contains(finishSquare) -> clicked.value = START(startSquare.toString())
+            value is ERROR && !possibleMovesList.value.contains(finishSquare) ->
+                clicked.value = START(startSquare.toString())
             else -> {
                 clicked.value = NONE()
 
