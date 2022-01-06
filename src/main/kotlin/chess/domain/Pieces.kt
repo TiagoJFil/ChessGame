@@ -145,7 +145,7 @@ class Pawn (override val player: Player) : Piece  {
             if(piece != null && piece.player != this.player){
                 moves.add(PieceMove(pos, squareToDiagonalLeft))
             }
-            if(canEnpassant(board,PieceMove(pos, squareToDiagonalLeft))){
+            if(canEnPassant(board,PieceMove(pos, squareToDiagonalLeft))){
                 moves.add(PieceMove(pos, squareToDiagonalLeft))
             }
         }
@@ -155,7 +155,7 @@ class Pawn (override val player: Player) : Piece  {
             if(piece != null && piece.player != this.player){
                 moves.add(PieceMove(pos, squareToDiagonalRight))
             }
-            if(canEnpassant(board,PieceMove(pos,squareToDiagonalRight)))
+            if(canEnPassant(board,PieceMove(pos,squareToDiagonalRight)))
                 moves.add(PieceMove(pos, squareToDiagonalRight))
         }
         if(pos.addDirection(possibleDirections[0]) != null && board.getPiece(pos.addDirectionNotNull(possibleDirections[0])) == null){
@@ -176,10 +176,10 @@ class Pawn (override val player: Player) : Piece  {
 
         return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
-            isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
-            pieceAtEndSquare == null && canEnpassant(board,pieceInfo) -> MoveType.ENPASSANT
-            pieceAtEndSquare == null -> MoveType.REGULAR
             canPromote(pieceInfo) -> MoveType.PROMOTION
+            isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
+            pieceAtEndSquare == null && canEnPassant(board,pieceInfo) -> MoveType.ENPASSANT
+            pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
 
             else -> MoveType.ILLEGAL
@@ -192,7 +192,7 @@ class Pawn (override val player: Player) : Piece  {
      * @param pos    the piece to movement to check
      * @return a [Boolean] value indicating whether the piece can perform enpassant
      */
-    private fun canEnpassant(board: Board, pos: PieceMove): Boolean{
+    private fun canEnPassant(board: Board, pos: PieceMove): Boolean{
 
          val rowAdd = if(player.isWhite()) UP else DOWN
         val leftPos = pos.startSquare.addDirection(Direction(LEFT,0))
