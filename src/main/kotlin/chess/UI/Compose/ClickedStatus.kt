@@ -8,7 +8,7 @@ sealed class Clicked
 /**
  * Information produced when the user has not clicked a tile.
  */
-class NONE() : Clicked()
+object NONE : Clicked()
 
 /**
  * Information produced when the user clicked a tile for the first time.
