@@ -132,10 +132,10 @@ class Pawn (override val player: Player) : Piece  {
      * @return the list of possible directions for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> {
-        val moves = mutableListOf<PieceMove>()
+        var moves = listOf<PieceMove>()
         val colorDirection = if (belongsToWhitePlayer())  UP else DOWN
         if(!hasMoved() && board.getPiece(pos.addDirectionNotNull(Direction(0, 1 * colorDirection))) == null && board.getPiece(pos.addDirectionNotNull(Direction(0, 2 * colorDirection))) == null){
-            moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
+            moves += (PieceMove(pos, pos.addDirectionNotNull(Direction(0, 2 * colorDirection))))
         }
         val squareToDiagonalRight = pos.addDirection(Direction(RIGHT,colorDirection))
         val squareToDiagonalLeft = pos.addDirection(Direction(LEFT,colorDirection))
@@ -143,26 +143,27 @@ class Pawn (override val player: Player) : Piece  {
         if(squareToDiagonalLeft != null){
             val piece = board.getPiece(squareToDiagonalLeft)
             if(piece != null && piece.player != this.player){
-                moves.add(PieceMove(pos, squareToDiagonalLeft))
+                moves += (PieceMove(pos, squareToDiagonalLeft))
             }
             if(canEnPassant(board,PieceMove(pos, squareToDiagonalLeft))){
-                moves.add(PieceMove(pos, squareToDiagonalLeft))
+                moves += (PieceMove(pos, squareToDiagonalLeft))
             }
         }
 
         if(squareToDiagonalRight != null ){
             val piece = board.getPiece(squareToDiagonalRight)
             if(piece != null && piece.player != this.player){
-                moves.add(PieceMove(pos, squareToDiagonalRight))
+                moves += (PieceMove(pos, squareToDiagonalRight))
             }
             if(canEnPassant(board,PieceMove(pos,squareToDiagonalRight)))
-                moves.add(PieceMove(pos, squareToDiagonalRight))
+                moves += (PieceMove(pos, squareToDiagonalRight))
         }
         if(pos.addDirection(possibleDirections[0]) != null && board.getPiece(pos.addDirectionNotNull(possibleDirections[0])) == null){
-            moves.add(PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
+            moves += (PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
         }
-        
-        
+
+        if(verifyForCheck) moves = moves.filter { it.endSquare in board.playerMoves(!board.player,false) && !isKingInCheckPostMove(board,it)}
+
         return moves
     }
 
@@ -176,10 +177,10 @@ class Pawn (override val player: Player) : Piece  {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if(isCheckMate(board)) return MoveType.CHECKMATE
 
-        return when(getPossibleMoves(board, pieceInfo.startSquare,false).contains(pieceInfo)){
+        return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board)).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
             canPromote(pieceInfo) -> MoveType.PROMOTION
-            isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
+            isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null && canEnPassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
@@ -196,7 +197,7 @@ class Pawn (override val player: Player) : Piece  {
      */
     private fun canEnPassant(board: Board, pos: PieceMove): Boolean{
 
-         val rowAdd = if(player.isWhite()) UP else DOWN
+        val rowAdd = if(player.isWhite()) UP else DOWN
         val leftPos = pos.startSquare.addDirection(Direction(LEFT,0))
         val rightPos = pos.startSquare.addDirection(Direction(RIGHT,0))
         if(leftPos != null){
@@ -293,7 +294,7 @@ data class King (override val player: Player) : Piece {
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> {
 
-        val moves = getMovesByAddingDirection(possibleDirections, pos, board, verifyForCheck).toMutableList()
+        val moves = getMovesByAddingDirection(possibleDirections, pos, board, false).toMutableList()
 
         if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))) {
             moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
@@ -315,7 +316,7 @@ data class King (override val player: Player) : Piece {
         if (canCastle(board, pieceInfo)) return MoveType.CASTLE
         return when ( getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board) ).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
-            isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
+            isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
 

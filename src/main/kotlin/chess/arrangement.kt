@@ -6,7 +6,6 @@ import chess.Storage.ChessDataBase
 import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.Square
-import chess.domain.filterCheckMoves
 import com.mongodb.client.MongoClient
 
 

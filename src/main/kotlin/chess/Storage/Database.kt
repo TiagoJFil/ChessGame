@@ -31,7 +31,7 @@ interface DataBase {
      * Gets the last movement played in the game
      * @param gameId     the id of the game where we will get the last move played from.
      */
-    fun getLastMove(gameId: GameName): Move
+    fun getLastMove(gameId: GameName): Move?
 
     /**
      * @param gameId     the id of the game where we will get the move count from
@@ -116,12 +116,13 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
      * Gets the last movement played in the game
      * @param gameId     the id of the game where we will get the last move played from.
      */
-    override fun getLastMove(gameId: GameName) : Move {
+    override fun getLastMove(gameId: GameName) : Move? {
         try{
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: Document(gameId.id, listOf())
-
-            return  doc.moves.last()
+            val moveList = doc.moves
+            return if(moveList.isEmpty()) null
+            else moveList.last()
         } catch (e: MongoException) {
             throw ChessGameAccessException(e)
         }

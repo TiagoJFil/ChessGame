@@ -171,9 +171,9 @@ private fun updateNewBoard(dataBase: DataBase, gameId: GameName): Board =
  * Updates a board with the moves from the DataBase with the given gameId.
  */
 private fun updateAnExistentBoard(dataBase: DataBase, gameId: GameName,board: Board): Board {
-     val move = dataBase.getLastMove(gameId).move
+    val dbMove = dataBase.getLastMove(gameId) ?: return board
 
-    val filteredInput = filterInput(move, board) ?: return board
+    val filteredInput = filterInput(dbMove.move, board) ?: return board
 
     return evaluateMoveAndUpdateBoard(filteredInput, board)
 }

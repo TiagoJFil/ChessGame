@@ -130,21 +130,21 @@ data class Board internal constructor(
     }
 }
 
-private fun Board.getAllBoardMoves(): Pair<List<PieceMove>, List<PieceMove>> {
+private fun Board.getAllBoardMoves(verifyError: Boolean): Pair<List<PieceMove>, List<PieceMove>> {
     val playerMoves = mutableListOf<PieceMove>()
     val opponentMoves = mutableListOf<PieceMove>()
     this.asList().forEachIndexed { idx, p ->
         if (p != null) {
-            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
-            else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
+            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare(),verifyError))
+            else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare(), verifyError))
         }
     }
     return Pair(playerMoves, opponentMoves)
 }
 
 
-fun Board.playerMoves(p: Player): List<Square> {
-    val allMoves = this.getAllBoardMoves()
+fun Board.playerMoves(p: Player, verifyError: Boolean): List<Square> {
+    val allMoves = this.getAllBoardMoves(verifyError)
     val playerMoves = allMoves.first.map { it.endSquare }
     val opponentMoves = allMoves.second.map { it.endSquare }
     return if (p == player) playerMoves
