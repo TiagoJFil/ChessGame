@@ -13,6 +13,7 @@ import chess.UI.Compose.board.*
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.*
+import chess.domain.commands.Result
 import chess.domain.getPiecePossibleMovesFrom
 import doesBelongTo
 import doesNotBelongTo
@@ -61,7 +62,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
     val showPossibleMoves = remember { mutableStateOf(true) }               // Show possible moves starts as true by default
     val move = remember { mutableStateOf("") }
     val possibleMovesList = remember { mutableStateOf(emptyList<Square>()) }      // List of possible moves for a piece
-    val result : MutableState<Result> = remember { mutableStateOf(ERROR) }        // Result produced from making an action(moving, joining, etc)
+    val result : MutableState<Result> = remember { mutableStateOf(NONE()) }        // Result produced from making an action(moving, joining, etc)
     val showCheckInfo = remember { mutableStateOf(false) }
     val showCheckMateInfo = remember { mutableStateOf(false) }
     val movesToDisplay = remember { mutableStateOf("") }
@@ -120,7 +121,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
         LaunchedEffect(Unit) {
             while(true) {
                 if(chess.value.currentGameId != null && chess.value.currentPlayer != chess.value.board.player) {
-                    chess.value = refreshBoardAction(chess.value)
+                    result.value = refreshBoardAction(chess.value)
                     areMovesUpdated.value = false
                 }
                 delay(1500)
@@ -166,7 +167,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 possibleMovesList,
                 showPossibleMoves.value,
                 chess.value,
-                move,
+                move.value,
                 result,
                 promotionType,
                 isSelectingPromotion,
@@ -214,9 +215,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
 
 
-
-
-
 fun handleResult(
     result: MutableState<Result>,
     chess: MutableState<Chess>,
@@ -228,18 +226,23 @@ fun handleResult(
 ) {
 
     when (result.value) {
-        is CONTINUE -> {
-            val res = (result.value as CONTINUE)
+        is OK -> {
+            val res = (result.value as OK)
             chess.value = res.chess
             if (res.moves != null) {
                 movesPlayed.value = res.moves.toAString()
             }
-            result.value = ERROR
+            result.value = NONE()
             showCheckInfo.value = false
             showCheckMateInfo.value = false
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
         }
         is CHECK -> {
+            //TODO: make check apper on the player received
+            val res = (result.value as CHECK)
+            chess.value = res.chess
+            result.value = NONE()
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
             //TODO fix this, somewhere its wrong
             showCheckInfo.value = true
         }
@@ -257,7 +260,7 @@ private fun dealWithMovement(
     possibleMovesList: MutableState<List<Square>>,
     showPossibleMoves: Boolean,
     chess: Chess,
-    move: MutableState<String>,
+    move: String,
     result: MutableState<Result>,
     promotionType: MutableState<String>,
     isSelectingPromotion: MutableState<Boolean>
@@ -265,46 +268,43 @@ private fun dealWithMovement(
     val finish = clicked.value as FINISH
     val board = chess.board
     val finishSquare = finish.square.toSquare()
-    val startSquare = move.value.toSquare()
+    val startSquare = move.toSquare()
     val currentPlayer = chess.currentPlayer
     val endPiece = chess.board.getPiece(finish.square.toSquare())
     val finalMoveString = remember { mutableStateOf("") }
-    if(promotionType.value != ""){
-        finalMoveString.value =move.value + finish.square + "=" + promotionType.value
-    }
-    else {
-        finalMoveString.value = move.value + finish.square
+    if(promotionType.value == "" && board.isTheMovementPromotable("$startSquare$finishSquare")) {
+        isSelectingPromotion.value = true
     }
 
-        val value = playAction(finalMoveString.value, chess)
+    finalMoveString.value =move + finish.square + "=" + promotionType.value
 
-        result.value = value
-        when {
-            value is ERROR && board.isTheMovementPromotable(finalMoveString.value) -> {
-                isSelectingPromotion.value = true
-            }
-            value is ERROR && startSquare == finishSquare -> {
-                clicked.value = NONE
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-            }
-            value is ERROR && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
-                clicked.value = START(finish.square)
 
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-            }
-            value is ERROR && endPiece != null && endPiece.player != currentPlayer -> {
-                clicked.value = NONE
+    val value = playAction(finalMoveString.value, chess)
 
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-            }
-            value is ERROR && !possibleMovesList.value.contains(finishSquare) ->
-                clicked.value = START(startSquare.toString())
-            else -> {
-                clicked.value = NONE
-
-                clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-            }
+    result.value = value
+    when {
+        value is chess.domain.commands.NONE && startSquare == finishSquare -> {
+            clicked.value = NONE
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
         }
+        value is chess.domain.commands.NONE && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
+            clicked.value = START(finish.square)
+
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+        }
+        value is chess.domain.commands.NONE && endPiece != null && endPiece.player != currentPlayer -> {
+            clicked.value = NONE
+
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+        }
+        value is chess.domain.commands.NONE && !possibleMovesList.value.contains(finishSquare) ->
+            clicked.value = START(startSquare.toString())
+        else -> {
+            clicked.value = NONE
+
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+        }
+    }
     promotionType.value = ""
 }
 

@@ -2,6 +2,7 @@ package chess.domain.commands
 
 import chess.Chess
 import chess.Storage.Move
+import chess.domain.Player
 
 /**
  * Sealed class to represent the possible results of an action
@@ -11,19 +12,19 @@ sealed class Result
 /**
  * Result produced when the user makes an action.
  */
-class CONTINUE(val chess: Chess, val moves: Iterable<Move>? ) : Result()
+class OK(val chess: Chess, val moves: Iterable<Move>? ) : Result()
 
 /**
  * Result produced when the user makes an error.
  */
-object ERROR : Result()
+class NONE() : Result()
 
 /**
  * Result produced a user makes a CHECK.
  */
-object CHECK : Result()
+class CHECK(val chess: Chess,val playerInCheck: Player) : Result()
 
 /**
  * Result produced a user makes a CHECKMATE.
  */
-object CHECKMATE : Result()
+class CHECKMATE(val chess: Chess, playerInCheckMate: Player) : Result()

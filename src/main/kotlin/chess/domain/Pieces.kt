@@ -294,7 +294,7 @@ data class King (override val player: Player) : Piece {
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> {
 
-        val moves = getMovesByAddingDirection(possibleDirections, pos, board, false).toMutableList()
+        val moves = getMovesByAddingDirection(possibleDirections, pos, board, verifyForCheck).toMutableList()
 
         if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))) {
             moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
