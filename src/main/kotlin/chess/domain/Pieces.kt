@@ -37,7 +37,7 @@ sealed interface Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    fun getPossibleMoves(board: Board, pos: Square): List<PieceMove>
+    fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove>
 
     /**
      * @param board         the board to check the movement on
@@ -131,7 +131,7 @@ class Pawn (override val player: Player) : Piece  {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
+    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> {
         val moves = mutableListOf<PieceMove>()
         val colorDirection = if (belongsToWhitePlayer())  UP else DOWN
         if(!hasMoved() && board.getPiece(pos.addDirectionNotNull(Direction(0, 1 * colorDirection))) == null && board.getPiece(pos.addDirectionNotNull(Direction(0, 2 * colorDirection))) == null){
@@ -161,6 +161,8 @@ class Pawn (override val player: Player) : Piece  {
         if(pos.addDirection(possibleDirections[0]) != null && board.getPiece(pos.addDirectionNotNull(possibleDirections[0])) == null){
             moves.add(PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
         }
+        
+        
         return moves
     }
 
@@ -174,7 +176,7 @@ class Pawn (override val player: Player) : Piece  {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if(isCheckMate(board)) return MoveType.CHECKMATE
 
-        return when(getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)){
+        return when(getPossibleMoves(board, pieceInfo.startSquare,false).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
             canPromote(pieceInfo) -> MoveType.PROMOTION
             isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
@@ -289,8 +291,10 @@ data class King (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> {
-        val moves = getMovesByAddingDirection(possibleDirections, pos, board).toMutableList()
+    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> {
+
+        val moves = getMovesByAddingDirection(possibleDirections, pos, board, verifyForCheck).toMutableList()
+
         if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))) {
             moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
         }
@@ -309,7 +313,7 @@ data class King (override val player: Player) : Piece {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if (canCastle(board, pieceInfo)) return MoveType.CASTLE
-        return when (getPossibleMoves(board, pieceInfo.startSquare).contains(pieceInfo)) {
+        return when ( getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board) ).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
             isKingInCheckPostMove(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null -> MoveType.REGULAR
@@ -332,7 +336,7 @@ data class King (override val player: Player) : Piece {
             Direction(RIGHT, 0),
             Direction(LEFT, 0)
         )
-        val possibleMovesUnfiltered = getMoves(possibleDirections, pieceInfo.startSquare, board)
+        val possibleMovesUnfiltered = getMoves(possibleDirections, pieceInfo.startSquare, board,false)
         val possibleCastleMoves = possibleMovesUnfiltered.filter { it.endSquare.column.number - it.startSquare.column.number == 2 }
 
         if (!possibleCastleMoves.contains(pieceInfo)) return false
@@ -390,7 +394,7 @@ data class Queen (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(possibleDirections, pos, board)
+    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
 
     /**
      * @param board         the board to check the movement on
@@ -445,7 +449,7 @@ data class Rook (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(possibleDirections, pos, board)
+    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
 
     /**
      * @param board         the board to check the movement on
@@ -488,7 +492,7 @@ data class Knight (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> =  getMovesByAddingDirection(possibleDirections, pos, board)
+    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMovesByAddingDirection(possibleDirections, pos, board,verifyForCheck)
 
     /**
      * @param board         the board to check the movement on
@@ -526,7 +530,7 @@ data class Bishop (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible moves for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square): List<PieceMove> = getMoves(possibleDirections, pos, board)
+    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
 
 
     /**

@@ -128,35 +128,31 @@ data class Board internal constructor(
     fun asList(): List<Piece?> {
         return board
     }
+}
 
-    private fun getAllBoardMoves(): Pair<List<PieceMove>, List<PieceMove>> {
-        val playerMoves = mutableListOf<PieceMove>()
-        val opponentMoves = mutableListOf<PieceMove>()
-        this.asList().forEachIndexed { idx, p ->
-            if (p != null) {
-                if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
-                else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
-            }
+private fun Board.getAllBoardMoves(): Pair<List<PieceMove>, List<PieceMove>> {
+    val playerMoves = mutableListOf<PieceMove>()
+    val opponentMoves = mutableListOf<PieceMove>()
+    this.asList().forEachIndexed { idx, p ->
+        if (p != null) {
+            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
+            else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare()))
         }
-        return Pair(playerMoves, opponentMoves)
     }
-
-    private val allMoves = getAllBoardMoves()
-    private val playerMoves = allMoves.first.map { it.endSquare }
-    private val opponentMoves = allMoves.second.map { it.endSquare }
-
-
-    fun playerMoves(p: Player): List<Square> {
-        return if (p == player) playerMoves
-        else opponentMoves
-    }
-
-
+    return Pair(playerMoves, opponentMoves)
 }
 
 
+fun Board.playerMoves(p: Player): List<Square> {
+    val allMoves = this.getAllBoardMoves()
+    val playerMoves = allMoves.first.map { it.endSquare }
+    val opponentMoves = allMoves.second.map { it.endSquare }
+    return if (p == player) playerMoves
+    else opponentMoves
+}
+
 /**
- * @param square the Square where the piece to be promoted is placed
+ *
  * @return true if the piece is a promoted or false if it isn't
  */
 fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{

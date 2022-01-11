@@ -43,7 +43,8 @@ fun getGameName(
     val input = remember { mutableStateOf("") }
 
     val filterGameName = {
-        val gameId = input.value.toGameNameOrNull()
+        val inputWithoutEnter = input.value.trim()
+        val gameId = inputWithoutEnter.toGameNameOrNull()
         if(gameId != null){
             onSelection(gameId)
         }else{

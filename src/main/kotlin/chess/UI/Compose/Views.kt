@@ -91,6 +91,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
         if (!showPossibleMoves.value) possibleMovesList.value = emptyList()
 
         if (isAskingForName.value) {
+
             getGameName(
                 actionToDisplay.value.text,
                 onClose = { isAskingForName.value = false }
@@ -106,6 +107,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
         }
 
         if (isSelectingPromotion.value) {
+
             selectPossiblePromotions(
                 chess.value.currentPlayer,
                 onClose = { isSelectingPromotion.value = false }
@@ -124,6 +126,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 delay(1500)
             }
         }
+
     //TODO on open or join game chess board isnt uopdating after the game is deleted from db
         //above here is all confirmed
         //from down here the things must still be checked

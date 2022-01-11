@@ -12,7 +12,6 @@ import doCastling
 import doEnpassant
 import promotePieceAndMove
 
-private const val PAWN_INPUT = 2
 private const val NO_PIECE_INPUT = 4
 
 /**
@@ -28,7 +27,7 @@ fun openAction(gameId: GameName,chess: Chess): Result {
     val gameExists = chess.dataBase.createGameDocumentIfItNotExists(gameId)
 
     val board = if (gameExists) {
-        updateNewBoard(chess.dataBase, gameId, Board())
+        updateNewBoard(chess.dataBase, gameId)
     }else{
         Board()
     }
@@ -44,7 +43,7 @@ fun openAction(gameId: GameName,chess: Chess): Result {
 fun joinAction(gameId: GameName,chess: Chess): Result {
     if(!chess.dataBase.doesGameExist(gameId)) return ERROR
 
-    val board = updateNewBoard(chess.dataBase, gameId, Board())
+    val board = updateNewBoard(chess.dataBase, gameId)
 
     val moves = getMovesAction(gameId, chess.dataBase)
 
@@ -64,7 +63,7 @@ fun playAction(move: String, chess: Chess): Result {
     val filteredInput = filterInput(move, chess.board) ?: return ERROR
     var newBoard : Board = chess.board
 
-    val movement = canPieceMoveTo(filteredInput.filteredMove, chess.board)
+    val movement = getMoveType(filteredInput.filteredMove, chess.board)
     when (movement) {
         MoveType.ILLEGAL -> return ERROR;
         MoveType.CASTLE -> {
@@ -110,7 +109,7 @@ fun playAction(move: String, chess: Chess): Result {
 
 fun refreshBoardAction(chess: Chess): Chess {
     require(chess.currentGameId != null)
-    val board = updateNewBoard(chess.dataBase, chess.currentGameId, chess.board)
+    val board = updateAnExistentBoard(chess.dataBase, chess.currentGameId, chess.board)
     return Chess(board,chess.dataBase,chess.currentGameId,chess.currentPlayer)
 }
 
@@ -147,9 +146,23 @@ private fun filterToDbString(filteredMove: Moves, type: MoveType): Move {
  */
 fun Board.isTheMovementPromotable(move: String): Boolean {
     val filteredInput = filterInput(move, this) ?: return false
-    return canPieceMoveTo(filteredInput.filteredMove, this) == MoveType.PROMOTION
+    return getMoveType(filteredInput.filteredMove, this) == MoveType.PROMOTION
 }
 
+
+/**
+ * @param dataBase      the database to use
+ * @param gameId        the id of the game to update from
+ * Updates a board with the moves from the DataBase with the given gameId.
+ */
+private fun updateNewBoard(dataBase: DataBase, gameId: GameName): Board =
+    dataBase.getAllMoves(gameId).fold(Board()) {
+            acc, move ->
+
+        val filteredInput = filterInput(move.move, acc) ?: throw IllegalArgumentException("Invalid move from db")
+
+        evaluateMoveAndUpdateBoard(filteredInput, acc)
+}
 
 /**
  * @param dataBase      the database to use
@@ -157,57 +170,46 @@ fun Board.isTheMovementPromotable(move: String): Boolean {
  * @param board         the board to update
  * Updates a board with the moves from the DataBase with the given gameId.
  */
-private fun updateNewBoard(dataBase: DataBase, gameId: GameName, board: Board): Board =
-    dataBase.getAllMoves(gameId).fold(board) {
-            acc, move ->
+private fun updateAnExistentBoard(dataBase: DataBase, gameId: GameName,board: Board): Board {
+     val move = dataBase.getLastMove(gameId).move
 
-        val filteredInput = filterInput(move.move, acc) ?: return acc
+    val filteredInput = filterInput(move, board) ?: return board
 
-         when (canPieceMoveTo(filteredInput.filteredMove, acc)) {
-            MoveType.CASTLE -> {
-                acc.doCastling(filteredInput.filteredMove.formatToPieceMove())
-            }
-            MoveType.PROMOTION -> {
-                acc.promotePieceAndMove(filteredInput.filteredMove, filteredInput.databaseMove.last())
-            }
-            MoveType.ENPASSANT -> {
-                acc.doEnpassant(filteredInput.filteredMove.formatToPieceMove())
-            }
-            MoveType.REGULAR -> {
-                acc.makeMove(filteredInput.filteredMove)
-            }
-            MoveType.CAPTURE -> {
-                acc.makeMove(filteredInput.filteredMove)
-            }
-            MoveType.CHECK -> {
-                acc.makeMove(filteredInput.filteredMove)
-            }
-            MoveType.CHECKMATE -> {
-                acc.makeMove(filteredInput.filteredMove)
-            }
-            else -> acc
-        }
-
-
-
-        /*
-
-        val moveFiltered = filterInput(move.move,board)
-        if(moveFiltered != null) {
-            if(moveFiltered.databaseMove.contains("=")) {
-                acc.promotePieceAndMove(moveFiltered.filteredMove, moveFiltered.databaseMove.last())
-            }
-            else if(moveFiltered.databaseMove.contains(".ep")) {
-                acc.doEnpassant(moveFiltered.filteredMove.formatToPieceMove())
-            }
-            else {
-                acc.makeMove(moveFiltered.filteredMove)
-            }
-
-        }else acc
-         */
+    return evaluateMoveAndUpdateBoard(filteredInput, board)
 }
 
+/**
+ * Added to avoid code duplication
+ * @param filteredInput the input to be evaluated
+ * @param board         the board to update
+ * @return              the updated board
+ */
+private fun evaluateMoveAndUpdateBoard(filteredInput : Moves, board: Board): Board {
+    return when (getMoveType(filteredInput.filteredMove, board)) {
+        MoveType.CASTLE -> {
+            board.doCastling(filteredInput.filteredMove.formatToPieceMove())
+        }
+        MoveType.PROMOTION -> {
+            board.promotePieceAndMove(filteredInput.filteredMove, filteredInput.databaseMove.last())
+        }
+        MoveType.ENPASSANT -> {
+            board.doEnpassant(filteredInput.filteredMove.formatToPieceMove())
+        }
+        MoveType.REGULAR -> {
+            board.makeMove(filteredInput.filteredMove)
+        }
+        MoveType.CAPTURE -> {
+            board.makeMove(filteredInput.filteredMove)
+        }
+        MoveType.CHECK -> {
+            board.makeMove(filteredInput.filteredMove)
+        }
+        MoveType.CHECKMATE -> {
+            board.makeMove(filteredInput.filteredMove)
+        }
+        else -> board
+    }
+}
 
 
 /**
