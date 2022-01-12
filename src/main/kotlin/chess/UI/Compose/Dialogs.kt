@@ -38,7 +38,7 @@ private val IMAGE_PROMOTION_SIZE = 50.dp
 fun getGameName(
     actionName : String,
     onClose : () -> Unit,
-    onSelection : (name : GameName) -> Unit
+    onSubmit : (name : GameName) -> Unit
 ){
     val input = remember { mutableStateOf("") }
 
@@ -46,7 +46,7 @@ fun getGameName(
         val inputWithoutEnter = input.value.trim()
         val gameId = inputWithoutEnter.toGameNameOrNull()
         if(gameId != null){
-            onSelection(gameId)
+            onSubmit(gameId)
         }else{
             input.value = ""
         }

@@ -27,4 +27,4 @@ class CHECK(val chess: Chess,val playerInCheck: Player) : Result()
 /**
  * Result produced a user makes a CHECKMATE.
  */
-class CHECKMATE(val chess: Chess, playerInCheckMate: Player) : Result()
+class CHECKMATE(val chess: Chess,val playerInCheckMate: Player) : Result()

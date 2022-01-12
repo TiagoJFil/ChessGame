@@ -54,7 +54,7 @@ private enum class ACTION(val text: String) {
 @Composable
 fun ApplicationScope.App(chessInfo: Chess) {
     val chess = remember { mutableStateOf(chessInfo) }
-    val promotionType = remember { mutableStateOf("") }                     // The type of piece the user wants to promote to
+    val promotionValue = remember { mutableStateOf("") }                     // The type of piece the user wants to promote to
     val isSelectingPromotion = remember { mutableStateOf(false) }           // Open the dialog to select a promotion
     val isAskingForName = remember { mutableStateOf(false) }                // Open the dialog to ask for a name
     val actionToDisplay = remember { mutableStateOf(ACTION.OPEN) }
@@ -95,16 +95,17 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
             getGameName(
                 actionToDisplay.value.text,
-                onClose = { isAskingForName.value = false }
-            ) {
+                onClose = { isAskingForName.value = false },
+                onSubmit = {
                 if (actionToDisplay.value == ACTION.JOIN) {
                     result.value = joinAction(it, chess.value)
-
                 } else {
                     result.value = openAction(it, chess.value)
                 }
                 isAskingForName.value = false
-            }
+                }
+            )
+
         }
 
         if (isSelectingPromotion.value) {
@@ -113,7 +114,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 chess.value.currentPlayer,
                 onClose = { isSelectingPromotion.value = false }
             ) {
-                    promotionType.value = it
+                    promotionValue.value = "=$it"
                     isSelectingPromotion.value = false
                 }
         }
@@ -169,7 +170,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 chess.value,
                 move.value,
                 result,
-                promotionType,
+                promotionValue,
                 isSelectingPromotion,
             )
             areMovesUpdated.value = false
@@ -238,16 +239,26 @@ fun handleResult(
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
         }
         is CHECK -> {
-            //TODO: make check apper on the player received
             val res = (result.value as CHECK)
+            val player = res.playerInCheck
+
             chess.value = res.chess
             result.value = NONE()
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
-            //TODO fix this, somewhere its wrong
-            showCheckInfo.value = true
+
+            if(player == chess.value.currentPlayer)
+                showCheckInfo.value = true
         }
         is CHECKMATE -> {
-            showCheckMateInfo.value = true
+            val res = (result.value as CHECKMATE)
+            val player = res.playerInCheckMate
+
+            chess.value = res.chess
+            result.value = NONE()
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+
+            if(player == chess.value.currentPlayer)
+                showCheckMateInfo.value = true
         }
     }
 
@@ -262,7 +273,7 @@ private fun dealWithMovement(
     chess: Chess,
     move: String,
     result: MutableState<Result>,
-    promotionType: MutableState<String>,
+    promotionValue: MutableState<String>,
     isSelectingPromotion: MutableState<Boolean>
 ){
     val finish = clicked.value as FINISH
@@ -272,11 +283,11 @@ private fun dealWithMovement(
     val currentPlayer = chess.currentPlayer
     val endPiece = chess.board.getPiece(finish.square.toSquare())
     val finalMoveString = remember { mutableStateOf("") }
-    if(promotionType.value == "" && board.isTheMovementPromotable("$startSquare$finishSquare")) {
+    if(promotionValue.value == "" && board.isTheMovementPromotable("$startSquare$finishSquare")) {
         isSelectingPromotion.value = true
     }
 
-    finalMoveString.value =move + finish.square + "=" + promotionType.value
+    finalMoveString.value =move + finish.square + promotionValue.value
 
 
     val value = playAction(finalMoveString.value, chess)
@@ -305,7 +316,7 @@ private fun dealWithMovement(
             clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
         }
     }
-    promotionType.value = ""
+    promotionValue.value = ""
 }
 
 
