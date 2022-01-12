@@ -1,6 +1,6 @@
 
 import chess.GameName
-import chess.Storage.ChessDataBase
+import chess.Storage.ChessRepository
 import isel.leic.tds.storage.DbMode
 import isel.leic.tds.storage.getDBConnectionInfo
 import isel.leic.tds.storage.mongodb.createMongoClient
@@ -13,6 +13,6 @@ class MongoDBTest(){
         val driver =
             if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
             else createMongoClient()
-        val game = ChessDataBase(driver.getDatabase(dbInfo.dbName)).doesGameExist(GameName(""))
+        val game = ChessRepository(driver.getDatabase(dbInfo.dbName)).doesGameExist(GameName(""))
     }
 }

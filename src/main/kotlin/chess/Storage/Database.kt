@@ -1,69 +1,73 @@
 package chess.Storage
 
 import chess.GameName
+import chess.Storage.MongoDb.createDocument
+import chess.Storage.MongoDb.getCollectionWithId
+import chess.Storage.MongoDb.getDocument
+import chess.Storage.MongoDb.updateDocument
 import com.mongodb.MongoException
 import com.mongodb.client.MongoDatabase
-import isel.leic.tds.storage.mongodb.*
 
-class ChessGameAccessException(cause: Exception): Exception(cause)
+
+class ChessDataBaseAccessException(cause: Exception): Exception(cause)
 private const val COLLECTION_NAME = "Games"
 
 /**
  * Contract to be supported by the database using MongoDB storage
  */
-interface DataBase {
+interface ChessDatabase {
 
     /**
      * Creates a new Collection with the given gameId if the collection does not exist
      * @param gameId      the id of the collection to be created
      * @return            a [Boolean] value indicating whether the collection was already exists (true) or if it created (false)
      */
-    fun createGameDocumentIfItNotExists(gameId: GameName): Boolean
+    suspend fun createGameDocumentIfItNotExists(gameId: GameName): Boolean
 
     /**
      * @param gameId     the id of the game whre we will put the move
      * @param move       the move to add to the dataBase
      * @return      a boolean value indicating whether the operation was successful (true) or not (false)
      */
-    fun addMoveToDb(move: Move, gameId: GameName): Boolean
+    suspend fun addMoveToDb(move: Move, gameId: GameName): Boolean
 
     /**
      * Gets the last movement played in the game
      * @param gameId     the id of the game where we will get the last move played from.
      */
-    fun getLastMove(gameId: GameName): Move?
+    suspend fun getLastMove(gameId: GameName): Move?
 
     /**
      * @param gameId     the id of the game where we will get the move count from
      * @return           the number of moves played in the game
      */
-    fun getMoveCount(gameId: GameName): Int
+    suspend fun getMoveCount(gameId: GameName): Int
 
     /**
      * Gets the list of movement already played in the game
      * @param gameId     the id of the game where we will get the moves played from.
      * @return           an [Iterable] of [Move]s played in the game
      */
-    fun getAllMoves(gameId: GameName): Iterable<Move>
+    suspend fun getAllMoves(gameId: GameName): Iterable<Move>
 
     /**
      * @param gameId     the id of the game where we will check if it exists
      * @return           a [Boolean] value indicating whether the game exists (true) or not (false)
      */
-    fun doesGameExist(gameId: GameName): Boolean
+    suspend fun doesGameExist(gameId: GameName): Boolean
 }
 
 /**
- * Implementation of the [DataBase] contract using MongoDB
+ * Implementation of the [ChessDatabase] contract using MongoDB
  */
-class ChessDataBase(private val db: MongoDatabase) : DataBase {
+class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
 
     /**
      * @param gameId     the id of the game whre we will put the move
      * @param move       the move to add to the dataBase
      * @return      a boolean value indicating whether the operation was successful (true) or not (false)
      */
-    override fun addMoveToDb(move: Move, gameId: GameName): Boolean {
+    override suspend fun addMoveToDb(move: Move, gameId: GameName): Boolean {
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: return false
@@ -73,7 +77,7 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
 
          return true
         } catch (e: MongoException) {
-            throw ChessGameAccessException(e)
+            throw ChessDataBaseAccessException(e)
         }
     }
 
@@ -82,7 +86,7 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
      * @param gameId      the id of the collection to be created
      * @return            a [Boolean] value indicating whether the collection was already exists (true) or if it created (false)
      */
-    override fun createGameDocumentIfItNotExists(gameId: GameName): Boolean {
+    override suspend fun createGameDocumentIfItNotExists(gameId: GameName): Boolean {
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id)
@@ -92,23 +96,25 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
             }
             return true
         } catch (e: MongoException) {
-            throw ChessGameAccessException(e)
+            throw ChessDataBaseAccessException(e)
         }
     }
+
+
 
     /**
      * Gets the list of movement already played in the game
      * @param gameId     the id of the game where we will get the moves played from.
      * @return           an [Iterable] of [Move]s played in the game
      */
-    override fun getAllMoves(gameId: GameName): Iterable<Move> {
+    override suspend fun getAllMoves(gameId: GameName): Iterable<Move> {
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: Document(gameId.id, listOf())
 
             return  doc.moves.asIterable()
         } catch (e: MongoException) {
-            throw ChessGameAccessException(e)
+            throw ChessDataBaseAccessException(e)
         }
     }
 
@@ -116,7 +122,7 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
      * Gets the last movement played in the game
      * @param gameId     the id of the game where we will get the last move played from.
      */
-    override fun getLastMove(gameId: GameName) : Move? {
+    override suspend fun getLastMove(gameId: GameName) : Move? {
         try{
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: Document(gameId.id, listOf())
@@ -124,7 +130,7 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
             return if(moveList.isEmpty()) null
             else moveList.last()
         } catch (e: MongoException) {
-            throw ChessGameAccessException(e)
+            throw ChessDataBaseAccessException(e)
         }
     }
 
@@ -132,14 +138,14 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
      * @param gameId     the id of the game where we will get the move count from
      * @return           the number of moves played in the game
      */
-    override fun getMoveCount(gameId: GameName): Int {
+    override suspend fun getMoveCount(gameId: GameName): Int {
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: Document(gameId.id, listOf())
 
             return  doc.moves.size
         } catch (e: MongoException) {
-            throw ChessGameAccessException(e)
+            throw ChessDataBaseAccessException(e)
         }
     }
 
@@ -147,12 +153,12 @@ class ChessDataBase(private val db: MongoDatabase) : DataBase {
      * @param gameId     the id of the game where we will check if it exists
      * @return           a [Boolean] value indicating whether the game exists (true) or not (false)
      */
-    override fun doesGameExist(gameId: GameName): Boolean{
+    override suspend fun doesGameExist(gameId: GameName): Boolean{
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             return (collection.getDocument(gameId.id) != null)
         } catch (e: MongoException) {
-            throw ChessGameAccessException(e)
+            throw ChessDataBaseAccessException(e)
         }
     }
 

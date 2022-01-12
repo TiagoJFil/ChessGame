@@ -155,7 +155,7 @@ class PawnTest {
          val sut = Board().makeMove("Pe2e4").makeMove("ph7h6").makeMove("Pe4e5").makeMove("pd7d5")
         val endPos = Square(Column.E, Row.Five)
         val piece = sut.getPiece(endPos)
-        val moves = piece!!.getPossibleMoves(sut,endPos)
+        val moves = piece!!.getPossibleMoves(sut,endPos,false)
         println(moves)
         assert(moves.contains(PieceMove((Square(Column.E,Row.Five)),(Square(Column.D,Row.Six)))))
     }
@@ -165,7 +165,7 @@ class PawnTest {
         val sut = Board().makeMove("Pe2e4").makeMove("ph7h6").makeMove("Pe4e5").makeMove("pf7f6").makeMove("Ph2h3").makeMove("pd7d5")
         val endPos = Square(Column.E, Row.Five)
         val piece = sut.getPiece(endPos)
-        val moves = piece!!.getPossibleMoves(sut,endPos)
+        val moves = piece!!.getPossibleMoves(sut,endPos,verifyForCheck = false)
         println(moves)
         assert(moves.size == 3)
     }
@@ -175,7 +175,7 @@ class PawnTest {
         val sut = Board().makeMove("Pe2e4").makeMove("ph7h6").makeMove("Pe4e5").makeMove("pd7d5").makeMove("Ph2h3").makeMove("pf7f6")
         val endPos = Square(Column.E, Row.Five)
         val piece = sut.getPiece(endPos)
-        val moves = piece!!.getPossibleMoves(sut,endPos)
+        val moves = piece!!.getPossibleMoves(sut,endPos, verifyForCheck = false)
         println(moves)
         assert(moves.size == 2)
     }

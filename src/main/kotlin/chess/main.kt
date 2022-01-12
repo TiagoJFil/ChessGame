@@ -2,12 +2,13 @@ package chess
 
 import Board
 import androidx.compose.ui.window.application
-import chess.Storage.ChessDataBase
+import chess.Storage.ChessRepository
+import chess.Storage.MongoDb.createMongoClient
 import chess.UI.Compose.App
 import chess.domain.Player
 import isel.leic.tds.storage.DbMode
 import isel.leic.tds.storage.getDBConnectionInfo
-import isel.leic.tds.storage.mongodb.createMongoClient
+
 
 
 fun main() {
@@ -18,7 +19,7 @@ fun main() {
 
 
     driver.use {
-        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
+        val chessGame = Chess(Board(), ChessRepository(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
         application {
             App(chessGame)
         }

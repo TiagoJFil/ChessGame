@@ -43,8 +43,7 @@ fun getGameName(
     val input = remember { mutableStateOf("") }
 
     val filterGameName = {
-        val inputWithoutEnter = input.value.trim()
-        val gameId = inputWithoutEnter.toGameNameOrNull()
+        val gameId = input.value.toGameNameOrNull()
         if(gameId != null){
             onSubmit(gameId)
         }else{
@@ -67,7 +66,7 @@ fun getGameName(
             )
             TextField(
                 value = input.value,
-                onValueChange = { input.value = it },
+                singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 5.dp)
@@ -76,7 +75,8 @@ fun getGameName(
                             filterGameName()
                         }
                         true
-                    }
+                    },
+                onValueChange = { input.value = it }
             )
             Button(
                 onClick = { filterGameName() },

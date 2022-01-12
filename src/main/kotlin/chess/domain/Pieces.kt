@@ -162,10 +162,13 @@ class Pawn (override val player: Player) : Piece  {
             moves += (PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
         }
 
-        if(verifyForCheck) moves = moves.filter { it.endSquare in board.playerMoves(!board.player,false) && !isKingInCheckPostMove(board,it)}
+        if(verifyForCheck) moves = moves.filter { it.endSquare in board.counterCheckMoves(!board.player)  && !isKingInCheckPostMove(board,it) }
 
         return moves
     }
+
+
+
 
 
     /**
@@ -294,14 +297,18 @@ data class King (override val player: Player) : Piece {
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> {
 
-        val moves = getMovesByAddingDirection(possibleDirections, pos, board, verifyForCheck).toMutableList()
+        var moves = getMovesByAddingDirection(possibleDirections, pos, board)
 
         if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))) {
-            moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
+            moves += (PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
         }
         if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * LEFT, 0))))) {
-            moves.add(PieceMove(pos, pos.addDirectionNotNull(Direction(LEFT, 0))))
+            moves += (PieceMove(pos, pos.addDirectionNotNull(Direction(LEFT, 0))))
         }
+
+        if(verifyForCheck) moves = moves.filter {  it.endSquare !in  board.playerMoves(!board.player,false)  && !isKingInCheckPostMove(board,it) }
+
+
         return moves
     }
 
@@ -314,7 +321,7 @@ data class King (override val player: Player) : Piece {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if (canCastle(board, pieceInfo)) return MoveType.CASTLE
-        return when ( getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board) ).contains(pieceInfo)) {
+        return when ( getPossibleMoves(board, pieceInfo.startSquare, true ).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
             isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null -> MoveType.REGULAR
@@ -493,7 +500,12 @@ data class Knight (override val player: Player) : Piece {
      * @param board    the board where the piece is
      * @return the list of possible directions for the piece
      */
-    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMovesByAddingDirection(possibleDirections, pos, board,verifyForCheck)
+    override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> {
+
+        var moves = getMovesByAddingDirection(possibleDirections, pos, board)
+        if(verifyForCheck) moves = moves.filter {  it.endSquare in board.counterCheckMoves(!board.player)  && !isKingInCheckPostMove(board,it) }
+        return moves
+    }
 
     /**
      * @param board         the board to check the movement on

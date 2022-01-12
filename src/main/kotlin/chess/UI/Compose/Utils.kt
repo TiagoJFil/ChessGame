@@ -2,19 +2,18 @@ package chess.UI.Compose
 
 import Board
 import androidx.compose.runtime.MutableState
-import chess.Chess
 import chess.GameName
-import chess.Storage.ChessDataBase
+import chess.Storage.ChessRepository
 import chess.Storage.Move
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
-import chess.domain.commands.getMovesAction
+import chess.domain.commands.getPlayedMoves
 import chess.domain.getPiecePossibleMovesFrom
 
 
-fun getMovesAsString(gameId : GameName, database: ChessDataBase): String {
-    val moves = getMovesAction(gameId,database)
+suspend fun getMovesAsString(gameId : GameName, database: ChessRepository): String {
+    val moves = getPlayedMoves(gameId,database)
 
     if (moves.count() == 0) return ""
     var res = ""

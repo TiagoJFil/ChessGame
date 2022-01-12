@@ -2,8 +2,10 @@ package chess.domain
 
 import Board
 import Direction
+import King
 import Piece
 import chess.domain.board_components.*
+import counterCheckMoves
 import playerMoves
 
 //TODO : add a movetype for promotion and capture or change into sealed class and the promotion to have values
@@ -56,9 +58,9 @@ fun PieceMove.formatToString(board : Board) =
  * @param board                  the [Board] to verify the moves on
  * @return the list of possible [PieceMove] for the piece given
  */
-fun getMovesByAddingDirection(possibleDirections : List<Direction> , pos : Square, board : Board, verifyForCheck: Boolean): List<PieceMove> {
+fun getMovesByAddingDirection(possibleDirections : List<Direction> , pos : Square, board : Board): List<PieceMove> {
     val startingPiece = board.getPiece(pos) ?: return emptyList()
-    var moves = possibleDirections.mapNotNull {
+    val moves = possibleDirections.mapNotNull {
         val newPos = pos.addDirection(it)
         if (newPos != null) {
             val piece = board.getPiece(newPos)
@@ -69,9 +71,7 @@ fun getMovesByAddingDirection(possibleDirections : List<Direction> , pos : Squar
         else null
     }
 
-    if(verifyForCheck){
-        moves = moves.filter { it.endSquare in board.playerMoves(!board.player,false) && !isKingInCheckPostMove(board,it)}
-    }
+
     return moves
 }
 
@@ -105,7 +105,7 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ,
             newPos = newPos.addDirection(it)
         }
     }
-    if(verifyForCheck) moves = moves.filter { it.endSquare in board.playerMoves(!board.player,false) && !isKingInCheckPostMove(board,it)}
+    if(verifyForCheck) moves = moves.filter {  it.endSquare in board.counterCheckMoves(!board.player)  && !isKingInCheckPostMove(board,it) }
 
     return moves
 }
@@ -149,6 +149,7 @@ fun getMoveType(moveString:String, board: Board): MoveType {
  */
 fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMove> {
     val piece = board.getPiece(this) ?: return emptyList()
+     if(piece is King) return piece.getPossibleMoves(board,this,true)
     if(piece.player != player)
         return emptyList()
 
