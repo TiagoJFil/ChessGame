@@ -1,16 +1,3 @@
-
-import chess.Chess
-import chess.GameName
-import chess.Storage.ChessDataBase
-
-import chess.domain.Player
-
-import isel.leic.tds.storage.DbMode
-import isel.leic.tds.storage.getDBConnectionInfo
-import isel.leic.tds.storage.mongodb.createMongoClient
-import org.junit.Assert.assertEquals
-import org.junit.Test
-
 class ActionsTest {
 /*
     @Test

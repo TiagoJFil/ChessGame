@@ -1,12 +1,8 @@
 package chess
 
 import Board
-import androidx.compose.ui.window.ApplicationScope
-import chess.Storage.ChessDataBase
-import chess.domain.PieceMove
+import chess.Storage.ChessRepository
 import chess.domain.Player
-import chess.domain.board_components.Square
-import com.mongodb.client.MongoClient
 
 
 /**
@@ -14,9 +10,9 @@ import com.mongodb.client.MongoClient
  * @property board                 the board containing the chess pieces
  * @property dataBase              the database to use
  * @property currentGameId         the GameId of the current game, can be null if no game is running
- * @property currentPlayer         the current Player on this machine
+ * @property localPlayer         the current Player on this machine
  */
-data class Chess(val board: Board, val dataBase: ChessDataBase, val currentGameId: GameName?, val currentPlayer: Player)
+data class Chess(val board: Board, val dataBase: ChessRepository, val currentGameId: GameName?, val localPlayer: Player)
 
 /**
  * Represents a GameId with an identifier.

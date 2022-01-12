@@ -1,9 +1,8 @@
-import chess.Storage.Move
 import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.*
 import chess.domain.formatToPieceMove
-import org.junit.Test
+
 
 
 const val BOARD_SIZE = 8
@@ -88,7 +87,7 @@ data class Board internal constructor(
 
 
     /**
-     * @param move the [Move] we want to make
+     * @param move the movement we want to make
      * @return the [Board] after the move
      * Makes a move on the board and changes the player turn
      */
@@ -130,26 +129,54 @@ data class Board internal constructor(
     }
 }
 
-private fun Board.getAllBoardMoves(verifyError: Boolean): Pair<List<PieceMove>, List<PieceMove>> {
+private fun Board.getAllBoardMoves(inCheck: Boolean): Pair<List<PieceMove>, List<PieceMove>> {
     val playerMoves = mutableListOf<PieceMove>()
     val opponentMoves = mutableListOf<PieceMove>()
     this.asList().forEachIndexed { idx, p ->
         if (p != null) {
-            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare(),verifyError))
-            else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare(), verifyError))
+            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare(),inCheck))
+            else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare(), inCheck))
         }
     }
     return Pair(playerMoves, opponentMoves)
 }
 
+private fun Board.getAllBoardMoves(inCheck: Boolean, player: Player): List<PieceMove> {
+    val playerMoves = mutableListOf<PieceMove>()
+    this.asList().forEachIndexed { idx, p ->
+        if (p != null) {
+            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare(),inCheck))
+        }
+    }
+    return playerMoves
+}
 
-fun Board.playerMoves(p: Player, verifyError: Boolean): List<Square> {
-    val allMoves = this.getAllBoardMoves(verifyError)
+
+fun Board.playerMoves(p: Player, inCheck: Boolean): List<Square> {
+    val allMoves = this.getAllBoardMoves(inCheck)
     val playerMoves = allMoves.first.map { it.endSquare }
     val opponentMoves = allMoves.second.map { it.endSquare }
     return if (p == player) playerMoves
     else opponentMoves
 }
+
+fun Board.counterCheckMoves(player: Player): List<Square> =
+    this.asList().foldRightIndexed(listOf<Square>()) { idx, p, acc ->
+        if (p != null && p.player == player) {
+
+            val piecePossibleMoves = p.getPossibleMoves(this, idx.toSquare(), false).map { it.endSquare }
+            val piecePos = idx.toSquare()
+            val pieceAntiCheckPositions = piecePossibleMoves + piecePos
+
+            acc + pieceAntiCheckPositions
+
+        } else acc
+
+
+    }
+
+
+
 
 /**
  *

@@ -18,7 +18,7 @@ import chess.domain.getPiecePossibleMovesFrom
 import doesBelongTo
 import doesNotBelongTo
 import kotlinx.coroutines.delay
-
+import kotlinx.coroutines.launch
 
 
 private const val ORANGE = 0xFFB5651E
@@ -75,6 +75,8 @@ fun ApplicationScope.App(chessInfo: Chess) {
         title = "Chess",
         resizable = false
     ) {
+        //while this function is running , there will be coroutines running
+        val coroutineScope = rememberCoroutineScope()
 
         chessMenu(
             onClickOpen = {
@@ -98,11 +100,19 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 onClose = { isAskingForName.value = false },
                 onSubmit = {
                 if (actionToDisplay.value == ACTION.JOIN) {
-                    result.value = joinAction(it, chess.value)
+
+                    coroutineScope.launch {
+                        result.value = joinGame(it, chess.value)
+                    }
+
                 } else {
-                    result.value = openAction(it, chess.value)
+                    coroutineScope.launch {
+                        result.value = openGame(it, chess.value)
+                    }
                 }
-                isAskingForName.value = false
+
+                    isAskingForName.value = false
+                    areMovesUpdated.value = false
                 }
             )
 
@@ -111,7 +121,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
         if (isSelectingPromotion.value) {
 
             selectPossiblePromotions(
-                chess.value.currentPlayer,
+                chess.value.localPlayer,
                 onClose = { isSelectingPromotion.value = false }
             ) {
                     promotionValue.value = "=$it"
@@ -119,10 +129,10 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 }
         }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(chess.value) {
             while(true) {
-                if(chess.value.currentGameId != null && chess.value.currentPlayer != chess.value.board.player) {
-                    result.value = refreshBoardAction(chess.value,null)
+                if(chess.value.currentGameId != null && chess.value.localPlayer != chess.value.board.player) {
+                    result.value = refreshBoard(chess.value,null)
                     areMovesUpdated.value = false
                 }
                 delay(1500)
@@ -138,7 +148,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
             val board = chess.value.board
 
             val startSquare = start.square.toSquare()
-            val currentPlayer = chess.value.currentPlayer
+            val currentPlayer = chess.value.localPlayer
 
             if (currentPlayer != board.player) {
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
@@ -163,30 +173,90 @@ fun ApplicationScope.App(chessInfo: Chess) {
         }
 
         if (clicked.value is FINISH) {
-            dealWithMovement(
-                clicked,
-                possibleMovesList,
-                showPossibleMoves.value,
-                chess.value,
-                move.value,
-                result,
-                promotionValue,
-                isSelectingPromotion,
-            )
+            coroutineScope.launch {
+
+
+                dealWithMovement(
+                    clicked,
+                    possibleMovesList,
+                    showPossibleMoves.value,
+                    chess.value,
+                    move.value,
+                    result,
+                    promotionValue,
+                    isSelectingPromotion,
+                )
+            }
+
             areMovesUpdated.value = false
         }
 
+        /*
+
+        if (clicked.value is FINISH) {
+
+            val finish = clicked.value as FINISH
+            val board = chess.board
+            val finishSquare = finish.square.toSquare()
+            val startSquare = move.toSquare()
+            val currentPlayer = chess.localPlayer
+            val endPiece = chess.board.getPiece(finish.square.toSquare())
+            if(promotionValue.value == "" && board.isTheMovementPromotable("$startSquare$finishSquare")) {
+                isSelectingPromotion.value = true
+            }
+
+            val finalMoveString = move + finish.square + promotionValue.value
+
+            coroutineScope.launch {
+                val value = play(finalMoveString, chess)
+            }
+
+
+            result.value = value
+            when {
+                value is chess.domain.commands.NONE && startSquare == finishSquare -> {
+                    clicked.value = NONE
+                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+                }
+                value is chess.domain.commands.NONE && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
+                    clicked.value = START(finish.square)
+
+                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+                }
+                value is chess.domain.commands.NONE && endPiece != null && endPiece.player != currentPlayer -> {
+                    clicked.value = NONE
+
+                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+                }
+                value is chess.domain.commands.NONE && !possibleMovesList.value.contains(finishSquare) ->
+                    clicked.value = START(startSquare.toString())
+                else -> {
+                    clicked.value = NONE
+
+                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
+                }
+            }
+            promotionValue.value = ""
+
+
+
+            areMovesUpdated.value = false
+        }
+         */
+
+        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesToDisplay, showPossibleMoves, possibleMovesList)
 
         if (!areMovesUpdated.value) {
             val gameId = chess.value.currentGameId
             if(gameId != null ) {
-                movesToDisplay.value = getMovesAsString(gameId, chess.value.dataBase)
-                areMovesUpdated.value = true
+                coroutineScope.launch {
+                    movesToDisplay.value = getMovesAsString(gameId, chess.value.dataBase)
+                    areMovesUpdated.value = true
+                }
+
+
             }
         }
-
-
-        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesToDisplay, showPossibleMoves, possibleMovesList)
 
         val hasAGameStarted = chess.value.currentGameId != null
 
@@ -246,7 +316,7 @@ fun handleResult(
             result.value = NONE()
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-            if(player == chess.value.currentPlayer)
+            if(player == chess.value.localPlayer)
                 showCheckInfo.value = true
         }
         is CHECKMATE -> {
@@ -257,7 +327,7 @@ fun handleResult(
             result.value = NONE()
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-            if(player == chess.value.currentPlayer)
+            if(player == chess.value.localPlayer)
                 showCheckMateInfo.value = true
         }
     }
@@ -265,8 +335,8 @@ fun handleResult(
 }
 
 
-@Composable
-private fun dealWithMovement(
+
+private suspend fun dealWithMovement(
     clicked: MutableState<Clicked>,
     possibleMovesList: MutableState<List<Square>>,
     showPossibleMoves: Boolean,
@@ -280,17 +350,16 @@ private fun dealWithMovement(
     val board = chess.board
     val finishSquare = finish.square.toSquare()
     val startSquare = move.toSquare()
-    val currentPlayer = chess.currentPlayer
+    val currentPlayer = chess.localPlayer
     val endPiece = chess.board.getPiece(finish.square.toSquare())
-    val finalMoveString = remember { mutableStateOf("") }
     if(promotionValue.value == "" && board.isTheMovementPromotable("$startSquare$finishSquare")) {
         isSelectingPromotion.value = true
     }
 
-    finalMoveString.value =move + finish.square + promotionValue.value
+    val finalMoveString = move + finish.square + promotionValue.value
 
 
-    val value = playAction(finalMoveString.value, chess)
+    val value = play(finalMoveString, chess)
 
     result.value = value
     when {
@@ -350,9 +419,9 @@ private fun drawVisualsWithAStartedGame(
                 boardToComposableView( chess.board, checkIfIsAPossibleMove, checkIfTileIsSelected, OnTileClicked)
             }
 
-                val info = if (chess.board.player == chess.currentPlayer) "Your turn" else "Waiting..."
+                val info = if (chess.board.player == chess.localPlayer) "Your turn" else "Waiting..."
                 Text(
-                    "Game:${gameId.id} | You:${chess.currentPlayer} | $info",
+                    "Game:${gameId.id} | You:${chess.localPlayer} | $info",
                     fontSize = INFO_FONT_SIZE,
                     modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
                 )
