@@ -33,18 +33,8 @@ fun openAction(gameId: GameName,chess: Chess): Result {
     }
     val moves = getMovesAction(gameId, chess.dataBase)
 
-//    refreshBoardAction
-    if(gameExists){
-        val movement = getMoveTypeFromLastDbPlay(gameId, chess.dataBase,chess.board)
+    return refreshBoardAction(Chess(board,chess.dataBase,gameId,Player.WHITE), moves)
 
-        return when(movement){
-            MoveType.CHECKMATE ->  CHECKMATE(Chess(board,chess.dataBase,gameId,Player.WHITE), board.player)
-            MoveType.CHECK ->  CHECK(Chess(board,chess.dataBase,gameId,Player.WHITE), board.player)
-            else ->  OK(Chess(board,chess.dataBase,gameId,Player.WHITE),moves)
-        }
-    }else{
-        return OK(Chess(board,chess.dataBase,gameId,Player.WHITE),moves)
-    }
 }
 
 /**
@@ -121,7 +111,7 @@ private fun dealWithMovement(movement: MoveType, board: Board,filteredInput: Mov
     }
 
 
-fun refreshBoardAction(chess: Chess): Result {
+fun refreshBoardAction(chess: Chess, movesList: Iterable<Move>?): Result {
     require(chess.currentGameId != null)
     val dbMove = chess.dataBase.getLastMove(chess.currentGameId) ?: return NONE()
 
@@ -133,7 +123,7 @@ fun refreshBoardAction(chess: Chess): Result {
     return when(movement){
         MoveType.CHECKMATE ->  CHECKMATE(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer), newBoard.player)
         MoveType.CHECK ->  CHECK(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer), newBoard.player)
-        else ->  OK(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer),null)
+        else ->  OK(Chess(newBoard,chess.dataBase,chess.currentGameId,chess.currentPlayer),movesList)
     }
 }
 
@@ -195,8 +185,18 @@ fun Board.isTheMovementPromotable(move: String): Boolean {
  * Updates a board with the moves from the DataBase with the given gameId.
  */
 private fun updateBoardUntilLastMove(dataBase: DataBase, gameId: GameName): Board {
+    val lastMove = dataBase.getLastMove(gameId)
 
-    //TODO
+    return dataBase.getAllMoves(gameId).fold(Board()) {
+            acc, move ->
+
+        val filteredInput = filterInput(move.move, acc) ?: throw IllegalArgumentException("Invalid move from db")
+        val moveType = getMoveType(filteredInput.filteredMove, acc)
+        if(move == lastMove){acc}
+            else {
+            dealWithMovement(moveType, acc, filteredInput) ?: acc
+        }
+    }
 }
 
 /**

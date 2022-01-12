@@ -122,7 +122,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
         LaunchedEffect(Unit) {
             while(true) {
                 if(chess.value.currentGameId != null && chess.value.currentPlayer != chess.value.board.player) {
-                    result.value = refreshBoardAction(chess.value)
+                    result.value = refreshBoardAction(chess.value,null)
                     areMovesUpdated.value = false
                 }
                 delay(1500)
