@@ -9,6 +9,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import chess.Chess
+import chess.GameName
 import chess.UI.Compose.board.*
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
@@ -63,10 +64,9 @@ fun ApplicationScope.App(chessInfo: Chess) {
     val move = remember { mutableStateOf("") }
     val possibleMovesList = remember { mutableStateOf(emptyList<Square>()) }      // List of possible moves for a piece
     val result : MutableState<Result> = remember { mutableStateOf(NONE()) }        // Result produced from making an action(moving, joining, etc)
-    val showCheckInfo = remember { mutableStateOf(false) }
-    val showCheckMateInfo = remember { mutableStateOf(false) }
+    val infoToShow : MutableState<SHOWINFO?> = remember { mutableStateOf(null) }
     val movesToDisplay = remember { mutableStateOf("") }
-    val areMovesUpdated = remember { mutableStateOf(false) }
+    val areMovesUpdated = remember { mutableStateOf(true) }
 
     Window(
         onCloseRequest = ::exitApplication,
@@ -94,7 +94,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
         if (!showPossibleMoves.value) possibleMovesList.value = emptyList()
 
         if (isAskingForName.value) {
-
             getGameName(
                 actionToDisplay.value.text,
                 onClose = { isAskingForName.value = false },
@@ -110,12 +109,21 @@ fun ApplicationScope.App(chessInfo: Chess) {
                         result.value = openGame(it, chess.value)
                     }
                 }
-
                     isAskingForName.value = false
                     areMovesUpdated.value = false
                 }
             )
+        }
 
+        fun openAGame(gameId: GameName) {
+            coroutineScope.launch {
+                result.value = openGame(gameId, chess.value)
+            }
+        }
+        fun joinAGame(gameId: GameName) {
+            coroutineScope.launch {
+                result.value = joinGame(gameId, chess.value)
+            }
         }
 
         if (isSelectingPromotion.value) {
@@ -129,15 +137,25 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 }
         }
 
+
         LaunchedEffect(chess.value) {
             while(true) {
                 if(chess.value.currentGameId != null && chess.value.localPlayer != chess.value.board.player) {
-                    result.value = refreshBoard(chess.value,null)
+                    result.value = refreshBoard(chess.value)
                     areMovesUpdated.value = false
                 }
                 delay(1500)
             }
         }
+        fun updateMoves() {
+            val gameId = chess.value.currentGameId
+            require(gameId != null)
+            coroutineScope.launch {
+                movesToDisplay.value = getMovesAsString(gameId, chess.value.dataBase)
+            }
+        }
+
+
 
     //TODO on open or join game chess board isnt uopdating after the game is deleted from db
         //above here is all confirmed
@@ -170,7 +188,8 @@ fun ApplicationScope.App(chessInfo: Chess) {
             }
 
         }
-
+//TODO QUANDO FAZEMOS PROMOTE E COMEMOS ALGUEM APARECE MAL NA DB
+        // TODO QUANDO FAZEMOS CHECK E COMEMOS ALKGUEM APARECE MAL NA DB
 
         if (clicked.value is FINISH) {
             val finish = clicked.value as FINISH
@@ -193,25 +212,22 @@ fun ApplicationScope.App(chessInfo: Chess) {
         }
 
 
-        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesToDisplay, showPossibleMoves, possibleMovesList,clicked,move.value)
+        handleResult(result, chess, infoToShow , showPossibleMoves, possibleMovesList,clicked,move.value)
 
         if (!areMovesUpdated.value) {
-            val gameId = chess.value.currentGameId
-            if(gameId != null ) {
-                coroutineScope.launch {
-                    movesToDisplay.value = getMovesAsString(gameId, chess.value.dataBase)
-                    areMovesUpdated.value = true
-                }
-
-
+            if(chess.value.currentGameId != null) {
+                    updateMoves()
+                areMovesUpdated.value = true
             }
         }
-
+        //TODO WHEN A LOT OF MOVES ARE PLAYED TO RIGHT MOVES  GO DOWN INTO INFINIY
+//TODO stop the movement after the game is over
         val hasAGameStarted = chess.value.currentGameId != null
 
         if(hasAGameStarted){
+
             MaterialTheme {
-                drawVisualsWithAStartedGame(chess.value,showCheckInfo.value,showCheckMateInfo.value,movesToDisplay.value,
+                drawVisualsWithAStartedGame(chess.value,infoToShow.value,movesToDisplay.value,
                     checkIfIsAPossibleMove = { square ->
                         showPossibleMoves.value && possibleMovesList.value.contains(square)
                     },
@@ -238,9 +254,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
 fun handleResult(
     result: MutableState<Result>,
     chess: MutableState<Chess>,
-    showCheckInfo: MutableState<Boolean>,
-    showCheckMateInfo: MutableState<Boolean>,
-    movesPlayed: MutableState<String>,
+    infoToShow: MutableState<SHOWINFO?>,
     showPossibleMoves: MutableState<Boolean>,
     possibleMovesList: MutableState<List<Square>>,
     clicked: MutableState<Clicked>,
@@ -251,12 +265,9 @@ fun handleResult(
         is OK -> {
             val res = (result.value as OK)
             chess.value = res.chess
-            if (res.moves != null) {
-                movesPlayed.value = res.moves.toAString()
-            }
+
             result.value = NONE()
-            showCheckInfo.value = false
-            showCheckMateInfo.value = false
+            infoToShow.value = null
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
         }
         is CHECK -> {
@@ -267,8 +278,7 @@ fun handleResult(
             result.value = NONE()
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-            if(player == chess.value.localPlayer)
-                showCheckInfo.value = true
+            infoToShow.value = showCheck(player)
         }
         is CHECKMATE -> {
             val res = (result.value as CHECKMATE)
@@ -278,8 +288,16 @@ fun handleResult(
             result.value = NONE()
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-            if(player == chess.value.localPlayer)
-                showCheckMateInfo.value = true
+            infoToShow.value = showCheckmate(player)
+        }
+        is STALEMATE -> {
+            val res = (result.value as STALEMATE)
+
+            chess.value = res.chess
+            result.value = NONE()
+            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+
+            infoToShow.value = showStalemate()
         }
         is chess.domain.commands.NONE  -> {
             if(clicked.value is FINISH) {
@@ -385,14 +403,13 @@ private suspend fun dealWithMovement(
 @Composable
 private fun drawVisualsWithAStartedGame(
     chess: Chess,
-    showCheckInfo: Boolean,
-    showCheckMateInfo: Boolean,
+    infoToShow: SHOWINFO?,
     movesPlayed: String,
     checkIfIsAPossibleMove : (square: Square) -> Boolean,
     checkIfTileIsSelected: (square: Square) -> Boolean,
     OnTileClicked : (square: Square) -> Unit
 ) {
-
+    val infoModifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
     val gameId = chess.currentGameId
     require(gameId != null) { "Game id is null" }
 
@@ -416,22 +433,32 @@ private fun drawVisualsWithAStartedGame(
                     modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
                 )
 
-                if(showCheckInfo){
-                    Text(
-                        "CHECK",
-                        fontSize = INFO_FONT_SIZE,
-                        modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
-                    )
+                when(infoToShow){
+                    is showCheckmate-> {
+                        val playerMessage = if (infoToShow.player == chess.localPlayer) "Lose." else "Win!!!"
+                        Text(
+                            "CHECKMATE You $playerMessage",
+                            fontSize = INFO_FONT_SIZE,
+                            modifier = infoModifier
+                        )
+                    }
+                    is showCheck -> {
+                        if(infoToShow.player == chess.localPlayer) {
+                            Text(
+                                "CHECK",
+                                fontSize = INFO_FONT_SIZE,
+                                modifier = infoModifier
+                            )
+                        }
+                    }
+                    is showStalemate -> {
+                        Text(
+                            "STALEMATE",
+                            fontSize = INFO_FONT_SIZE,
+                            modifier = infoModifier
+                        )
+                    }
                 }
-
-                if(showCheckMateInfo){
-                    Text(
-                        "CHECKMATE",
-                        fontSize = INFO_FONT_SIZE,
-                        modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
-                    )
-                }
-
         }
         Column(
             Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(MOVES_BACKGROUND_COLOR)

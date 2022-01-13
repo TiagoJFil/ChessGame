@@ -170,3 +170,47 @@ fun selectPossiblePromotions(
         }
     }
 }
+
+
+@Composable
+fun showStalemateDialog(
+    onClose : () -> Unit,
+    onClickOpen : () -> Unit,
+    onClickJoin : () -> Unit
+){
+    Dialog(
+        onCloseRequest = {onClose() },
+        title = "Game Over!",
+        resizable = false,
+        state = DialogState(size = DpSize(width = 400.dp, height = 200.dp))
+
+    ) {
+        Column{
+            Text(
+                "Game is a draw.\nPlease enter another game to play again",
+                fontSize = 19.sp,
+                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+            )
+
+            Button(
+                onClick = { onClickOpen() },
+                modifier = Modifier.absoluteOffset(150.dp,5.dp).size(100.dp,50.dp)
+            ) {
+                Text("Close")
+            }
+            Button(
+                onClick = { onClickJoin() },
+                modifier = Modifier.absoluteOffset(150.dp,5.dp).size(100.dp,50.dp)
+            ) {
+                Text("Open")
+            }
+            Button(
+                onClick = { onClose() },
+                modifier = Modifier.absoluteOffset(150.dp,5.dp).size(100.dp,50.dp)
+            ) {
+                Text("Join")
+            }
+        }
+    }
+
+}

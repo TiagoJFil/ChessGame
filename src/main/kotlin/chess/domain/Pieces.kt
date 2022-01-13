@@ -180,8 +180,9 @@ class Pawn (override val player: Player) : Piece  {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
 
 
-        return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board)).contains(pieceInfo)){
+        return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player)).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
+            isStalemate(board) -> MoveType.STALEMATE
             canPromote(pieceInfo) -> MoveType.PROMOTION
             isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
             isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
@@ -297,7 +298,6 @@ data class King (override val player: Player) : Piece {
      * @return the list of possible directions for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> {
-
         var moves = getMovesByAddingDirection(possibleDirections, pos, board)
 
         if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))) {
@@ -307,7 +307,15 @@ data class King (override val player: Player) : Piece {
             moves += (PieceMove(pos, pos.addDirectionNotNull(Direction(LEFT, 0))))
         }
 
-        if(verifyForCheck) moves = moves.filter {  it.endSquare !in  board.playerMoves(!board.player,false)  && !isMyKingInCheckPostMove(board,it) }
+        if(verifyForCheck) {
+            val a = board.getAllBoardMovesFrom(!board.player,false).map { move -> move.endSquare }
+            //val b = !isMyKingInCheckPostMove(board,it)
+            println("a")
+            moves = moves.filter {
+                it.endSquare !in  a
+                        &&
+                        !isMyKingInCheckPostMove(board,it) }
+        }
 
 
         return moves
@@ -322,8 +330,10 @@ data class King (override val player: Player) : Piece {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
         if (canCastle(board, pieceInfo)) return MoveType.CASTLE
+
         return when ( getPossibleMoves(board, pieceInfo.startSquare, true ).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
+            isStalemate(board) -> MoveType.STALEMATE
             isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
             isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
             pieceAtEndSquare == null -> MoveType.REGULAR

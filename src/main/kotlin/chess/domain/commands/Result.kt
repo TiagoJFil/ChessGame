@@ -12,7 +12,7 @@ sealed class Result
 /**
  * Result produced when the user makes an action.
  */
-class OK(val chess: Chess, val moves: Iterable<Move>? ) : Result()
+class OK(val chess: Chess) : Result()
 
 /**
  * Result produced when the user makes an error.
@@ -28,3 +28,8 @@ class CHECK(val chess: Chess,val playerInCheck: Player) : Result()
  * Result produced a user makes a CHECKMATE.
  */
 class CHECKMATE(val chess: Chess,val playerInCheckMate: Player) : Result()
+
+/**
+ * Result produced a user makes a STALEMATE.
+ */
+class STALEMATE(val chess: Chess) : Result()

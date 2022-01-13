@@ -72,7 +72,9 @@ data class Board internal constructor(
      * Finds the king of the given color
      */
     fun getKingSquare(player: Player): Square {
-        return board.indexOfFirst { it is King && it.player == player }.toSquare()
+            val idx = board.indexOfFirst { it is King && it.player == player }
+            if(idx == -1) throw IllegalStateException("No king found for player $player")
+            return idx.toSquare()
     }
 
     /**
@@ -129,19 +131,8 @@ data class Board internal constructor(
     }
 }
 
-private fun Board.getAllBoardMoves(inCheck: Boolean): Pair<List<PieceMove>, List<PieceMove>> {
-    val playerMoves = mutableListOf<PieceMove>()
-    val opponentMoves = mutableListOf<PieceMove>()
-    this.asList().forEachIndexed { idx, p ->
-        if (p != null) {
-            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare(),inCheck))
-            else opponentMoves.addAll(p.getPossibleMoves(this, idx.toSquare(), inCheck))
-        }
-    }
-    return Pair(playerMoves, opponentMoves)
-}
 
-private fun Board.getAllBoardMoves(inCheck: Boolean, player: Player): List<PieceMove> {
+fun Board.getAllBoardMovesFrom(player: Player,inCheck: Boolean ): List<PieceMove> {
     val playerMoves = mutableListOf<PieceMove>()
     this.asList().forEachIndexed { idx, p ->
         if (p != null) {
@@ -152,13 +143,13 @@ private fun Board.getAllBoardMoves(inCheck: Boolean, player: Player): List<Piece
 }
 
 
-fun Board.playerMoves(p: Player, verifyForCheck: Boolean): List<Square> {
-    val allMoves = this.getAllBoardMoves(verifyForCheck)
-    val playerMoves = allMoves.first.map { it.endSquare }
-    val opponentMoves = allMoves.second.map { it.endSquare }
-    return if (p == player) playerMoves
-    else opponentMoves
-}
+fun Board.piecesCountFrom(p: Player)=
+    this.asList().fold(0){
+        acc, piece ->
+        if (piece != null && piece.player == p) acc + 1
+        else acc
+    }
+
 
 fun Board.counterCheckMoves(player: Player): List<Square> =
     this.asList().foldRightIndexed(listOf<Square>()) { idx, p, acc ->
@@ -174,10 +165,11 @@ fun Board.counterCheckMoves(player: Player): List<Square> =
 
     }
 
-fun Board.getKingPossibleMoves(player: Player,verifyForCheck: Boolean): List<Square> {
+fun Board.getKingPossibleMoves(player: Player,verifyForCheck: Boolean): List<PieceMove> {
     val king = getKingPiece(player) ?: throw IllegalStateException("no king found")
     val kingPos = getKingSquare(player)
-    return king.getPossibleMoves(this, kingPos, verifyForCheck ).map { it.endSquare }
+    val kingMoves = king.getPossibleMoves(this, kingPos, verifyForCheck )
+    return kingMoves
 }
 
 
