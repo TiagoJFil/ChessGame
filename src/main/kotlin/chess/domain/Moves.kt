@@ -123,7 +123,7 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
 
     return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player)).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
-        isStalemate(board) -> MoveType.STALEMATE
+        isStalemate(board,pieceInfo) -> MoveType.STALEMATE
         isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
         isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
         pieceAtEndSquare == null -> MoveType.REGULAR
@@ -196,6 +196,21 @@ fun isMyKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean{
 fun isKingInCheck(board: Board,player: Player) = board.getKingSquare(player) in board.getAllBoardMovesFrom(!player,false).map { it.endSquare }
 
 
+
+
+fun isStalemate(board: Board,pieceInfo: PieceMove): Boolean {
+    //TODO FIX
+    return false
+    /*
+    val opponentMoves = board.getAllBoardMovesFrom(board.player, false).map { it.endSquare }
+    val kingMoves = board.getKingPossibleMoves(!board.player,false)
+    val kingPossibleMoves = kingMoves.filter { it.endSquare !in opponentMoves }
+    val kingCantMove = kingPossibleMoves.isEmpty()
+    val kingInCheck = isOpponentKingInCheckAfterMove(board,pieceInfo)
+    return kingCantMove && !kingInCheck
+    */
+}
+/*
 fun isStalemate(board: Board) : Boolean{
 
     val b = board.piecesCountFrom(!board.player) == 1
@@ -204,4 +219,5 @@ fun isStalemate(board: Board) : Boolean{
 
     return board.piecesCountFrom(!board.player) == 1 && !isKingInCheck(board,!board.player) && board.getKingPossibleMoves(!board.player,true).isEmpty()
 }
+*/
 

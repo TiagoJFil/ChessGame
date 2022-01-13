@@ -2,8 +2,8 @@ package chess.UI.Compose
 
 import chess.domain.Player
 
-sealed class SHOWINFO();
+sealed class ShowInfo();
 
-class showCheckmate(val player: Player?) : SHOWINFO()
-class showCheck(val player: Player?) : SHOWINFO()
-class showStalemate : SHOWINFO()
+class showCheckmate(val player: Player?) : ShowInfo()
+class showCheck(val player: Player?) : ShowInfo()
+class showStalemate : ShowInfo()

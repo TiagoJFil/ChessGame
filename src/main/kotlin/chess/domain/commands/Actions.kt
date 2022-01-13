@@ -27,9 +27,10 @@ suspend fun openGame(gameId: GameName, chess: Chess): Result {
     val board: Board
     val gameExists = chess.dataBase.doesGameExist(gameId)
 
+    val moves =  getPlayedMoves(gameId, chess.dataBase)
     if (gameExists) {
         //if gameExists and there is no lastMove then return an OK result with a clean board
-        chess.dataBase.getLastMove(gameId) ?: return OK(Chess(Board(), chess.dataBase, gameId, Player.WHITE))
+        chess.dataBase.getLastMove(gameId) ?: return OK(Chess(Board(), chess.dataBase, gameId, Player.WHITE),moves)
 
         board = updateBoardUntilLastMove(chess.dataBase, gameId)
 
@@ -40,7 +41,7 @@ suspend fun openGame(gameId: GameName, chess: Chess): Result {
 
         board = Board()
 
-        return OK(Chess(board, chess.dataBase, gameId, Player.WHITE))
+        return OK(Chess(board, chess.dataBase, gameId, Player.WHITE),moves)
     }
 }
 
@@ -51,8 +52,10 @@ suspend fun openGame(gameId: GameName, chess: Chess): Result {
 suspend fun joinGame(gameId: GameName, chess: Chess): Result {
     val gameExists = chess.dataBase.doesGameExist(gameId)
     if (!gameExists) return NONE()
+
+    val moves = getPlayedMoves(gameId, chess.dataBase)
     //if gameExists and there is no lastMove then return an OK result with a clean board
-    chess.dataBase.getLastMove(gameId) ?: return OK(Chess(Board(), chess.dataBase, gameId, Player.BLACK))
+    chess.dataBase.getLastMove(gameId) ?: return OK(Chess(Board(), chess.dataBase, gameId, Player.BLACK),moves)
 
 
     val board = updateBoardUntilLastMove(chess.dataBase, gameId)
@@ -76,7 +79,7 @@ suspend fun play(move: String, chess: Chess): Result {
 
     val dbMove = filterToDbString(filteredInput, movement)
     chess.dataBase.addMoveToDb(dbMove, gameId)
-
+    val moves = getPlayedMoves(gameId, chess.dataBase)
     return when (movement) {
         MoveType.CHECKMATE -> CHECKMATE(
             Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer),
@@ -90,7 +93,7 @@ suspend fun play(move: String, chess: Chess): Result {
             Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer)
 
         )
-        else -> OK(Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer))
+        else -> OK(Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer),moves)
     }
 }
 
@@ -105,7 +108,7 @@ suspend fun refreshBoard(chess: Chess): Result {
 
     val movement = getMoveType(filteredInput.filteredMove, chess.board)
     val newBoard = dealWithMovement(movement, chess.board, filteredInput) ?: return NONE()
-
+    val moves = getPlayedMoves(chess.currentGameId, chess.dataBase)
     return when (movement) {
         MoveType.CHECKMATE -> CHECKMATE(
             Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer),
@@ -118,7 +121,7 @@ suspend fun refreshBoard(chess: Chess): Result {
         MoveType.STALEMATE -> STALEMATE(
             Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer)
         )
-        else -> OK(Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer))
+        else -> OK(Chess(newBoard, chess.dataBase, chess.currentGameId, chess.localPlayer),moves)
     }
 }
 

@@ -12,14 +12,14 @@ import chess.domain.commands.getPlayedMoves
 import chess.domain.getPiecePossibleMovesFrom
 
 
-suspend fun getMovesAsString(gameId : GameName, database: ChessRepository): String {
-    val moves = getPlayedMoves(gameId,database)
+fun Iterable<Move>.getMovesAsString(gameId : GameName, database: ChessRepository): String {
 
-    if (moves.count() == 0) return ""
+
+    if (this.count() == 0) return ""
     var res = ""
     var plays = 0
     var noOfPlays = 1
-    moves.forEach {
+    this.forEach {
         if (plays % 2 == 1) {
             noOfPlays++
             res+= "- ${it.move}\n"

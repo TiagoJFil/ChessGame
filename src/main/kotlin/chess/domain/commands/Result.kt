@@ -12,7 +12,7 @@ sealed class Result
 /**
  * Result produced when the user makes an action.
  */
-class OK(val chess: Chess) : Result()
+class OK(val chess: Chess, val moves: Iterable<Move>?) : Result()
 
 /**
  * Result produced when the user makes an error.
