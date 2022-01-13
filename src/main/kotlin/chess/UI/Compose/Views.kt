@@ -47,7 +47,11 @@ private enum class ACTION(val text: String) {
     JOIN("Join")
 }
 
-
+private enum class GameStatus {
+    GameStarted,
+    GameNotStarted,
+    GameOver;
+}
 
 /**
  * This is the main entry point for our application, as our app starts here.
@@ -64,10 +68,9 @@ fun ApplicationScope.App(chessInfo: Chess) {
     val move = remember { mutableStateOf("") }
     val possibleMovesList = remember { mutableStateOf(emptyList<Square>()) }      // List of possible moves for a piece
     val result : MutableState<Result> = remember { mutableStateOf(NONE()) }        // Result produced from making an action(moving, joining, etc)
-    val infoToShow : MutableState<SHOWINFO?> = remember { mutableStateOf(null) }
+    val infoToShow : MutableState<ShowInfo?> = remember { mutableStateOf(null) }
     val movesToDisplay = remember { mutableStateOf("") }
-    val areMovesUpdated = remember { mutableStateOf(true) }
-
+    val gameStatus = remember { mutableStateOf(GameStatus.GameNotStarted) }
     Window(
         onCloseRequest = ::exitApplication,
         state = WindowState(size = WindowSize(Dp.Unspecified, Dp.Unspecified)),
@@ -77,6 +80,17 @@ fun ApplicationScope.App(chessInfo: Chess) {
     ) {
         //while this function is running , there will be coroutines running
         val coroutineScope = rememberCoroutineScope()
+
+        fun openAGame(gameId: GameName) {
+            coroutineScope.launch {
+                result.value = openGame(gameId, chess.value)
+            }
+        }
+        fun joinAGame(gameId: GameName) {
+            coroutineScope.launch {
+                result.value = joinGame(gameId, chess.value)
+            }
+        }
 
         chessMenu(
             onClickOpen = {
@@ -90,7 +104,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
             }
         )
 
-
         if (!showPossibleMoves.value) possibleMovesList.value = emptyList()
 
         if (isAskingForName.value) {
@@ -99,31 +112,13 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 onClose = { isAskingForName.value = false },
                 onSubmit = {
                 if (actionToDisplay.value == ACTION.JOIN) {
-
-                    coroutineScope.launch {
-                        result.value = joinGame(it, chess.value)
-                    }
-
+                    joinAGame(it)
                 } else {
-                    coroutineScope.launch {
-                        result.value = openGame(it, chess.value)
-                    }
+                    openAGame(it)
                 }
                     isAskingForName.value = false
-                    areMovesUpdated.value = false
                 }
             )
-        }
-
-        fun openAGame(gameId: GameName) {
-            coroutineScope.launch {
-                result.value = openGame(gameId, chess.value)
-            }
-        }
-        fun joinAGame(gameId: GameName) {
-            coroutineScope.launch {
-                result.value = joinGame(gameId, chess.value)
-            }
         }
 
         if (isSelectingPromotion.value) {
@@ -142,19 +137,10 @@ fun ApplicationScope.App(chessInfo: Chess) {
             while(true) {
                 if(chess.value.currentGameId != null && chess.value.localPlayer != chess.value.board.player) {
                     result.value = refreshBoard(chess.value)
-                    areMovesUpdated.value = false
                 }
                 delay(1500)
             }
         }
-        fun updateMoves() {
-            val gameId = chess.value.currentGameId
-            require(gameId != null)
-            coroutineScope.launch {
-                movesToDisplay.value = getMovesAsString(gameId, chess.value.dataBase)
-            }
-        }
-
 
 
     //TODO on open or join game chess board isnt uopdating after the game is deleted from db
@@ -199,7 +185,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
             if(promotionValue.value == "" && chess.value.board.isTheMovementPromotable("$startSquare$finishSquare")) {
                 isSelectingPromotion.value = true
             }else {
-
                 val finalMoveString = move.value + finish.square + promotionValue.value
 
                 coroutineScope.launch {
@@ -207,68 +192,80 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 }
 
                 promotionValue.value = ""
-                areMovesUpdated.value = false
             }
         }
 
 
-        handleResult(result, chess, infoToShow , showPossibleMoves, possibleMovesList,clicked,move.value)
+        handleResult(result, chess, infoToShow , showPossibleMoves, possibleMovesList,clicked,move.value, movesToDisplay,gameStatus)
 
-        if (!areMovesUpdated.value) {
-            if(chess.value.currentGameId != null) {
-                    updateMoves()
-                areMovesUpdated.value = true
-            }
-        }
         //TODO WHEN A LOT OF MOVES ARE PLAYED TO RIGHT MOVES  GO DOWN INTO INFINIY
 //TODO stop the movement after the game is over
-        val hasAGameStarted = chess.value.currentGameId != null
 
-        if(hasAGameStarted){
 
-            MaterialTheme {
-                drawVisualsWithAStartedGame(chess.value,infoToShow.value,movesToDisplay.value,
-                    checkIfIsAPossibleMove = { square ->
-                        showPossibleMoves.value && possibleMovesList.value.contains(square)
-                    },
-                    checkIfTileIsSelected =   { square ->
-                        clicked.value is START && (clicked.value as START).square == square.toString()
-                    },
-                    OnTileClicked = { square ->
-                        clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
-                    }
-                )
+        when(gameStatus.value){
+            GameStatus.GameNotStarted ->{
+                MaterialTheme{
+                    drawVisualsWithoutAStartedGame()
+                }
             }
-        }else{
-            MaterialTheme{
-                drawVisualsWithoutAStartedGame()
+            GameStatus.GameStarted ->{
+                MaterialTheme {
+                    drawVisualsWithAStartedGame(chess.value,infoToShow.value,movesToDisplay.value,
+                        checkIfIsAPossibleMove = { square ->
+                            showPossibleMoves.value && possibleMovesList.value.contains(square)
+                        },
+                        checkIfTileIsSelected =   { square ->
+                            clicked.value is START && (clicked.value as START).square == square.toString()
+                        },
+                        OnTileClicked = { square ->
+                            clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
+                        }
+                    )
+                }
+            }
+            GameStatus.GameOver ->{
+                MaterialTheme {
+                    drawVisualsWithAStartedGame(chess.value,infoToShow.value,movesToDisplay.value,
+                        checkIfIsAPossibleMove = { false },
+                        checkIfTileIsSelected =   { false },
+                        OnTileClicked = { }
+                    )
+                }
+
             }
         }
-
 
     }
 }
 
 
 
-fun handleResult(
+private fun handleResult(
     result: MutableState<Result>,
     chess: MutableState<Chess>,
-    infoToShow: MutableState<SHOWINFO?>,
+    infoToShow: MutableState<ShowInfo?>,
     showPossibleMoves: MutableState<Boolean>,
     possibleMovesList: MutableState<List<Square>>,
     clicked: MutableState<Clicked>,
     move: String,
+    movesToDisplay: MutableState<String>,
+    gameStatus: MutableState<GameStatus>
 ) {
 
     when (result.value) {
         is OK -> {
             val res = (result.value as OK)
             chess.value = res.chess
+            val gameId = res.chess.currentGameId
+            require(gameId != null)
+            if(res.moves != null)
+                movesToDisplay.value = res.moves.getMovesAsString(gameId,chess.value.dataBase)
 
             result.value = NONE()
             infoToShow.value = null
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+
+            gameStatus.value = GameStatus.GameStarted
         }
         is CHECK -> {
             val res = (result.value as CHECK)
@@ -289,6 +286,7 @@ fun handleResult(
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
             infoToShow.value = showCheckmate(player)
+            gameStatus.value = GameStatus.GameOver
         }
         is STALEMATE -> {
             val res = (result.value as STALEMATE)
@@ -298,6 +296,7 @@ fun handleResult(
             clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
             infoToShow.value = showStalemate()
+            gameStatus.value = GameStatus.GameOver
         }
         is chess.domain.commands.NONE  -> {
             if(clicked.value is FINISH) {
@@ -403,7 +402,7 @@ private suspend fun dealWithMovement(
 @Composable
 private fun drawVisualsWithAStartedGame(
     chess: Chess,
-    infoToShow: SHOWINFO?,
+    infoToShow: ShowInfo?,
     movesPlayed: String,
     checkIfIsAPossibleMove : (square: Square) -> Boolean,
     checkIfTileIsSelected: (square: Square) -> Boolean,
