@@ -426,18 +426,18 @@ class KingTest {
     @Test
     fun `test checkMate`(){
         val sut = Board().makeMove("Pe2e4").makeMove("pd7d5").makeMove("Ke1e2").makeMove("bc8g4")
-        assertEquals(false,isCheckMate(sut))
+        assertEquals(false,isCheckMateAfterMove(sut))
     }
 
     @Test
     fun `test checkMate true`(){
         val sut = Board().makeMove("Pf2f3").makeMove("pe7e5").makeMove("Pg2g4").makeMove("Qd8h4")
-        assertEquals(true,isCheckMate(sut))
+        assertEquals(true,isCheckMateAfterMove(sut))
     }
     @Test
     fun `test checkMate true 2`(){
         val sut = Board().makeMove("Pe2e4").makeMove("pf7f6").makeMove("Pd2d4").makeMove("pg7g5").makeMove("Qd1h5")
-        assertEquals(true,isCheckMate(sut))
+        assertEquals(true,isCheckMateAfterMove(sut))
     }
 
 

@@ -152,8 +152,8 @@ private fun Board.getAllBoardMoves(inCheck: Boolean, player: Player): List<Piece
 }
 
 
-fun Board.playerMoves(p: Player, inCheck: Boolean): List<Square> {
-    val allMoves = this.getAllBoardMoves(inCheck)
+fun Board.playerMoves(p: Player, verifyForCheck: Boolean): List<Square> {
+    val allMoves = this.getAllBoardMoves(verifyForCheck)
     val playerMoves = allMoves.first.map { it.endSquare }
     val opponentMoves = allMoves.second.map { it.endSquare }
     return if (p == player) playerMoves
@@ -172,15 +172,20 @@ fun Board.counterCheckMoves(player: Player): List<Square> =
 
         } else acc
 
-
     }
 
+fun Board.getKingPossibleMoves(player: Player,verifyForCheck: Boolean): List<Square> {
+    val king = getKingPiece(player) ?: throw IllegalStateException("no king found")
+    val kingPos = getKingSquare(player)
+    return king.getPossibleMoves(this, kingPos, verifyForCheck ).map { it.endSquare }
+}
 
 
 
 /**
- *
- * @return true if the piece is a promoted or false if it isn't
+ * @param move      the movement we want to make
+ * @param promotionType  the type of the promotion
+ * @return the [Board] after the promotion
  */
 fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
     val square = move.substring(1,3).toSquare()
@@ -203,9 +208,8 @@ fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION
 }
 
 /**
- * @param board         The board to perform the castling on
  * @param move          The move received from the user to perform the castling.
- * @returns     a List of Moves that happened during the castling.
+ * @returns            The [Board] after the castling.
  * Moves the king and the rook to the correct position.
  */
 fun Board.doCastling(move: PieceMove): Board {
@@ -226,11 +230,10 @@ fun Board.doCastling(move: PieceMove): Board {
     return Board(newBoard, !player)
 }
 
-
 /**
  * Does en passant movement from the given [PieceMove]
  * @param pieceMove     The piece movement to be performed
- * @return              The new board after the movement
+ * @return              The new [Board] after the movement
  */
 fun Board.doEnpassant(pieceMove: PieceMove): Board {
     val piece = getPiece(pieceMove.startSquare) ?: throw IllegalStateException("No piece at ${pieceMove.startSquare}")
@@ -252,7 +255,6 @@ fun Board.doEnpassant(pieceMove: PieceMove): Board {
     return Board(newBoard, !player)
 }
 
-
 /**
  * Checks whether the square is occupied by a piece of the player given at a square
  */
@@ -269,7 +271,6 @@ fun Square.doesBelongTo(player: Player,board: Board): Boolean {
 fun Square.doesNotBelongTo(player: Player, board: Board): Boolean {
     return !this.doesBelongTo(player,board)
 }
-
 
 /**
  * @param player    The player that owns the pieces

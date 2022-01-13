@@ -6,6 +6,7 @@ import King
 import Piece
 import chess.domain.board_components.*
 import counterCheckMoves
+import getKingPossibleMoves
 import playerMoves
 
 //TODO : add a movetype for promotion and capture or change into sealed class and the promotion to have values
@@ -17,7 +18,8 @@ enum class MoveType{
     ENPASSANT,
     CHECK,
     CHECKMATE,
-    ILLEGAL;
+    ILLEGAL,
+    DRAW;
 }
 
 
@@ -105,7 +107,7 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ,
             newPos = newPos.addDirection(it)
         }
     }
-    if(verifyForCheck) moves = moves.filter {  it.endSquare in board.counterCheckMoves(!board.player)  && !isKingInCheckPostMove(board,it) }
+    if(verifyForCheck) moves = moves.filter {  it.endSquare in board.counterCheckMoves(!board.player)  && !isMyKingInCheckPostMove(board,it) }
 
     return moves
 }
@@ -119,7 +121,7 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
     return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board)).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
-        isCheckMate(board) -> MoveType.CHECKMATE
+        isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
         isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
         pieceAtEndSquare == null -> MoveType.REGULAR
         pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
@@ -164,23 +166,17 @@ fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMov
  * @param color the color of the player
  * @return true if the king is in checkMate false otherwise
  */
-fun isCheckMate(board: Board): Boolean {
-/*
-    val king = board.getKingPiece(board.player)
-    val kingSquare = board.getKingSquare(board.player)
-    val opponentMoves = board.playerMoves(!board.player,false)
-    if(isKingInCheck(board)){
-        val possibleMoves = king.getPossibleMoves(board, kingSquare,true).map { it.endSquare }
-        val filteredOpponentMoves = opponentMoves.filter { it in possibleMoves }
-        val playerMoves = board.playerMoves(board.player,true)
-        if (filteredOpponentMoves.size >= possibleMoves.size
-            && cannotDefendKing(possibleMoves, playerMoves)
-        ) return true
 
-    }
 
- */
-    return false
+
+fun isCheckMateAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
+    val tempBoard = board.makeMove(pieceInfo.formatToString(board))
+    return isCheckMate(tempBoard)
+}
+
+fun isDrawAfterMove(board: Board,pieceInfo: PieceMove) : Boolean{
+    val tempBoard = board.makeMove(pieceInfo.formatToString(board))
+    return isStalemate(tempBoard)
 }
 
 fun isOpponentKingInCheckAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
@@ -190,7 +186,7 @@ fun isOpponentKingInCheckAfterMove(board: Board, pieceInfo: PieceMove): Boolean 
     return opponentKing in playerMoves
 }
 
-fun isKingInCheckPostMove(board: Board,pieceInfo: PieceMove): Boolean{
+fun isMyKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean{
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
     val king = tempBoard.getKingSquare(board.player)
     val opponentMoves = tempBoard.playerMoves(tempBoard.player,false)
@@ -201,23 +197,6 @@ fun isKingInCheckPostMove(board: Board,pieceInfo: PieceMove): Boolean{
 
 fun isKingInCheck(board: Board) = board.getKingSquare(board.player) in board.playerMoves(!board.player,false)
 
+fun isStalemate(board: Board) = board.playerMoves(board.player,true).isEmpty() && !isKingInCheck(board)
 
-
-
-
-/*
-fun filterCheckMoves(board: Board, moves: List<PieceMove>?, piece: Piece?): List<PieceMove>? {
-    if(isKingInCheck(board) && moves != null && piece !is King)
-        return moves.filter { it.endSquare in board.playerMoves(!board.player) && !isKingInCheckPostMove(board,it) }
-    if(isKingInCheck(board) && moves != null && piece is King) return moves.filter { it.endSquare !in board.playerMoves(!board.player)  && !isKingInCheckPostMove(board,it)}
-    return moves
-}
-*/
-
-fun canDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>): Boolean {
-    if(possibleKingMoves.size == 1 && possibleKingMoves.first() in playerMoves) return false
-    return true
-}
-
-fun cannotDefendKing(possibleKingMoves : List<Square>, playerMoves: List<Square>) =
-    !canDefendKing(possibleKingMoves, playerMoves)
+fun isCheckMate(board: Board) = board.getKingPossibleMoves(!board.player,true).isEmpty() &&  isKingInCheck(board)

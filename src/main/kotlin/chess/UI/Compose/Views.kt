@@ -144,7 +144,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
         //from down here the things must still be checked
         if (clicked.value is START) {
             val start = clicked.value as START
-
             val board = chess.value.board
 
             val startSquare = start.square.toSquare()
@@ -154,13 +153,13 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
                 clicked.value = NONE
             } else {
-
                 if (startSquare.doesNotBelongTo(currentPlayer, board)) {
                     clicked.value = NONE
                 } else {
                     move.value = start.square
                     if(showPossibleMoves.value) {
                         val moves = move.value.toSquare().getPiecePossibleMovesFrom(board,currentPlayer)
+                        //TODO maybe improve getPiecePossibleMovesFrom
                         if (moves.isNotEmpty()) {
                             val possibleMoves = moves.map { it.endSquare }
                             possibleMovesList.value = possibleMoves
@@ -172,79 +171,29 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
         }
 
-        if (clicked.value is FINISH) {
-            coroutineScope.launch {
-
-
-                dealWithMovement(
-                    clicked,
-                    possibleMovesList,
-                    showPossibleMoves.value,
-                    chess.value,
-                    move.value,
-                    result,
-                    promotionValue,
-                    isSelectingPromotion,
-                )
-            }
-
-            areMovesUpdated.value = false
-        }
-
-        /*
 
         if (clicked.value is FINISH) {
-
             val finish = clicked.value as FINISH
-            val board = chess.board
             val finishSquare = finish.square.toSquare()
-            val startSquare = move.toSquare()
-            val currentPlayer = chess.localPlayer
-            val endPiece = chess.board.getPiece(finish.square.toSquare())
-            if(promotionValue.value == "" && board.isTheMovementPromotable("$startSquare$finishSquare")) {
+            val startSquare = move.value.toSquare()
+
+            if(promotionValue.value == "" && chess.value.board.isTheMovementPromotable("$startSquare$finishSquare")) {
                 isSelectingPromotion.value = true
+            }else {
+
+                val finalMoveString = move.value + finish.square + promotionValue.value
+
+                coroutineScope.launch {
+                    result.value = play(finalMoveString, chess.value)
+                }
+
+                promotionValue.value = ""
+                areMovesUpdated.value = false
             }
-
-            val finalMoveString = move + finish.square + promotionValue.value
-
-            coroutineScope.launch {
-                val value = play(finalMoveString, chess)
-            }
-
-
-            result.value = value
-            when {
-                value is chess.domain.commands.NONE && startSquare == finishSquare -> {
-                    clicked.value = NONE
-                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-                }
-                value is chess.domain.commands.NONE && finishSquare.doesBelongTo(currentPlayer, chess.board) -> {
-                    clicked.value = START(finish.square)
-
-                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-                }
-                value is chess.domain.commands.NONE && endPiece != null && endPiece.player != currentPlayer -> {
-                    clicked.value = NONE
-
-                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-                }
-                value is chess.domain.commands.NONE && !possibleMovesList.value.contains(finishSquare) ->
-                    clicked.value = START(startSquare.toString())
-                else -> {
-                    clicked.value = NONE
-
-                    clearPossibleMovesIfOptionEnabled(showPossibleMoves, possibleMovesList)
-                }
-            }
-            promotionValue.value = ""
-
-
-
-            areMovesUpdated.value = false
         }
-         */
 
-        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesToDisplay, showPossibleMoves, possibleMovesList)
+
+        handleResult(result, chess, showCheckInfo, showCheckMateInfo, movesToDisplay, showPossibleMoves, possibleMovesList,clicked,move.value)
 
         if (!areMovesUpdated.value) {
             val gameId = chess.value.currentGameId
@@ -293,7 +242,9 @@ fun handleResult(
     showCheckMateInfo: MutableState<Boolean>,
     movesPlayed: MutableState<String>,
     showPossibleMoves: MutableState<Boolean>,
-    possibleMovesList: MutableState<List<Square>>
+    possibleMovesList: MutableState<List<Square>>,
+    clicked: MutableState<Clicked>,
+    move: String,
 ) {
 
     when (result.value) {
@@ -330,6 +281,45 @@ fun handleResult(
             if(player == chess.value.localPlayer)
                 showCheckMateInfo.value = true
         }
+        is chess.domain.commands.NONE  -> {
+            if(clicked.value is FINISH) {
+                val finish = clicked.value as FINISH
+                val finishSquare = finish.square.toSquare()
+                val startSquare = move.toSquare()
+                val currentPlayer = chess.value.localPlayer
+                val endPiece = chess.value.board.getPiece(finish.square.toSquare())
+
+
+                when {
+                    startSquare == finishSquare -> {
+                        clicked.value = NONE
+                        clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+                    }
+                    finishSquare.doesBelongTo(currentPlayer, chess.value.board) -> {
+                        clicked.value = START(finish.square)
+
+                        clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+                    }
+                    endPiece != null && endPiece.player != currentPlayer -> {
+                        clicked.value = NONE
+
+                        clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+                    }
+                    !possibleMovesList.value.contains(finishSquare) ->
+                        clicked.value = START(startSquare.toString())
+                    else -> {
+                        clicked.value = NONE
+
+                        clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+                    }
+                }
+
+                result.value = NONE()
+                clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
+            }
+        }
+
+
     }
 
 }
