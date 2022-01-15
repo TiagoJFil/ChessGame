@@ -5,6 +5,7 @@ import chess.Storage.MongoDb.createDocument
 import chess.Storage.MongoDb.getCollectionWithId
 import chess.Storage.MongoDb.getDocument
 import chess.Storage.MongoDb.updateDocument
+import chess.domain.Move
 import com.mongodb.MongoException
 import com.mongodb.client.MongoDatabase
 
@@ -15,7 +16,7 @@ private const val COLLECTION_NAME = "Games"
 /**
  * Contract to be supported by the database using MongoDB storage
  */
-interface ChessDatabase {
+private interface ChessDatabase {
 
     /**
      * Creates a new Collection with the given gameId if the collection does not exist
@@ -171,24 +172,3 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
  */
 private data class Document(val _id: String, val moves: List<Move>)
 
-
-/**
- * Represents a move in the game
- * @property move    the move
- * Only formatted moves are allowed ex: Pe2e4, pb1xc3, Kb6c7=Q , Pa6xb7=Q , etc.
- */
-data class Move(val move: String){
-    init {
-           require(move.isFormatted())
-    }
-    override fun toString() = move
-}
-
-/**
- * Checks if a string is formatted correctly to be allowed as a moved
- * @return  a [Boolean] value indicating whether the string is formatted correctly (true) or not (false)
- */
-private fun String.isFormatted(): Boolean {
-    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
-    return filtered.matches(this)
-}

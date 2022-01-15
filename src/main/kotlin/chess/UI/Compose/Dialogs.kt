@@ -35,7 +35,7 @@ private val IMAGE_PROMOTION_SIZE = 50.dp
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun getGameName(
+fun openGameNameDialog(
     actionName : String,
     onClose : () -> Unit,
     onSubmit : (name : GameName) -> Unit

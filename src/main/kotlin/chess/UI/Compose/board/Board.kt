@@ -25,14 +25,14 @@ private val PADDING_BETWEEN_LETTERS = 24.dp
 /**
  * Places the pieces from the [board] received on the visual chess board.
  * @param board                     The board to be displayed.
- * @param checkIfIsAPossibleMove    A function that checks if a square is a possible move.
+ * @param checkIfTheTileIsAPossibleMove    A function that checks if a square is a possible move.
  * @param checkIfTileIsSelected     A function that checks if a square is selected.
  * @param OnTileClicked             A function that is called when a tile is clicked.
  */
 @Composable
 fun boardToComposableView(
     board: Board,
-    checkIfIsAPossibleMove : (square: Square) -> Boolean,
+    checkIfTheTileIsAPossibleMove : (square: Square) -> Boolean,
     checkIfTileIsSelected: (square: Square) -> Boolean,
     OnTileClicked : (square: Square) -> Unit
 ){
@@ -44,7 +44,7 @@ fun boardToComposableView(
                     val square = "$column$i".toSquare()
                     val piece = board.getPiece(square)
 
-                    tile(piece, square, checkIfIsAPossibleMove, checkIfTileIsSelected){
+                    tile(piece, square, checkIfTheTileIsAPossibleMove, checkIfTileIsSelected){
                         OnTileClicked(square)
                     }
                 }

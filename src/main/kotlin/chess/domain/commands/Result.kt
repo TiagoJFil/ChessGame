@@ -1,7 +1,7 @@
 package chess.domain.commands
 
 import chess.Chess
-import chess.Storage.Move
+import chess.domain.Move
 import chess.domain.Player
 
 /**
@@ -17,7 +17,7 @@ class OK(val chess: Chess, val moves: Iterable<Move>?) : Result()
 /**
  * Result produced when the user makes an error.
  */
-class NONE() : Result()
+class EMPTY() : Result()
 
 /**
  * Result produced a user makes a CHECK.

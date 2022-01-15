@@ -72,7 +72,7 @@ data class Board internal constructor(
      * Finds the king of the given color
      */
     fun getKingSquare(player: Player): Square {
-            val idx = board.indexOfFirst { it is King && it.player == player }
+            val idx = this.board.indexOfFirst { it is King && it.player == player }
             if(idx == -1) throw IllegalStateException("No king found for player $player")
             return idx.toSquare()
     }

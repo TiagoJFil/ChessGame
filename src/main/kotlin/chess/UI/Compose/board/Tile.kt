@@ -57,7 +57,7 @@ private fun getResource(piece: Piece?):String?{
  * Draws a tile on the chessboard.
  * The Tile could be a piece, or a empty square and if [showPossibleMoves] option is active, also a circle.
  * @param piece                        The piece to draw on the tile, may be null(empty square).
- * @param checkIfIsAPossibleMove       Checks if the tile is a possible move for other piece.
+ * @param checkIfTheTileIsAPossibleMove       Checks if the tile is a possible move for other piece.
  * @param checkIfTileIsSelected        Checks if the tile is selected by the user.
  * @param onSelected                   The function to call when the tile is clicked.
  */
@@ -65,7 +65,7 @@ private fun getResource(piece: Piece?):String?{
 fun tile(
     piece: Piece?,
     square : Square,
-    checkIfIsAPossibleMove : (square: Square) -> Boolean,
+    checkIfTheTileIsAPossibleMove : (square: Square) -> Boolean,
     checkIfTileIsSelected: (square: Square) -> Boolean,
     onSelected: () -> Unit = { }
 ){
@@ -93,7 +93,7 @@ fun tile(
         } else {
             Spacer(modifier = Modifier.size(TILE_SIZE))
         }
-        if (checkIfIsAPossibleMove(square))
+        if (checkIfTheTileIsAPossibleMove(square))
             Box(modifier = Modifier
                 .size(POSSIBLE_PATH_SIZE)
                 .align(Alignment.Center)

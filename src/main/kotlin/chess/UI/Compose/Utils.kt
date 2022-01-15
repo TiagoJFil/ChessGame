@@ -4,11 +4,10 @@ import Board
 import androidx.compose.runtime.MutableState
 import chess.GameName
 import chess.Storage.ChessRepository
-import chess.Storage.Move
+import chess.domain.Move
 import chess.domain.Player
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
-import chess.domain.commands.getPlayedMoves
 import chess.domain.getPiecePossibleMovesFrom
 
 
@@ -33,25 +32,7 @@ fun Iterable<Move>.getMovesAsString(gameId : GameName, database: ChessRepository
 
 }
 
-fun Iterable<Move>.toAString(): String {
 
-    if (this.count() == 0) return ""
-    var res = ""
-    var plays = 0
-    var noOfPlays = 1
-    this.forEach {
-        if (plays % 2 == 1) {
-            noOfPlays++
-            res+= "- ${it.move}\n"
-
-        } else {
-            res+= "$noOfPlays. ${it.move} "
-        }
-        plays++
-    }
-    return res
-
-}
 
 fun clearPossibleMovesIfOptionEnabled(showPossibleMoves: Boolean, selected: MutableState<List<Square>>){
     //TODO see if this is removed, kinda useless
