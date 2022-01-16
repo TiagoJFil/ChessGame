@@ -60,19 +60,17 @@ private fun String.isFormatted(): Boolean {
 }
 
 fun String.toMove(board: Board): Move? {
-    val filterForCompleteMove = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
-
     val filterForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
 
-    if(!filterForCompleteMove.matches(this)  && this.length == NO_PIECE_INPUT && filterForNoPieceName.matches(this)) {
-    val piece = board.getPiece(this.substring(0, 2).toSquare())
-    if(piece != null) {
-        val filteredInput = piece.toString().uppercase() + this
-        return Move(filteredInput)
+    if(this.length == NO_PIECE_INPUT && filterForNoPieceName.matches(this)) {
+        val piece = board.getPiece(this.substring(0, 2).toSquare())
+        if(piece != null) {
+            val filteredInput = piece.toString().uppercase() + this
+            return Move(filteredInput)
+        }
+        else return null
     }
-    else return null
-    }
-    if(!filterForCompleteMove.matches(this)) return null
+
     return Move(this)
 }
 
@@ -137,10 +135,10 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ,
         while(newPos != null ){
             val pieceAtEndSquare = board.getPiece(newPos)
             if (pieceAtEndSquare == null){
-                moves += (PieceMove(pos, newPos))
+                moves = moves + (PieceMove(pos, newPos))
             }
             if(pieceAtEndSquare != null && pieceAtEndSquare.player != color){
-                moves += (PieceMove(pos, newPos))
+                moves = moves + (PieceMove(pos, newPos))
                 break
             }
             if(pieceAtEndSquare != null && pieceAtEndSquare.player == color){
@@ -237,11 +235,9 @@ fun isOpponentKingInCheckAfterMove(board: Board, pieceInfo: PieceMove): Boolean 
 }
 
 fun isMyKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean{
-
     val endPiece = board.getPiece(pieceInfo.endSquare)
     if (endPiece != null && endPiece is King && endPiece.player == board.player) return true
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-
 
     return isKingInCheck(tempBoard,board.player)
 }

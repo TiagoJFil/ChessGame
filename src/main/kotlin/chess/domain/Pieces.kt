@@ -301,10 +301,10 @@ data class King (override val player: Player) : Piece {
         var moves = getMovesByAddingDirection(possibleDirections, pos, board)
 
         if ( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))) {
-            moves += (PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
+            moves = moves + (PieceMove(pos, pos.addDirectionNotNull(Direction(2 * RIGHT, 0))))
         }
         if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * LEFT, 0))))) {
-            moves += (PieceMove(pos, pos.addDirectionNotNull(Direction(LEFT, 0))))
+            moves = moves + (PieceMove(pos, pos.addDirectionNotNull(Direction(LEFT, 0))))
         }
 
         if(verifyForCheck) moves = moves.filter { !isMyKingInCheckPostMove(board,it) }

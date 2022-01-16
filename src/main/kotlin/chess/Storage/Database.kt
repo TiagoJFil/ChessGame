@@ -30,13 +30,13 @@ private interface ChessDatabase {
      * @param move       the move to add to the dataBase
      * @return      a boolean value indicating whether the operation was successful (true) or not (false)
      */
-    suspend fun addMoveToDb(move: Move, gameId: GameName): Boolean
+    suspend fun addMoveToDb(move: DatabaseMove, gameId: GameName): Boolean
 
     /**
      * Gets the last movement played in the game
      * @param gameId     the id of the game where we will get the last move played from.
      */
-    suspend fun getLastMove(gameId: GameName): Move?
+    suspend fun getLastMove(gameId: GameName): DatabaseMove?
 
     /**
      * @param gameId     the id of the game where we will get the move count from
@@ -49,7 +49,7 @@ private interface ChessDatabase {
      * @param gameId     the id of the game where we will get the moves played from.
      * @return           an [Iterable] of [Move]s played in the game
      */
-    suspend fun getAllMoves(gameId: GameName): Iterable<Move>
+    suspend fun getAllMoves(gameId: GameName): Iterable<DatabaseMove>
 
     /**
      * @param gameId     the id of the game where we will check if it exists
@@ -68,7 +68,7 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
      * @param move       the move to add to the dataBase
      * @return      a boolean value indicating whether the operation was successful (true) or not (false)
      */
-    override suspend fun addMoveToDb(move: Move, gameId: GameName): Boolean {
+    override suspend fun addMoveToDb(move: DatabaseMove, gameId: GameName): Boolean {
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: return false
@@ -108,7 +108,7 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
      * @param gameId     the id of the game where we will get the moves played from.
      * @return           an [Iterable] of [Move]s played in the game
      */
-    override suspend fun getAllMoves(gameId: GameName): Iterable<Move> {
+    override suspend fun getAllMoves(gameId: GameName): Iterable<DatabaseMove> {
         try {
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: Document(gameId.id, listOf())
@@ -123,7 +123,7 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
      * Gets the last movement played in the game
      * @param gameId     the id of the game where we will get the last move played from.
      */
-    override suspend fun getLastMove(gameId: GameName) : Move? {
+    override suspend fun getLastMove(gameId: GameName) : DatabaseMove? {
         try{
             val collection = db.getCollectionWithId<Document>(COLLECTION_NAME)
             val doc = collection.getDocument(gameId.id) ?: Document(gameId.id, listOf())
@@ -170,5 +170,20 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
  * @property moves    the move
  * @property _id      the id of the game where the move was played
  */
-private data class Document(val _id: String, val moves: List<Move>)
+private data class Document(val _id: String, val moves: List<DatabaseMove>)
 
+data class DatabaseMove(val move: String){
+    init {
+        require(move.isADataBaseMove())
+    }
+    override fun toString(): String {
+        return move
+    }
+}
+
+private fun String.isADataBaseMove() : Boolean{
+    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
+    return filtered.matches(this)
+}
+
+fun Move.toDataBaseMove() =DatabaseMove(this.move)

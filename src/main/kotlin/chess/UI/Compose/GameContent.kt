@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
-sealed class GameStatus()
+sealed class GameStatus
 
 class GameStarted(val InfoToView: ShowInfo?) : GameStatus()
 
@@ -29,19 +29,25 @@ class GameContentViews(
     private val action: GameActions,
     private val Cscope : CoroutineScope
 ) {
-    val chess = mutableStateOf(chessInfo)
+    private val chess = mutableStateOf(chessInfo)
     private val gameStatus : MutableState<GameStatus> = mutableStateOf(GameNotStarted)
-    private val promotionValue = mutableStateOf("")                      // The type of piece the user wants to promote to
-    val isSelectingPromotion = mutableStateOf(false)            // Open the dialog to select a promotion
+    private val promotionValue = mutableStateOf("")                        // The type of piece the user wants to promote to
+    private val canSelectAPromotion = mutableStateOf(true)                 // Oppener of the dialog to select a promotion
     val actionToEnterGame: MutableState<ACTION?> = mutableStateOf(null)    //Oppener for the select game name dialog
-    private val clicked: MutableState<Clicked> = mutableStateOf(NONE)      // The state of click on a tile
-    val showPossibleMoves = mutableStateOf(true)                // Show possible moves starts as true by default
-    private val possibleMovesList = mutableStateOf(emptyList<Square>())       // List of possible moves for a piece
+    private val clicked: MutableState<Clicked> = mutableStateOf(NONE)            // The state of click on a tile
+    private val showPossibleMoves = mutableStateOf(true)                           // Show possible moves starts as true by default
+    private val possibleMovesList = mutableStateOf(emptyList<Square>())          // List of possible moves for a piece
 
-    val movesToDisplay = mutableStateOf("")
+    private val movesToDisplay = mutableStateOf("")
     private val move = mutableStateOf("")
-    fun getGameStatus(): GameStatus = gameStatus.value
 
+    fun getChess() = chess.value
+    fun getGameStatus(): GameStatus = gameStatus.value
+    fun getMoveToDisplay() = movesToDisplay.value
+
+    fun updatePossibleMovesOption(value: Boolean) {
+        showPossibleMoves.value = value
+    }
 
 
     fun openAGame(gameId: GameName) {
@@ -56,7 +62,7 @@ class GameContentViews(
         }
     }
 
-    fun playAGame(move: String) {
+    private fun playAGame(move: String) {
         Cscope.launch {
             updateGame(action.play(move, chess.value))
         }
@@ -73,14 +79,14 @@ class GameContentViews(
     /**
      * Updates the [promotionValue] with the given value to add to the move string
      */
-    fun updatePromotionValue(value: String) {
+    private fun updatePromotionValue(value: String) {
         promotionValue.value = "=$value"
     }
 
     /**
      * Clears the possibleMoveList if the option to showPossibleMoves is disabled
      */
-    fun clearPossibleMovesList() {
+    fun clearPossibleMovesListIfOptionDisabled() {
         if(!showPossibleMoves.value)
             possibleMovesList.value = emptyList()
     }
@@ -146,14 +152,21 @@ class GameContentViews(
                 val finishSquare = finish.square.toSquare()
                 val startSquare = move.value.toSquare()
 
-                if(promotionValue.value == "" && chess.value.board.isTheMovementPromotable("$startSquare$finishSquare")) {
-                    isSelectingPromotion.value = true
+                if(promotionValue.value == "" && chess.value.board.isTheMovementPromotable("$startSquare$finishSquare") && canSelectAPromotion.value) {
+                    selectPossiblePromotions(
+                        chess.value.localPlayer,
+                        onClose = { canSelectAPromotion.value = false }
+                    ) {   piece ->
+                        updatePromotionValue(piece)
+                        canSelectAPromotion.value = false
+                    }
                 }else {
                     val finalMoveString = move.value + finish.square + promotionValue.value
 
                     playAGame(finalMoveString)
 
                     promotionValue.value = ""
+                    canSelectAPromotion.value = true
                 }
             }
 

@@ -10,7 +10,7 @@ import MIN_Y_NUMBER
  * Represents the Row that is used to represent the Y axis on the board.
  * @property number    the number associated with the row
  */
-enum class Row(val number: Int) {  //BoardMap[row][column]
+enum class Row(val number: Int) {
     Eight(0),
     Seven(1),
     Six(2),
@@ -43,6 +43,4 @@ fun Int.toRowOnList(): Row {
 }
 
 
-fun Char.isARow() = this.toString().toInt() in MIN_Y_NUMBER..MAX_Y_NUMBER
-
-fun Int.isARow() = this in MIN_ROW_NUMBER..MAX_ROW_NUMBER
+private fun Char.isARow() = this.toString().toInt() in MIN_Y_NUMBER..MAX_Y_NUMBER

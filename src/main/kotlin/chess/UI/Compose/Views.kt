@@ -69,11 +69,11 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 gameContent.actionToEnterGame.value = ACTION.JOIN
             },
             onClickShowMoves = {
-                gameContent.showPossibleMoves.value = it
+                gameContent.updatePossibleMovesOption(it)
             }
         )
 
-        gameContent.clearPossibleMovesList()
+        gameContent.clearPossibleMovesListIfOptionDisabled()
 
         if(gameContent.actionToEnterGame.value != null){
             val action = gameContent.actionToEnterGame.value
@@ -93,21 +93,10 @@ fun ApplicationScope.App(chessInfo: Chess) {
             )
         }
 
-        if (gameContent.isSelectingPromotion.value) {
 
-            selectPossiblePromotions(
-                gameContent.chess.value.localPlayer,
-                onClose = { gameContent.isSelectingPromotion.value = false }
-            ) {   piece ->
-                gameContent.updatePromotionValue(piece)
-                gameContent.isSelectingPromotion.value = false
-            }
-        }
-
-
-        LaunchedEffect(gameContent.chess.value) {
+        LaunchedEffect(gameContent.getChess()) {
             while(true) {
-                if(gameContent.chess.value.currentGameId != null && gameContent.chess.value.localPlayer != gameContent.chess.value.board.player) {
+                if(gameContent.getChess().currentGameId != null && gameContent.getChess().localPlayer != gameContent.getChess().board.player) {
                     gameContent.refreshGame(this)
                 }
                 delay(1500)
@@ -137,9 +126,9 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 val infoToView = (gameContent.getGameStatus() as GameStarted).InfoToView
 
                      drawVisualsWithAStartedGame(
-                         gameContent.chess.value,
+                         gameContent.getChess(),
                          infoToView,
-                         gameContent.movesToDisplay.value,
+                         gameContent.getMoveToDisplay(),
                         checkIfTheTileIsAPossibleMove = { square ->
                             gameContent.isTileAPossibleMove(square)
                         },
@@ -155,9 +144,9 @@ fun ApplicationScope.App(chessInfo: Chess) {
             is GameOver ->{
                 val infoToView = (gameContent.getGameStatus() as GameOver).InfoToView
 
-                drawVisualsWithEndedGame(gameContent.chess.value,
+                drawVisualsWithEndedGame(gameContent.getChess(),
                     infoToView,
-                    gameContent.movesToDisplay.value
+                    gameContent.getMoveToDisplay()
                 )
             }
         }

@@ -46,12 +46,6 @@ data class Board internal constructor(
     }
 
 
-    /**
-     * @return the current player color.
-     */
-    fun getPlayerColor(): Player {
-        return player
-    }
 
     /**
      * @param startPos the [Square] of the piece
@@ -142,11 +136,14 @@ fun Board.getAllBoardMovesFrom(player: Player,inCheck: Boolean ): List<PieceMove
     return playerMoves
 }
 
-
-fun Board.piecesCountFrom(p: Player)=
+/**
+ * Returns the number of pieces of the given player
+ * @param player the player we want to get the piece count from
+ */
+fun Board.piecesCountFrom(player: Player)=
     this.asList().fold(0){
         acc, piece ->
-        if (piece != null && piece.player == p) acc + 1
+        if (piece != null && piece.player == player) acc + 1
         else acc
     }
 
@@ -261,6 +258,8 @@ fun Square.doesBelongTo(player: Player,board: Board): Boolean {
 fun Square.doesNotBelongTo(player: Player, board: Board): Boolean {
     return !this.doesBelongTo(player,board)
 }
+
+
 
 /**
  * @param player    The player that owns the pieces

@@ -1,6 +1,7 @@
 package chess.domain.commands
 
 import chess.Chess
+import chess.Storage.DatabaseMove
 import chess.domain.Move
 import chess.domain.Player
 
@@ -10,9 +11,9 @@ import chess.domain.Player
 sealed class Result
 
 /**
- * Result produced when the user makes an action.
+ * Result produced when the user makes an action and works as expected
  */
-class OK(val chess: Chess, val moves: Iterable<Move>?) : Result()
+class OK(val chess: Chess, val moves: Iterable<DatabaseMove>?) : Result()
 
 /**
  * Result produced when the user makes an error.

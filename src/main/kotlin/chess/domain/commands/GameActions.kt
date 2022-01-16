@@ -4,6 +4,8 @@ import Board
 import chess.Chess
 import chess.GameName
 import chess.Storage.ChessRepository
+import chess.Storage.DatabaseMove
+import chess.Storage.toDataBaseMove
 import chess.domain.*
 import doCastling
 import doEnpassant
@@ -15,7 +17,7 @@ import promotePieceAndMove
  * @param filteredMove       the Filteres move to be sent to makeMove
  * @param databaseMove       the Filtered Move to be added to the database
  */
-private data class Moves(val filteredMove: Move, val databaseMove: Move)
+private data class Moves(val filteredMove: Move, val databaseMove: DatabaseMove)
 
 
 
@@ -66,11 +68,11 @@ class GameActions : ActionInterface{
      */
     override suspend fun play(move: String, chess: Chess): Result {
 
-        if (chess.board.getPlayerColor() != chess.localPlayer) return EMPTY()
+        if (chess.board.player != chess.localPlayer) return EMPTY()
         val gameId = chess.currentGameId
         require(gameId != null)
 
-        val filteredInput = filterInput(move, chess.board) ?: return EMPTY()
+        val filteredInput = filterInputToMoves(move, chess.board) ?: return EMPTY()
 
         val movement = getMoveType(filteredInput.filteredMove, chess.board)
         val newBoard = dealWithMovement(movement, chess.board, filteredInput) ?: return EMPTY()
@@ -102,7 +104,7 @@ class GameActions : ActionInterface{
         require(chess.currentGameId != null)
         val dbMove = chess.database.getLastMove(chess.currentGameId) ?: return EMPTY()
 
-        val filteredInput = filterInput(dbMove.move, chess.board) ?: return EMPTY()
+        val filteredInput = filterInputToMoves(dbMove.move, chess.board) ?: return EMPTY()
 
         val movement = getMoveType(filteredInput.filteredMove, chess.board)
         val newBoard = dealWithMovement(movement, chess.board, filteredInput) ?: return EMPTY()
@@ -169,16 +171,16 @@ private fun dealWithMovement(movement: MoveType, board: Board,filteredInput: Mov
  * @param type          the type of the move
  * Receives a filteredMove and a type, associates them and returns a [Move] to insert into the database
  */
-private fun filterToDbString(moves: Moves, type: MoveType): Move {
+private fun filterToDbString(moves: Moves, type: MoveType): DatabaseMove {
     when(type){
-        MoveType.CASTLE -> return moves.filteredMove
-        MoveType.REGULAR -> return moves.filteredMove
+        MoveType.CASTLE -> return moves.filteredMove.toDataBaseMove()
+        MoveType.REGULAR -> return moves.filteredMove.toDataBaseMove()
         MoveType.PROMOTION -> return moves.databaseMove
         MoveType.ENPASSANT ->
-            return Move((moves.filteredMove.move.substring(0,3) + "x" + moves.filteredMove.move.substring(3,5) + ".ep"))
+            return DatabaseMove((moves.filteredMove.move.substring(0,3) + "x" + moves.filteredMove.move.substring(3,5) + ".ep"))
 
         MoveType.CAPTURE ->
-            return Move((moves.filteredMove.move.substring(0, 3) + "x" + moves.filteredMove.move.substring(3, 5)))
+            return DatabaseMove((moves.filteredMove.move.substring(0, 3) + "x" + moves.filteredMove.move.substring(3, 5)))
 
         MoveType.CHECK ->
             return moves.databaseMove
@@ -206,7 +208,7 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
     return dataBase.getAllMoves(gameId).fold(Board()) {
             acc, move ->
 
-        val filteredInput = filterInput(move.move, acc) ?: throw IllegalArgumentException("Invalid move from db")
+        val filteredInput = filterInputToMoves(move.move, acc) ?: throw IllegalArgumentException("Invalid move from db")
         val moveType = getMoveType(filteredInput.filteredMove, acc)
         if(move == lastMove){acc}
             else {
@@ -222,22 +224,22 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
  * @return  A moves data class with the filtered input and the database move
  * Allows only the moves that can be played on the board.
  */
-private fun filterInput(input: String, board: Board): Moves? {
+private fun filterInputToMoves(input: String, board: Board): Moves? {
     val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
     val removableInput = Regex("x?(=([NBQR]))?(.ep)?")
     val filteredMove = input.replace(removableInput,"")
 
     val filterForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
     if( filterForNoPieceName.matches(filteredMove) ) {
-        val simpleMove = input.toMove(board)
+        val simpleMove = filteredMove.toMove(board)
         if (simpleMove != null ) {
             val filteredInput = simpleMove
             //put the piece in the idx 0 and the rest of the input
-            val databaseMove = Move(simpleMove.move[0] + input)
+            val databaseMove = DatabaseMove(simpleMove.move[0] + input)
             return Moves(filteredInput, databaseMove)
         }
     }
 
     if(!filter.matches(filteredMove)) return null
-    return Moves(Move(filteredMove),Move(input))
+    return Moves(Move(filteredMove),DatabaseMove(input))
 }

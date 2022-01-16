@@ -77,18 +77,28 @@ class BoardTest {
 
 
     @Test
-    fun `verify getPieceAt function` (){
-        val sut = Board()
-
-    }
-
-    @Test
-    fun `toString()` (){
+    fun `board toString()` (){
         val sut = Board()
         val boardString = "rnbqkbnrpppppppp                                PPPPPPPPRNBQKBNR"
         assertEquals(boardString, sut.toString() )
     }
 
+    @Test
+    fun `get board as a list`(){
+        val sut = Board()
+        val bList = sut.asList().map { it.toString() }
+        val expected = listOf(
+            "r","n","b","q","k","b","n","r",
+            "p","p","p","p","p","p","p","p",
+            "null","null","null","null","null","null","null","null",
+            "null","null","null","null","null","null","null","null",
+            "null","null","null","null","null","null","null","null",
+            "null","null","null","null","null","null","null","null",
+            "P","P","P","P","P","P","P","P",
+            "R","N","B","Q","K","B","N","R"
+        )
+        assertEquals(expected, bList)
+    }
 
 
 /*

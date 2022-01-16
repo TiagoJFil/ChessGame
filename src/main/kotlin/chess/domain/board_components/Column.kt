@@ -18,10 +18,6 @@ enum class Column(val letter: Char, val number : Int) {
     G('g',6),
     H('h',7);
 
-    operator fun plus(second: Int): Column {
-        require((number + second).isAColumn())
-        return values()[number + second]
-    }
     override fun toString(): String {
         return "${this.letter}"
     }
@@ -53,6 +49,5 @@ fun Int.toColumn() : Column  {
 /**
  * @return a boolean indicating if the given char is a valid Column.
  */
-fun Char.isAColumn() = this in MIN_X_LETTER..MAX_X_LETTER
+private fun Char.isAColumn() = this in MIN_X_LETTER..MAX_X_LETTER
 
-fun Int.isAColumn() = (MIN_X_LETTER+this).isAColumn()

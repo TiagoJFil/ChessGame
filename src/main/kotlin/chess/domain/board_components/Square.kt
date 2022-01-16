@@ -42,19 +42,10 @@ fun String.toSquare(): Square {
 }
 
 /**
- * @param value        the value to be checked
- * Checks if a [value] is an index that may express a valid board coordinate
- */
-fun isInCoordinateRange(value: Int) = value < BOARD_SIZE * BOARD_SIZE
-
-/**
  * Int extensions for expressing board coordinates
  */
 fun Int.toSquare() : Square {
 
     return Square((this % BOARD_SIZE).toColumn(), (this / BOARD_SIZE).toRowOnList())
 }
-fun Int.toSquareOrNull() = if (isInCoordinateRange(this)) toSquare() else null
-val Int.Square
-    get(): Square = toSquare()
 
