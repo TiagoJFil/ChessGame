@@ -61,7 +61,7 @@ data class Board internal constructor(
 
 
     /**
-     * @param coordinates the [Coordinates] where we check if there is a piece
+     * @param coordinates the [Square] where we check if there is a piece
      * @return true if there is a piece on the given coordinates, false otherwise.
      */
     fun hasPiece(at: Square): Boolean = board[at.toIndex()] != null
@@ -251,9 +251,7 @@ fun Board.doEnpassant(pieceMove: PieceMove): Board {
  * Checks whether the square is occupied by a piece of the player given at a square
  */
 fun Square.doesBelongTo(player: Player,board: Board): Boolean {
-
     val piece = board.getPiece(this)
-
     return (piece != null) && (piece.player == player)
 }
 

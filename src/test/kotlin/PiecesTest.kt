@@ -1,8 +1,7 @@
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Test
 
 class HasMoved {
@@ -13,8 +12,9 @@ class HasMoved {
         val piece = b.getPiece(startPos) as Pawn
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
-        b.makeMove("Pa2a3")
-        val hasMoved = piece.hasMoved()
+        val newBoard = b.makeMove("Pa2a3")
+        val pawn = newBoard.getPiece(Square(Column.A, Row.Three)) as Pawn
+        val hasMoved = pawn.hasMoved()
         assertTrue(hasMoved)
     }
 
@@ -25,9 +25,9 @@ class HasMoved {
         val piece = b.getPiece(startPos) as Rook
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
-        b.makeMove("Pa2a3")
-        b.makeMove("Ra1a2")
-        val hasMoved = piece.hasMoved()
+        val newBoard = b.makeMove("ph2h3").makeMove("pg7g6").makeMove("Rh1h2")
+        val rook = newBoard.getPiece(Square(Column.H, Row.Two)) as Rook
+        val hasMoved = rook.hasMoved()
         assertTrue(hasMoved)
     }
 
@@ -38,10 +38,10 @@ class HasMoved {
         val piece = b.getPiece(startPos) as King
         val notMovedYet = piece.hasMoved()
         assertFalse(notMovedYet)
-        b.makeMove("Pf2f3")
-        b.makeMove("Qe1f2")
-        val hasMoved = piece.hasMoved()
-        assertTrue(hasMoved)
+        val newBoard = b.makeMove("Pf2f3").makeMove("pe7e6").makeMove("Ke1e2")
+        val king = newBoard.getPiece(Square(Column.E, Row.Two)) as King
+        val hasMoved = king.hasMoved()
+        assertEquals(true,hasMoved)
     }
 }
 

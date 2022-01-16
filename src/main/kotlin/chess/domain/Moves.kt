@@ -81,6 +81,8 @@ fun String.toMove(board: Board): Move? {
  * Receives a move input as a [String] and transforms it into a [PieceMove]
  **/
 fun String.formatToPieceMove(): PieceMove{
+    val filterForPieceMove = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])([abcdefgh])([12345678])")
+    if(!filterForPieceMove.matches(this)) throw IllegalArgumentException("The String is not formatted correctly")
     val startSquare = Square((this[POSITION_FROM_LETTER]).toColumn(), (this[POSITION_FROM_NUMBER]).toRow())
     val endSquare = Square((this[POSITION_TO_LETTER]).toColumn(), (this[POSITION_TO_NUMBER]).toRow())
 
@@ -223,7 +225,7 @@ fun Board.isTheMovementPromotable(move: String): Boolean {
 fun isCheckMateAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
     val kingCantMove = tempBoard.getKingPossibleMoves(!board.player,true).isEmpty()
-    val playermoves = tempBoard.getAllBoardMovesFrom(board.player,true)
+    val playermoves = tempBoard.getAllBoardMovesFrom(!board.player,true)
     return kingCantMove &&  isKingInCheck(tempBoard,!board.player) && playermoves.isEmpty()
 }
 
