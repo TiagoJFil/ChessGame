@@ -23,14 +23,14 @@ class EMPTY() : Result()
 /**
  * Result produced a user makes a CHECK.
  */
-class CHECK(val chess: Chess,val playerInCheck: Player) : Result()
+class CHECK(val chess: Chess,val playerInCheck: Player, val moves: Iterable<DatabaseMove>) : Result()
 
 /**
  * Result produced a user makes a CHECKMATE.
  */
-class CHECKMATE(val chess: Chess,val playerInCheckMate: Player) : Result()
+class CHECKMATE(val chess: Chess,val playerInCheckMate: Player, val moves: Iterable<DatabaseMove>) : Result()
 
 /**
  * Result produced a user makes a STALEMATE.
  */
-class STALEMATE(val chess: Chess) : Result()
+class STALEMATE(val chess: Chess, val moves: Iterable<DatabaseMove>) : Result()

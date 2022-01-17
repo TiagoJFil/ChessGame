@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import chess.Chess
 import chess.GameName
+import chess.Storage.getMovesAsString
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.*
@@ -69,11 +70,11 @@ class GameContentViews(
     }
 
     fun refreshGame(scope: CoroutineScope) {
+
         scope.launch {
             updateGame(action.refreshBoard(chess.value))
         }
     }
-
 
 
     /**
@@ -91,12 +92,12 @@ class GameContentViews(
             possibleMovesList.value = emptyList()
     }
 
-
     /**
      * Verifies if the move square is a possible move for other piece
      */
     fun isTileAPossibleMove(square: Square) =
         showPossibleMoves.value && possibleMovesList.value.contains(square)
+
     /**
      * Verify if the [Square] given corresponds to a selected tile by the user
      */
@@ -184,7 +185,7 @@ class GameContentViews(
                 val gameId = result.chess.currentGameId
                 require(gameId != null)
                 if (result.moves != null)
-                    movesToDisplay.value = result.moves.getMovesAsString(gameId, chess.value.database)
+                    movesToDisplay.value = result.moves.getMovesAsString()
 
 
 
@@ -195,7 +196,7 @@ class GameContentViews(
             is CHECK -> {
                 val player = result.playerInCheck
                 chess.value = result.chess
-
+                movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
 
@@ -204,7 +205,7 @@ class GameContentViews(
             is CHECKMATE -> {
                 val player = result.playerInCheckMate
                 chess.value = result.chess
-
+                movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
 
@@ -212,7 +213,7 @@ class GameContentViews(
             }
             is STALEMATE -> {
                 chess.value = result.chess
-
+                movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
 

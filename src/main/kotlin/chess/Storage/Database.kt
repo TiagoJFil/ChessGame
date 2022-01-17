@@ -166,12 +166,15 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
 }
 
 /**
- * Represents the information of a move that
- * @property moves    the move
- * @property _id      the id of the game where the move was played
+ * Represents the information of a Document to be stored in the database
+ * @property _id      the id of the game where the move will be stored
+ * @property moves    the moves played in the game
  */
 private data class Document(val _id: String, val moves: List<DatabaseMove>)
 
+/**
+ * Represents a move to be stored in the database
+ */
 data class DatabaseMove(val move: String){
     init {
         require(move.isADataBaseMove())
@@ -181,9 +184,35 @@ data class DatabaseMove(val move: String){
     }
 }
 
+/**
+ * Validates if the given string is a valid DataBaseMove
+ */
 private fun String.isADataBaseMove() : Boolean{
     val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
     return filtered.matches(this)
 }
 
+/**
+ * Converts a [Move] to a [DatabaseMove]
+ * Its not needed to do any verification because the [Move] class already does it and the [DatabaseMove] class accepts the content of a [Move]
+ */
 fun Move.toDataBaseMove() =DatabaseMove(this.move)
+
+fun Iterable<DatabaseMove>.getMovesAsString(): String {
+    if (this.count() == 0) return ""
+    var res = ""
+    var plays = 0
+    var noOfPlays = 1
+    this.forEach {
+        if (plays % 2 == 1) {
+            noOfPlays++
+            res+= "- ${it.move}\n"
+
+        } else {
+            res+= "$noOfPlays. ${it.move} "
+        }
+        plays++
+    }
+    return res
+
+}

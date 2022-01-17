@@ -65,7 +65,6 @@ class GameActions : ActionInterface{
      * Function to move a piece on the board and update the database with the new move.
      */
     override suspend fun play(move: String, chess: Chess): Result {
-
         if (chess.board.player != chess.localPlayer) return EMPTY()
         val gameId = chess.currentGameId
         require(gameId != null)
@@ -77,23 +76,10 @@ class GameActions : ActionInterface{
 
         val dbMove = filterToDbString(filteredInput, movement)
         chess.database.addMoveToDb(dbMove, gameId)
-        val moves = chess.database.getAllMoves(gameId)
-        return when (movement) {
-            MoveType.CHECKMATE -> CHECKMATE(
-                Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer),
-                newBoard.player
-            )
-            MoveType.CHECK -> CHECK(
-                Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer),
-                newBoard.player
-            )
-            MoveType.STALEMATE -> STALEMATE(
-                Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer)
 
-            )
-            else -> OK(Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer), moves)
-        }
+       return handleMoveType(movement, chess,newBoard)
     }
+
 
     /**
      * Function to get update the board with the last move played.
@@ -106,28 +92,58 @@ class GameActions : ActionInterface{
 
         val movement = getMoveType(filteredInput.filteredMove, chess.board)
         val newBoard = dealWithMovement(movement, chess.board, filteredInput) ?: return EMPTY()
-        val moves = chess.database.getAllMoves(chess.currentGameId)
-        return when (movement) {
-            MoveType.CHECKMATE -> CHECKMATE(
-                Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer),
-                newBoard.player
-            )
-            MoveType.CHECK -> CHECK(
-                Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer),
-                newBoard.player
-            )
-            MoveType.STALEMATE -> STALEMATE(
-                Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer)
-            )
-            else -> OK(Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer), moves)
-        }
+
+        return handleMoveType(movement, chess,newBoard)
     }
 
+
+
+
+
+}
+/*
+/**
+ * Gets all moves played from a given [GameName].
+ */
+suspend fun getPlayedMoves(gameId: GameName, database: ChessRepository) : Iterable<DatabaseMove> {
+    return database.getAllMoves(gameId)
+}
+*/
+
+
+/**
+ * Added to avoid code repetition
+ * Receives a move type and returns a Result according to the type.
+ * @param movement the type of movement
+ * @param chess the chess object
+ * @param newBoard the new board after the movement
+ */
+private suspend fun handleMoveType(movement: MoveType, chess: Chess, newBoard: Board ): Result{
+    require(chess.currentGameId != null)
+    val moves = chess.database.getAllMoves(chess.currentGameId)
+    return when (movement) {
+        MoveType.CHECKMATE -> CHECKMATE(
+            Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer),
+            newBoard.player,
+            moves
+        )
+        MoveType.CHECK -> CHECK(
+            Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer),
+            newBoard.player,
+            moves
+        )
+        MoveType.STALEMATE -> STALEMATE(
+            Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer),
+            moves
+        )
+        else -> OK(Chess(newBoard, chess.database, chess.currentGameId, chess.localPlayer), moves)
+    }
 }
 
 
 /**
  * Added to avoid code duplication
+ * Updates a board according to a moveType
  * @param movement      the movement type to be checked
  * @param board         the board to update
  * @param filteredInput the filtered move to be sent to makeMove

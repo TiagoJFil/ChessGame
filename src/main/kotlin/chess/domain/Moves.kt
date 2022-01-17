@@ -41,7 +41,7 @@ data class PieceMove(val startSquare: Square, val endSquare: Square)
 /**
  * Represents a move in the game
  * @property move    the move
- * Only formatted moves are allowed ex: Pe2e4, pb1xc3, Kb6c7=Q , Pa6xb7=Q , etc.
+ * Only formatted moves are allowed ex: Pe2e4, pb1c3, Kb6c7 , Pa6b7 , etc.
  */
 data class Move(val move: String){
     init {
@@ -61,7 +61,6 @@ private fun String.isFormatted(): Boolean {
 
 /**
  * Converts a string to a board move
- * @param this the string to be converted
  * @param board the board to be used to convert the string
  * @return a Move if the move is possible or null otherwise
  */
@@ -97,9 +96,7 @@ fun String.formatToPieceMove(): PieceMove{
  * Receives a move input as a [PieceMove] and transforms it into a [String]
  */
 fun PieceMove.formatToString(board : Board) =
-    board.getPiece(startSquare).toString() +
-            startSquare.toString()+
-            endSquare.toString()
+    board.getPiece(startSquare).toString() + startSquare.toString()+ endSquare.toString()
 
 
 /**
