@@ -117,39 +117,123 @@ data class Board internal constructor(
         return Board(newBoard, !player)
     }
 
+
     /**
-     * Returns the board as a list of pieces
+     * @param move      the movement we want to make
+     * @param promotionType  the type of the promotion
+     * @return the [Board] after the promotion
      */
-    fun asList(): List<Piece?> {
-        return board
-    }
-}
-
-
-fun Board.getAllBoardMovesFrom(player: Player,inCheck: Boolean ): List<PieceMove> {
-    val playerMoves = mutableListOf<PieceMove>()
-    this.asList().forEachIndexed { idx, p ->
-        if (p != null) {
-            if (p.player == player) playerMoves.addAll(p.getPossibleMoves(this, idx.toSquare(),inCheck))
+    fun promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
+        val square = move.substring(1,3).toSquare()
+        val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
+        if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
+        else {
+            val newPiece = when (promotionType.lowercaseChar()) {
+                'q' -> Queen(piece.player)
+                'r' -> Rook(piece.player)
+                'b' -> Bishop(piece.player)
+                'n' -> Knight(piece.player)
+                else -> throw IllegalStateException("Invalid promotion type")
+            }
+            val newBoardList = this.asList().mapIndexed { index, it ->
+                if (index == square.toIndex()) newPiece
+                else it
+            }
+            return Board(newBoardList, player).makeMove(move)
         }
     }
-    return playerMoves
+
+
+    /**
+     * @param move          The move received from the user to perform the castling.
+     * @returns            The [Board] after the castling.
+     * Moves the king and the rook to the correct position.
+     */
+    fun doCastling(move: PieceMove): Board {
+
+        val rookColumnLetter = if ( move.startSquare.column == Column.C ) MIN_X_LETTER else MAX_X_LETTER
+
+        val rookStartPos = Square( (MAX_X_LETTER).toColumn(), move.endSquare.row )
+        val kingStartPos = move.startSquare
+        val kingRow = kingStartPos.row.toString()
+        val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d$kingRow" else "f$kingRow"
+        val newKingPos = if (rookColumnLetter == MIN_X_LETTER) "c$kingRow" else "g$kingRow"
+
+        val kingMove = "K$kingStartPos$newKingPos"
+        val rookMove = "R$rookStartPos$newRookPos"
+
+        val newBoard = this.makeMove(kingMove).makeMove(rookMove).asList()
+
+        return Board(newBoard, !player)
+    }
+
+    /**
+     * Does en passant movement from the given [PieceMove]
+     * @param pieceMove     The piece movement to be performed
+     * @return              The new [Board] after the movement
+     */
+    fun doEnpassant(pieceMove: PieceMove): Board {
+        val piece = getPiece(pieceMove.startSquare) ?: throw IllegalStateException("No piece at ${pieceMove.startSquare}")
+
+        val dir = if (piece.player == Player.WHITE) UP else DOWN
+        val eatenPieceEndSquare = (pieceMove.endSquare.row.number - dir).toRow()
+        val endSquareColumn = pieceMove.endSquare.column
+
+        val eatenPieceSquare = Square(endSquareColumn,eatenPieceEndSquare)
+        val newBoard = this.asList().mapIndexed{index, it ->
+            when(index){
+                eatenPieceSquare.toIndex() -> null
+                pieceMove.startSquare.toIndex() -> null
+                pieceMove.endSquare.toIndex() -> piece
+
+                else -> it
+            }
+        }
+        return Board(newBoard, !player)
+    }
+
+    /**
+     * Returns the board as a list of pieces
+     * Usefull if we change the board to a different type
+     */
+    private fun asList(): List<Piece?> {
+        return board
+    }
+
+
+    /**
+     * Accumulates value starting with a
+     * @param initial value and applying an
+     * @param operation from right to left to each element with its index from the [Board]
+     * @Return the specified initial value if the list is empty or the result of the operation.
+     */
+    fun <T>foldRightIndexed(initial: T , operation: (Int, Piece?, T) -> T) =
+        this.asList().foldRightIndexed(initial, operation)
+
+
+
+
 }
 
 /**
  * Returns the number of pieces of the given player
  * @param player the player we want to get the piece count from
  */
-fun Board.piecesCountFrom(player: Player)=
-    this.asList().fold(0){
-        acc, piece ->
+fun Board.piecesCountFrom(player: Player) =
+    foldRightIndexed(0){
+            _, piece, acc ->
         if (piece != null && piece.player == player) acc + 1
         else acc
     }
 
 
+/**
+ * Creates a list with all the possible counter check Squares
+ * @param player the player we want to get the possible positions and pieces positions (countercheck beeing the posistions where king can protect itself)
+ * @return the list of possible counter check positions
+ */
 fun Board.counterCheckMoves(player: Player): List<Square> =
-    this.asList().foldRightIndexed(listOf<Square>()) { idx, p, acc ->
+    foldRightIndexed(listOf<Square>()) { idx, p, acc ->
         if (p != null && p.player == player) {
 
             val piecePossibleMoves = p.getPossibleMoves(this, idx.toSquare(), false).map { it.endSquare }
@@ -162,6 +246,30 @@ fun Board.counterCheckMoves(player: Player): List<Square> =
 
     }
 
+
+/**
+ * Creates a list with all the possible moves of the pieces in the board
+ * @param player the color of the player
+ * @param inCheck if the player is in check or not
+ * @return the list of pieces of the given player
+ */
+fun Board.getAllBoardMovesFrom(player: Player,inCheck: Boolean ): List<PieceMove> =
+    foldRightIndexed(listOf<PieceMove>()){
+            idx, p, acc ->
+        if (p != null) {
+            if (p.player == player) acc + p.getPossibleMoves(this, idx.toSquare(),inCheck)
+            else acc
+        }
+        else acc
+    }
+
+
+
+/**
+ * Creates a list with all the possible king moves that match the given player
+ * @param player the player that corresponds to the king
+ * @return a list of possible king moves
+ */
 fun Board.getKingPossibleMoves(player: Player,verifyForCheck: Boolean): List<PieceMove> {
     val king = getKingPiece(player) ?: throw IllegalStateException("no king found")
     val kingPos = getKingSquare(player)
@@ -171,78 +279,6 @@ fun Board.getKingPossibleMoves(player: Player,verifyForCheck: Boolean): List<Pie
 
 
 
-/**
- * @param move      the movement we want to make
- * @param promotionType  the type of the promotion
- * @return the [Board] after the promotion
- */
-fun Board.promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
-    val square = move.substring(1,3).toSquare()
-    val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
-    if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
-    else {
-        val newPiece = when (promotionType.lowercaseChar()) {
-            'q' -> Queen(piece.player)
-            'r' -> Rook(piece.player)
-            'b' -> Bishop(piece.player)
-            'n' -> Knight(piece.player)
-            else -> throw IllegalStateException("Invalid promotion type")
-        }
-        val newBoardList = this.asList().mapIndexed { index, it ->
-            if (index == square.toIndex()) newPiece
-            else it
-        }
-        return Board(newBoardList, player).makeMove(move)
-    }
-}
-
-/**
- * @param move          The move received from the user to perform the castling.
- * @returns            The [Board] after the castling.
- * Moves the king and the rook to the correct position.
- */
-fun Board.doCastling(move: PieceMove): Board {
-
-    val rookColumnLetter = if ( move.startSquare.column == Column.C ) MIN_X_LETTER else MAX_X_LETTER
-
-    val rookStartPos = Square( (MAX_X_LETTER).toColumn(), move.endSquare.row )
-    val kingStartPos = move.startSquare
-    val kingRow = kingStartPos.row.toString()
-    val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d$kingRow" else "f$kingRow"
-    val newKingPos = if (rookColumnLetter == MIN_X_LETTER) "c$kingRow" else "g$kingRow"
-
-    val kingMove = "K$kingStartPos$newKingPos"
-    val rookMove = "R$rookStartPos$newRookPos"
-
-    val newBoard = this.makeMove(kingMove).makeMove(rookMove).asList()
-
-    return Board(newBoard, !player)
-}
-
-/**
- * Does en passant movement from the given [PieceMove]
- * @param pieceMove     The piece movement to be performed
- * @return              The new [Board] after the movement
- */
-fun Board.doEnpassant(pieceMove: PieceMove): Board {
-    val piece = getPiece(pieceMove.startSquare) ?: throw IllegalStateException("No piece at ${pieceMove.startSquare}")
-
-    val dir = if (piece.player == Player.WHITE) UP else DOWN
-    val eatenPieceEndSquare = (pieceMove.endSquare.row.number - dir).toRow()
-    val endSquareColumn = pieceMove.endSquare.column
-
-    val eatenPieceSquare = Square(endSquareColumn,eatenPieceEndSquare)
-    val newBoard = this.asList().mapIndexed{index, it ->
-        when(index){
-            eatenPieceSquare.toIndex() -> null
-            pieceMove.startSquare.toIndex() -> null
-            pieceMove.endSquare.toIndex() -> piece
-
-            else -> it
-        }
-    }
-    return Board(newBoard, !player)
-}
 
 /**
  * Checks whether the square is occupied by a piece of the player given at a square

@@ -61,10 +61,11 @@ class Move_DataClassTest {
 
     @Test
     fun `String not valid to Move`() {
-        val string = "Pa2a5a"
-        val sut = Board()
-        val move =  string.toMove(sut)
-        assertEquals(null,move)
+        assertThrows(IllegalArgumentException::class.java) {
+            val string = "Pa2a5a"
+            val sut = Board()
+            val move =  string.toMove(sut)
+        }
     }
 
 }

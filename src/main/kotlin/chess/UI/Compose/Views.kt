@@ -1,6 +1,9 @@
 package chess.UI.Compose
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -217,9 +220,18 @@ private fun drawVisualsWithAStartedGame(
                     }
                 }
             }
+
             Column(
-                Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(MOVES_BACKGROUND_COLOR)
+                Modifier.padding(32.dp)
+                    .height(MOVES_TEXT_SIZE_HEIGHT)
+                    .width(MOVES_TEXT_SIZE_WIDTH)
+                    .background(MOVES_BACKGROUND_COLOR)
+                    .verticalScroll(
+                        state = ScrollState(0),
+                        enabled = true
+                    )
             ) {
+
                 Text(
                     movesPlayed,
                     fontSize = MOVES_FONT_SIZE,
