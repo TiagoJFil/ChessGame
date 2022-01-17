@@ -7,9 +7,7 @@ import chess.Storage.ChessRepository
 import chess.Storage.DatabaseMove
 import chess.Storage.toDataBaseMove
 import chess.domain.*
-import doCastling
-import doEnpassant
-import promotePieceAndMove
+
 
 
 

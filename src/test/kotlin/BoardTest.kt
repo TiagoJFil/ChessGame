@@ -83,6 +83,7 @@ class BoardTest {
         assertEquals(boardString, sut.toString() )
     }
 
+    /*
     @Test
     fun `get board as a list`(){
         val sut = Board()
@@ -99,6 +100,7 @@ class BoardTest {
         )
         assertEquals(expected, bList)
     }
+    */
 
 
 /*

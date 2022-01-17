@@ -59,6 +59,12 @@ private fun String.isFormatted(): Boolean {
     return filtered.matches(this)
 }
 
+/**
+ * Converts a string to a board move
+ * @param this the string to be converted
+ * @param board the board to be used to convert the string
+ * @return a Move if the move is possible or null otherwise
+ */
 fun String.toMove(board: Board): Move? {
     val filterForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
 
@@ -161,7 +167,7 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ,
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
 
-    return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player)).contains(pieceInfo)){
+    return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player) ||  isMyKingInCheckPostMove(board,pieceInfo)).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
         isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
         isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
@@ -211,12 +217,7 @@ fun Board.isTheMovementPromotable(move: String): Boolean {
 }
 
 
-/**
- * Verifies if the opponent king is in checkMate
- * @param board game board
- * @param color the color of the player
- * @return true if the king is in checkMate false otherwise
- */
+
 
 
 
@@ -235,8 +236,6 @@ fun isOpponentKingInCheckAfterMove(board: Board, pieceInfo: PieceMove): Boolean 
 }
 
 fun isMyKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean{
-    val endPiece = board.getPiece(pieceInfo.endSquare)
-    if (endPiece != null && endPiece is King && endPiece.player == board.player) return true
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
 
     return isKingInCheck(tempBoard,board.player)
@@ -247,6 +246,12 @@ fun isStalemateAfterMove(board: Board, pieceInfo: PieceMove): Boolean{
     return tempBoard.piecesCountFrom(!board.player) == 1 && !isKingInCheck(tempBoard,!board.player) && tempBoard.getKingPossibleMoves(!board.player,true).isEmpty()
 }
 
+/**
+ * Verifies if the opponent king is in checkMate
+ * @param board game board
+ * @param color the color of the player
+ * @return true if the king is in checkMate false otherwise
+ */
 fun isKingInCheck(board: Board,player: Player) = board.getKingSquare(player) in board.getAllBoardMovesFrom(!player,false).map { it.endSquare }
 
 

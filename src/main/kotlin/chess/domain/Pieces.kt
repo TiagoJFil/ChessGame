@@ -180,7 +180,7 @@ class Pawn (override val player: Player) : Piece  {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
 
 
-        return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player)).contains(pieceInfo)){
+        return when(getPossibleMoves(board, pieceInfo.startSquare,isKingInCheck(board,board.player) ||  isMyKingInCheckPostMove(board,pieceInfo) ).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
             isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
             canPromote(pieceInfo) -> MoveType.PROMOTION
