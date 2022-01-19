@@ -27,20 +27,23 @@ enum class Row(val number: Int) {
 }
 
 
+/**
+ * @return the row associated with that char
+ */
 fun Char.toRow() : Row{
     require(this.isARow())
     return Row.values()[8 - this.toString().toInt()]
 }
 
+/**
+ * @return the row associated with that int
+ */
 fun Int.toRow(): Row {
     require(this in MIN_ROW_NUMBER..MAX_ROW_NUMBER)
     return Row.values()[this]
 }
 
-fun Int.toRowOnList(): Row {
-    require(this in 0..7)
-    return Row.values()[this]
-}
-
-
+/**
+ * @return true if the given char is a row
+ */
 private fun Char.isARow() = this.toString().toInt() in MIN_Y_NUMBER..MAX_Y_NUMBER

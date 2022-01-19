@@ -7,6 +7,7 @@ import chess.storage.ChessRepository
 import chess.storage.DatabaseMove
 import chess.domain.*
 import chess.domain.board_components.toSquare
+import org.junit.Test
 
 
 /**
@@ -19,6 +20,13 @@ private data class Moves(val filteredMove: Move, val databaseMove: DatabaseMove)
 
 class GameActions : ActionInterface{
 
+
+    /**
+     * Opens a game idetified by its id
+     * @param gameId the id of the game to open
+     * @param chess the chess game to alter
+     * @return a result with the new chess game
+     */
     override suspend fun openGame(gameId: GameName, chess: Chess): Result {
         val board: Board
         val gameExists = chess.database.doesGameExist(gameId)
@@ -188,10 +196,11 @@ private fun filterToDbString(moves: Moves, type: MoveType, board: Board): Databa
     val endPieceSquare = moves.filteredMove.move.substring(3,5).toSquare()
     val pieceAtEnd = board.getPiece(endPieceSquare)
     val captures = if(pieceAtEnd != null) "x" else ""
+    val rook = if(board.player.isWhite()) "O" else "o"
 
     when(type){
-        MoveType.CASTLE ->
-            return DatabaseMove(moves.filteredMove.move + ".ca")
+        MoveType.CASTLE -> return if(moves.filteredMove.move[3] == 'c') DatabaseMove("$rook-$rook-$rook")
+        else DatabaseMove("$rook-$rook")
         MoveType.REGULAR -> return DatabaseMove(moves.filteredMove.move)
         MoveType.PROMOTION ->
             return DatabaseMove(moves.databaseMove.move.substring(0,3) + captures + moves.databaseMove.move.substring(3,7))      //Pa2a4=Q or //Pa2xa4=Q
@@ -245,21 +254,44 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
  * Allows only the moves that can be played on the board.
  */
 private fun filterInputToMoves(input: String, board: Board): Moves? {
-    val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?(.ca)?")
-    val removableInput = Regex("x?(=([NBQR]))?(.ep)?(.ca)?")
+    val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
+    val removableInput = Regex("x?(=([NBQR]))?(.ep)?")
     val filteredMove = input.replace(removableInput,"")
 
+
+    val castle = Regex("([Oo]-[Oo]-?[Oo]?)")
+
+    val castleLeft = if(board.player.isWhite())"Ke1c1".toMove(board) else "ke1c1".toMove(board)
+    val castleRight = if(board.player.isWhite()) "Ke1g1".toMove(board) else "ke1g1".toMove(board)
+    val rook = if(board.player.isWhite()) "O" else "o"
+
+    if(castle.matches(input)){
+        if(input.length > 3 && castleLeft != null) return Moves(castleLeft, DatabaseMove("$rook-$rook-$rook"))
+        if(castleRight != null) return Moves(castleRight,DatabaseMove("$rook-$rook"))
+    }
+
+
     val filterForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
-    if( filterForNoPieceName.matches(filteredMove) ) {
+    if(filterForNoPieceName.matches(filteredMove) ) {
         val simpleMove = filteredMove.toMove(board)
         if (simpleMove != null ) {
-            val filteredInput = simpleMove
             //put the piece in the idx 0 and the rest of the input
             val databaseMove = DatabaseMove(simpleMove.move[0] + input)
-            return Moves(filteredInput, databaseMove)
+            return Moves(simpleMove, databaseMove)
         }
     }
 
     if(!filter.matches(filteredMove)) return null
     return Moves(Move(filteredMove),DatabaseMove(input))
+}
+
+
+@Test
+fun main(){
+    val rook = Regex("([Oo]-[Oo]-?[Oo]?)")
+    println(rook.matches("O-O-O"))
+    println(rook.matches("O-O"))
+    println(rook.matches("o-o-o"))
+    println(rook.matches("o-o"))
+
 }

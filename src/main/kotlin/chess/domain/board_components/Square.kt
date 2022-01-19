@@ -46,6 +46,6 @@ fun String.toSquare(): Square {
  */
 fun Int.toSquare() : Square {
 
-    return Square((this % BOARD_SIZE).toColumn(), (this / BOARD_SIZE).toRowOnList())
+    return Square((this % BOARD_SIZE).toColumn(), (this / BOARD_SIZE).toRow())
 }
 

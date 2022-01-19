@@ -187,8 +187,9 @@ data class DatabaseMove(val move: String){
  * Validates if the given string is a valid DataBaseMove
  */
 private fun String.isADataBaseMove() : Boolean{
-    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?(.ca)?")
-    return filtered.matches(this)
+    val rook = Regex("([Oo]-[Oo]?-?[Oo]?)")
+    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
+    return filtered.matches(this) || rook.matches(this)
 }
 
 
