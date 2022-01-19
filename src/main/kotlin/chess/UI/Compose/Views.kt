@@ -110,20 +110,9 @@ fun ApplicationScope.App(chessInfo: Chess) {
 
 
 
-        // TODO QUANDO FAZEMOS PROMOTE E COMEMOS ALGUEM APARECE MAL NA DB
-        // TODO QUANDO FAZEMOS CHECK E COMEMOS ALKGUEM APARECE MAL NA DB
-
-
-
-        // TODO WHEN A LOT OF MOVES ARE PLAYED TO RIGHT MOVES  GO DOWN INTO INFINIY
-
-
-
         when(gameContent.getGameStatus()){
             is GameNotStarted ->{
-
                     drawVisualsWithoutAStartedGame()
-
             }
             is GameStarted ->{
                 val infoToView = (gameContent.getGameStatus() as GameStarted).InfoToView
@@ -264,7 +253,7 @@ private fun drawVisualsWithoutAStartedGame(){
             Column(
                 Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(Color.White)
             ) {
-                //TODO: Add a text saying that the game has not started yet or maybe a button to start the game
+                Text(modifier = Modifier.padding(top=  MOVES_TEXT_SIZE_HEIGHT/2 , start = MOVES_TEXT_SIZE_WIDTH/3  ),text ="Welcome")
             }
         }
 
@@ -279,6 +268,7 @@ private fun drawVisualsWithEndedGame(
 ){
     val infoModifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
     val gameId = chess.currentGameId
+    val info = remember { mutableStateOf("") }
     require(gameId != null) { "Game id cant be null here" }
 
     MaterialTheme {
@@ -296,9 +286,10 @@ private fun drawVisualsWithEndedGame(
                     boardToComposableView(chess.board, { false }, { false }, { })
                 }
 
-                val info = if (chess.board.player == chess.localPlayer) "Your turn" else "Waiting..."
+                info.value = if (chess.board.player == chess.localPlayer) "Your turn" else "Waiting..."
+                if(infoToShow != null && infoToShow !is showCheck) info.value = ""
                 Text(
-                    "Game:${gameId.id} | You:${chess.localPlayer} | $info",
+                    "Game:${gameId.id} | You:${chess.localPlayer} | ${info.value}",
                     fontSize = INFO_FONT_SIZE,
                     modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
                 )
@@ -315,7 +306,7 @@ private fun drawVisualsWithEndedGame(
 
                     is showStalemate -> {
                         Text(
-                            "STALEMATE",
+                            "STALEMATE! Draw.",
                             fontSize = INFO_FONT_SIZE,
                             modifier = infoModifier
                         )
@@ -323,8 +314,14 @@ private fun drawVisualsWithEndedGame(
                 }
             }
             Column(
-                Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH)
+                Modifier.padding(32.dp)
+                    .height(MOVES_TEXT_SIZE_HEIGHT)
+                    .width(MOVES_TEXT_SIZE_WIDTH)
                     .background(MOVES_BACKGROUND_COLOR)
+                    .verticalScroll(
+                        state = ScrollState(0),
+                        enabled = true
+                    )
             ) {
                 Text(
                     movesPlayed,

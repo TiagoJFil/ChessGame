@@ -21,7 +21,7 @@ interface ActionInterface {
     suspend fun play(move: String, chess: Chess): Result
 
     /**
-     * Function to get update the board with the last move played.
+     * Function to update the board with the last move played.
      */
     suspend fun refreshBoard(chess: Chess): Result
 

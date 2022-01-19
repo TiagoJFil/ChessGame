@@ -5,7 +5,6 @@ import chess.Storage.MongoDb.createDocument
 import chess.Storage.MongoDb.getCollectionWithId
 import chess.Storage.MongoDb.getDocument
 import chess.Storage.MongoDb.updateDocument
-import chess.domain.Move
 import com.mongodb.MongoException
 import com.mongodb.client.MongoDatabase
 
@@ -47,7 +46,7 @@ private interface ChessDatabase {
     /**
      * Gets the list of movement already played in the game
      * @param gameId     the id of the game where we will get the moves played from.
-     * @return           an [Iterable] of [Move]s played in the game
+     * @return           an [Iterable] of formated [DatabaseMove]s played in the game
      */
     suspend fun getAllMoves(gameId: GameName): Iterable<DatabaseMove>
 
@@ -106,7 +105,7 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
     /**
      * Gets the list of movement already played in the game
      * @param gameId     the id of the game where we will get the moves played from.
-     * @return           an [Iterable] of [Move]s played in the game
+     * @return           an [Iterable] of [DatabaseMove]s played in the game
      */
     override suspend fun getAllMoves(gameId: GameName): Iterable<DatabaseMove> {
         try {
@@ -188,15 +187,10 @@ data class DatabaseMove(val move: String){
  * Validates if the given string is a valid DataBaseMove
  */
 private fun String.isADataBaseMove() : Boolean{
-    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
+    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?(.ca)?")
     return filtered.matches(this)
 }
 
-/**
- * Converts a [Move] to a [DatabaseMove]
- * Its not needed to do any verification because the [Move] class already does it and the [DatabaseMove] class accepts the content of a [Move]
- */
-fun Move.toDataBaseMove() =DatabaseMove(this.move)
 
 fun Iterable<DatabaseMove>.getMovesAsString(): String {
     if (this.count() == 0) return ""

@@ -2,7 +2,6 @@ package chess.domain.commands
 
 import chess.Chess
 import chess.Storage.DatabaseMove
-import chess.domain.Move
 import chess.domain.Player
 
 /**

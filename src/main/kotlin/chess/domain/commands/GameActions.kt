@@ -5,10 +5,8 @@ import chess.Chess
 import chess.GameName
 import chess.Storage.ChessRepository
 import chess.Storage.DatabaseMove
-import chess.Storage.toDataBaseMove
 import chess.domain.*
-
-
+import chess.domain.board_components.toSquare
 
 
 /**
@@ -74,7 +72,7 @@ class GameActions : ActionInterface{
         val movement = getMoveType(filteredInput.filteredMove, chess.board)
         val newBoard = dealWithMovement(movement, chess.board, filteredInput) ?: return EMPTY()
 
-        val dbMove = filterToDbString(filteredInput, movement)
+        val dbMove = filterToDbString(filteredInput, movement,chess.board)
         chess.database.addMoveToDb(dbMove, gameId)
 
        return handleMoveType(movement, chess,newBoard)
@@ -153,13 +151,13 @@ private fun dealWithMovement(movement: MoveType, board: Board,filteredInput: Mov
     when (movement) {
         MoveType.ILLEGAL -> null
         MoveType.CASTLE -> {
-            board.doCastling(filteredInput.filteredMove.toString().formatToPieceMove())
+            board.doCastling(filteredInput.filteredMove.toString().formatToPieceMove() )
         }
         MoveType.PROMOTION -> {
             board.promotePieceAndMove(filteredInput.filteredMove.toString(), filteredInput.databaseMove.toString().last())
         }
         MoveType.ENPASSANT -> {
-            board.doEnpassant(filteredInput.filteredMove.toString().formatToPieceMove())
+            board.doEnpassant(filteredInput.filteredMove.toString().formatToPieceMove() )
         }
         MoveType.REGULAR -> {
             board.makeMove(filteredInput.filteredMove.toString())
@@ -181,34 +179,42 @@ private fun dealWithMovement(movement: MoveType, board: Board,filteredInput: Mov
 
 
 /**
- * @param moves    the [Moves] object with the filtered move
- * @param type          the type of the move
- * Receives a filteredMove and a type, associates them and returns a [Move] to insert into the database
+ * @param moves     the [Moves] object with the filtered move
+ * @param type      the type of the move
+ * @param board     utilitary board for extracting the information if a piece eats other
+ * Receives a filteredMove and a type, associates them and returns a [DatabaseMove] to insert into the database
  */
-private fun filterToDbString(moves: Moves, type: MoveType): DatabaseMove {
+private fun filterToDbString(moves: Moves, type: MoveType, board: Board): DatabaseMove {
+    val endPieceSquare = moves.filteredMove.move.substring(3,5).toSquare()
+    val pieceAtEnd = board.getPiece(endPieceSquare)
+    val captures = if(pieceAtEnd != null) "x" else ""
+
     when(type){
-        MoveType.CASTLE -> return moves.filteredMove.toDataBaseMove()
-        MoveType.REGULAR -> return moves.filteredMove.toDataBaseMove()
-        MoveType.PROMOTION -> return moves.databaseMove
+        MoveType.CASTLE ->
+            return DatabaseMove(moves.filteredMove.move + ".ca")
+        MoveType.REGULAR -> return DatabaseMove(moves.filteredMove.move)
+        MoveType.PROMOTION ->
+            return DatabaseMove(moves.databaseMove.move.substring(0,3) + captures + moves.databaseMove.move.substring(3,7))      //Pa2a4=Q or //Pa2xa4=Q
         MoveType.ENPASSANT ->
-            return DatabaseMove((moves.filteredMove.move.substring(0,3) + "x" + moves.filteredMove.move.substring(3,5) + ".ep"))
+            return DatabaseMove(moves.filteredMove.move.substring(0,3) + "x" + moves.filteredMove.move.substring(3,5) + ".ep")   //Pa2xa4.ep
 
         MoveType.CAPTURE ->
-            return DatabaseMove((moves.filteredMove.move.substring(0, 3) + "x" + moves.filteredMove.move.substring(3, 5)))
+            return DatabaseMove(moves.filteredMove.move.substring(0, 3) + "x" + moves.filteredMove.move.substring(3, 5))         //Pa2xa4
 
         MoveType.CHECK ->
-            return moves.databaseMove
+            return DatabaseMove(moves.databaseMove.move.substring(0,3) + captures + moves.filteredMove.move.substring(3,5))      //Pa2xa4 or //Pa2a4
 
         MoveType.CHECKMATE ->
-            return moves.databaseMove
+            return DatabaseMove(moves.databaseMove.move.substring(0,3) + captures + moves.filteredMove.move.substring(3,5))      //Pa2xa4 or //Pa2a4
         MoveType.STALEMATE -> {
-            return moves.databaseMove
+            return DatabaseMove(moves.databaseMove.move.substring(0,3) + captures + moves.filteredMove.move.substring(3,5))      //Pa2xa4 or //Pa2a4
         }
 
         else ->
             throw IllegalArgumentException("Move type not implemented")
     }
 }
+
 
 
 /**
@@ -239,8 +245,8 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
  * Allows only the moves that can be played on the board.
  */
 private fun filterInputToMoves(input: String, board: Board): Moves? {
-    val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
-    val removableInput = Regex("x?(=([NBQR]))?(.ep)?")
+    val filter = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?(.ca)?")
+    val removableInput = Regex("x?(=([NBQR]))?(.ep)?(.ca)?")
     val filteredMove = input.replace(removableInput,"")
 
     val filterForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")

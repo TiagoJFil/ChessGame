@@ -24,14 +24,16 @@ import chess.domain.Player
 import chess.toGameNameOrNull
 
 
-private val IMAGE_PROMOTION_SIZE = 50.dp
-
+private const val IMAGE_PROMOTION_SIZE = 50
+private const val DIALOG_WIDTH= 400
+private const val OPEN_GAME_DIALOG_HEIGHT = 200
+private const val PROMOTION_DIALOG_HEIGHT = 150
 
 /**
  * This function asks the user for a name and saves it in the [chess] object
- * @param isAskingForName  a [Boolean] that tells if the user is asking for a name
- * @param action    the action to display
- * @param chess     a [chess] object that contains the current state of the game
+ * @param actionName  a [String] that to displays the action
+ * @param onClose    the function to execute when the dialog wants to be closed
+ * @param onSubmit    the function to execute when someone clicks the submit button
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -55,7 +57,7 @@ fun openGameNameDialog(
         onCloseRequest = {onClose() },
         title = "Insert Game Name",
         resizable = false,
-        state = DialogState(size = DpSize(width = 400.dp, height = 200.dp))
+        state = DialogState(size = DpSize(width = DIALOG_WIDTH.dp, height = OPEN_GAME_DIALOG_HEIGHT.dp))
 
     ) {
         Column{
@@ -106,7 +108,7 @@ fun selectPossiblePromotions(
     Dialog(
         onCloseRequest = { onClose() },
         title = "Promotion",
-        state = DialogState(size = DpSize(400.dp, 150.dp))
+        state = DialogState(size = DpSize(DIALOG_WIDTH.dp, PROMOTION_DIALOG_HEIGHT.dp))
     ) {
         Column {
 
@@ -126,7 +128,7 @@ fun selectPossiblePromotions(
                     Image(
                         painter = painterResource(resourcePath = "$colorExtension$pieceFile"),
                         contentDescription = pieceFile,
-                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE, IMAGE_PROMOTION_SIZE)
+                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE.dp, IMAGE_PROMOTION_SIZE.dp)
                     )
 
                 }
@@ -139,7 +141,7 @@ fun selectPossiblePromotions(
                     Image(
                         painter = painterResource(resourcePath = "$colorExtension$pieceFile"),
                         contentDescription = pieceFile,
-                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE, IMAGE_PROMOTION_SIZE)
+                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE.dp, IMAGE_PROMOTION_SIZE.dp)
                     )
                 }
                 Button(
@@ -151,7 +153,7 @@ fun selectPossiblePromotions(
                     Image(
                         painter = painterResource(resourcePath = "$colorExtension$pieceFile"),
                         contentDescription = pieceFile,
-                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE, IMAGE_PROMOTION_SIZE)
+                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE.dp, IMAGE_PROMOTION_SIZE.dp)
                     )
                 }
                 Button(
@@ -163,7 +165,7 @@ fun selectPossiblePromotions(
                     Image(
                         painter = painterResource(resourcePath = "$colorExtension$pieceFile"),
                         contentDescription = pieceFile,
-                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE, IMAGE_PROMOTION_SIZE)
+                        modifier = Modifier.size(IMAGE_PROMOTION_SIZE.dp, IMAGE_PROMOTION_SIZE.dp)
                     )
                 }
             }

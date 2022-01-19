@@ -11,7 +11,6 @@ import getKingPossibleMoves
 import piecesCountFrom
 
 
-//TODO : add a movetype for promotion and capture or change into sealed class and the promotion to have values
 enum class MoveType{
     REGULAR,
     CAPTURE,
@@ -55,7 +54,7 @@ data class Move(val move: String){
  * @return  a [Boolean] value indicating whether the string is formatted correctly (true) or not (false)
  */
 private fun String.isFormatted(): Boolean {
-    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])x?([abcdefgh])([12345678])=?([NBQR])?(.ep)?")
+    val filtered = Regex("([RNBQKPrnbqkp])([abcdefgh])([12345678])([abcdefgh])([12345678])")
     return filtered.matches(this)
 }
 

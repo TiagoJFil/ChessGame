@@ -95,7 +95,7 @@ data class Board internal constructor(
         when (newPiece) {
             is Pawn -> {
                 newPiece.setAsMoved()
-                newPiece.moveCounter()  //its needed here because this piece wont get affected by the if on the map
+                newPiece.increaseMoveCounter()  //its needed here because this piece wont get affected by the if on the map
             }
             is King -> newPiece.setAsMoved()
             is Rook -> newPiece.setAsMoved()
@@ -108,7 +108,7 @@ data class Board internal constructor(
                 pieceMovement.endSquare.toIndex() -> newPiece
                 else -> {
                     val piece = it?.copy()
-                    if (piece is Pawn) piece.moveCounter()
+                    if (piece is Pawn) piece.increaseMoveCounter()
                     piece
                 }
             }
@@ -151,9 +151,9 @@ data class Board internal constructor(
      */
     fun doCastling(move: PieceMove): Board {
 
-        val rookColumnLetter = if ( move.startSquare.column == Column.C ) MIN_X_LETTER else MAX_X_LETTER
+        val rookColumnLetter = if ( move.endSquare.column == Column.C ) MIN_X_LETTER else MAX_X_LETTER
 
-        val rookStartPos = Square( (MAX_X_LETTER).toColumn(), move.endSquare.row )
+        val rookStartPos = Square( (rookColumnLetter).toColumn(), move.endSquare.row )
         val kingStartPos = move.startSquare
         val kingRow = kingStartPos.row.toString()
         val newRookPos = if (rookColumnLetter == MIN_X_LETTER) "d$kingRow" else "f$kingRow"
@@ -209,8 +209,6 @@ data class Board internal constructor(
      */
     fun <T>foldRightIndexed(initial: T , operation: (Int, Piece?, T) -> T) =
         this.asList().foldRightIndexed(initial, operation)
-
-
 
 
 }
