@@ -544,10 +544,27 @@ class KingTest {
     fun `King tries to castle right`() {
         val sut = Board().makeMove("Pf2f4").makeMove("pg7g6")
             .makeMove("pe2e4").makeMove("pg6g5").makeMove("bf1e2")
-            .makeMove("ng1f3")
+            .makeMove("ng8f6").makeMove("ng1f3").makeMove("bf8h6")
 
         val startPos = Square(Column.E, Row.One)
         val endPos = Square(Column.G, Row.One)
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut, PieceMove(startPos, endPos))
+        assertEquals(MoveType.CASTLE, move)
+    }
+
+    @Test
+    fun `King tries to castle left`() {
+        val sut = Board().makeMove("Pc2c4").makeMove("pc7c5")
+            .makeMove("pd2d4").makeMove("pd7d5")
+            .makeMove("pe2e4").makeMove("pe7e5")
+            .makeMove("qd1d3").makeMove("qd8d6")
+            .makeMove("bc1h6").makeMove("bc8h3")
+            .makeMove("nb1c3").makeMove("nb8c6")
+
+        val startPos = Square(Column.E, Row.One)
+        val endPos = Square(Column.C, Row.One)
         val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
 
         val move = piece.canMove(sut, PieceMove(startPos, endPos))
