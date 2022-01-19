@@ -3,8 +3,8 @@ package chess.domain.commands
 import Board
 import chess.Chess
 import chess.GameName
-import chess.Storage.ChessRepository
-import chess.Storage.DatabaseMove
+import chess.storage.ChessRepository
+import chess.storage.DatabaseMove
 import chess.domain.*
 import chess.domain.board_components.toSquare
 

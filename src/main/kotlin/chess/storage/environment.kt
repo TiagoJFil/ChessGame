@@ -1,4 +1,4 @@
-package isel.leic.tds.storage
+package chess.storage
 
 /**
  * Represents the supported execution modes:

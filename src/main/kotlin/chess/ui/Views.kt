@@ -1,7 +1,6 @@
-package chess.UI.Compose
+package chess.ui
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
@@ -12,7 +11,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import chess.Chess
-import chess.UI.Compose.board.*
+import chess.ui.board.boardToComposableView
+import chess.ui.board.buildBackgroundBoard
+import chess.ui.board.drawCoordinateLetters
+import chess.ui.board.drawCoordinateNumbers
 import chess.domain.board_components.Square
 import chess.domain.commands.*
 import kotlinx.coroutines.delay
@@ -183,7 +185,7 @@ private fun drawVisualsWithAStartedGame(
                 )
 
                 when(infoToShow){
-                    is showCheckmate-> {
+                    is showCheckmate -> {
                         val playerMessage = if (infoToShow.player == chess.localPlayer) "Lose." else "Win!!!"
                         Text(
                             "CHECKMATE You $playerMessage",
@@ -253,7 +255,7 @@ private fun drawVisualsWithoutAStartedGame(){
             Column(
                 Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(Color.White)
             ) {
-                Text(modifier = Modifier.padding(top=  MOVES_TEXT_SIZE_HEIGHT/2 , start = MOVES_TEXT_SIZE_WIDTH/3  ),text ="Welcome")
+                Text(modifier = Modifier.padding(top=  MOVES_TEXT_SIZE_HEIGHT /2 , start = MOVES_TEXT_SIZE_WIDTH /3  ),text ="Welcome")
             }
         }
 

@@ -1,10 +1,10 @@
-package chess.Storage
+package chess.storage
 
 import chess.GameName
-import chess.Storage.MongoDb.createDocument
-import chess.Storage.MongoDb.getCollectionWithId
-import chess.Storage.MongoDb.getDocument
-import chess.Storage.MongoDb.updateDocument
+import chess.storage.MongoDb.createDocument
+import chess.storage.MongoDb.getCollectionWithId
+import chess.storage.MongoDb.getDocument
+import chess.storage.MongoDb.updateDocument
 import com.mongodb.MongoException
 import com.mongodb.client.MongoDatabase
 

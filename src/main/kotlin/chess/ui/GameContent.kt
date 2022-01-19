@@ -1,11 +1,11 @@
-package chess.UI.Compose
+package chess.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import chess.Chess
 import chess.GameName
-import chess.Storage.getMovesAsString
+import chess.storage.getMovesAsString
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import chess.domain.commands.*

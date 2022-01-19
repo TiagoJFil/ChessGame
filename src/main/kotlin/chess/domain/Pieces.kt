@@ -189,9 +189,9 @@ class Pawn (override val player: Player) : Piece  {
 
         return when(getPossibleMoves(board, pieceInfo.startSquare,isKingInCheck(board,board.player) ||  isMyKingInCheckPostMove(board,pieceInfo) ).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
-            isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
             isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
             isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
+            isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
             canPromote(pieceInfo) -> MoveType.PROMOTION
             pieceAtEndSquare == null && canEnPassant(board,pieceInfo) -> MoveType.ENPASSANT
             pieceAtEndSquare == null -> MoveType.REGULAR
@@ -335,9 +335,9 @@ data class King (override val player: Player) : Piece {
 
         return when ( getPossibleMoves(board, pieceInfo.startSquare, true ).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
-            isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
             isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
             isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
+            isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
             canCastle(board, pieceInfo) -> MoveType.CASTLE
             pieceAtEndSquare == null -> MoveType.REGULAR
             pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE

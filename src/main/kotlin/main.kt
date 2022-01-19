@@ -2,12 +2,12 @@ package chess
 
 import Board
 import androidx.compose.ui.window.application
-import chess.Storage.ChessRepository
-import chess.Storage.MongoDb.createMongoClient
-import chess.UI.Compose.App
+import chess.storage.ChessRepository
+import chess.storage.MongoDb.createMongoClient
+import chess.ui.App
 import chess.domain.Player
-import isel.leic.tds.storage.DbMode
-import isel.leic.tds.storage.getDBConnectionInfo
+import chess.storage.DbMode
+import chess.storage.getDBConnectionInfo
 
 
 
@@ -26,4 +26,4 @@ fun main() {
 
     }
 
-}
+}//TODO fix stalemate and change castling

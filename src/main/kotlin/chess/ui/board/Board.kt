@@ -1,4 +1,4 @@
-package chess.UI.Compose.board
+package chess.ui.board
 
 import Board
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package chess.UI.Compose
+package chess.ui
 
 import chess.domain.Player
 

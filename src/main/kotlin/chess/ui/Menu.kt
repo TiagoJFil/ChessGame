@@ -1,4 +1,4 @@
-package chess.UI.Compose
+package chess.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf

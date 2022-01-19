@@ -165,9 +165,9 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
 
     return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player) ||  isMyKingInCheckPostMove(board,pieceInfo)).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
-        isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
         isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
         isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
+        isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
         pieceAtEndSquare == null -> MoveType.REGULAR
         pieceAtEndSquare != null && pieceAtEndSquare.player != this.player -> MoveType.CAPTURE
         else -> MoveType.ILLEGAL
@@ -239,7 +239,8 @@ fun isMyKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean{
 
 fun isStalemateAfterMove(board: Board, pieceInfo: PieceMove): Boolean{
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-    return tempBoard.piecesCountFrom(!board.player) == 1 && !isKingInCheck(tempBoard,!board.player) && tempBoard.getKingPossibleMoves(!board.player,true).isEmpty()
+    val enemyPlayerCantMove = tempBoard.getAllBoardMovesFrom(!board.player,true).isEmpty()
+    return tempBoard.piecesCountFrom(!board.player) == 1 &&  !isKingInCheck(tempBoard,!board.player) && enemyPlayerCantMove
 }
 
 /**

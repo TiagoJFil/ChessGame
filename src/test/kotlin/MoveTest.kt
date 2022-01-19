@@ -45,10 +45,11 @@ class Move_DataClassTest {
 
     @Test
     fun `String  with extras to Move `() {
-        val string = "Pa2xa4=Q"
-        val sut = Board()
-        val move = string.toMove(sut)
-        assertEquals(string,move.toString())
+        assertThrows(IllegalArgumentException::class.java) {
+            val string = "Pa2xa4=Q"
+            val sut = Board()
+            val move = string.toMove(sut)
+        }
     }
 
     @Test

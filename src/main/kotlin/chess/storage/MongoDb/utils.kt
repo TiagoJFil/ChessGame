@@ -1,4 +1,4 @@
-package chess.Storage.MongoDb
+package chess.storage.MongoDb
 
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection

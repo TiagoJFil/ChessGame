@@ -1,7 +1,7 @@
 package chess
 
 import Board
-import chess.Storage.ChessRepository
+import chess.storage.ChessRepository
 import chess.domain.Player
 
 

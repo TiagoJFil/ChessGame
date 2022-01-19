@@ -1,4 +1,5 @@
-package chess.UI.Compose
+package chess.ui
+
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image

@@ -1,4 +1,4 @@
-package chess.UI.Compose
+package chess.ui
 
 import Board
 import androidx.compose.runtime.MutableState

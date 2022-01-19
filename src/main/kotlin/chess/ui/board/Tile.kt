@@ -1,4 +1,4 @@
-package chess.UI.Compose.board
+package chess.ui.board
 
 import Bishop
 import King
@@ -20,9 +20,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import chess.UI.Compose.*
 import chess.domain.Player
 import chess.domain.board_components.Square
+import chess.ui.*
 
 private val POSSIBLE_PATH_COLOR = Color.Green
 private val POSSIBLE_PATH_SIZE= 30.dp

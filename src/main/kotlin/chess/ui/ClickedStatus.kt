@@ -1,4 +1,4 @@
-package chess.UI.Compose
+package chess.ui
 
 /**
  * Sealed class to represent the possible results of a command, it is sealed because we wont add more results.
