@@ -144,9 +144,10 @@ class PawnTest {
 
     @Test
     fun `Pawn can move diagonally to capture a piece `() {
-        val sut = Board().makeMove("Pa2a4").makeMove("Pg7g6")
-            .makeMove("Pa4a5").makeMove("Pg6g5").makeMove("Pa5a6")
-            .makeMove("Pg5g4")
+        val sut = Board()
+            .makeMove("Pa2a4").makeMove("Pg7g6")
+            .makeMove("Pa4a5").makeMove("Pg6g5")
+            .makeMove("Pa5a6").makeMove("Pg5g4")
 
 
         val startPos = Square(Column.A, Row.Six)
@@ -179,55 +180,6 @@ class PawnTest {
         assert(moves.contains(PieceMove((Square(Column.E, Row.Five)), (Square(Column.D, Row.Six)))))
     }
 
-    @Test
-    fun `Testing canEnpassant algorithm2`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("ph7h6")
-            .makeMove("Pe4e5").makeMove("pf7f6").makeMove("Ph2h3")
-            .makeMove("pd7d5")
-
-        val endPos = Square(Column.E, Row.Five)
-        val piece = sut.getPiece(endPos)
-        val moves = piece!!.getPossibleMoves(sut, endPos, verifyForCheck = false)
-        assert(moves.size == 3)
-    }
-
-    @Test
-    fun `Testing canEnpassant algorithm3`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("ph7h6")
-            .makeMove("Pe4e5").makeMove("pd7d5").makeMove("Ph2h3")
-            .makeMove("pf7f6")
-
-        val endPos = Square(Column.E, Row.Five)
-        val piece = sut.getPiece(endPos)
-        val moves = piece!!.getPossibleMoves(sut, endPos, verifyForCheck = false)
-        assert(moves.size == 2)
-    }
-
-    @Test
-    fun `Testing canEnpassant algorithm4`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("ph7h6")
-            .makeMove("Pe4e5").makeMove("pf7f5")
-
-        val initialPos = Square(column = Column.E,row = Row.Five)
-        val endPos = Square(Column.E, Row.Five)
-        val piece = sut.getPiece(initialPos) ?: throw IllegalStateException("No piece at $initialPos")
-        val moves = piece.getPossibleMoves(sut, endPos, verifyForCheck = false)
-        assert(moves.size == 2)
-    }
-
-    @Test
-    fun `Pawn cant stop protecting king if king is going to be in check`() {
-        val sut = Board()
-            .makeMove("pa2a4").makeMove("pe7e5")
-            .makeMove("pa4a5").makeMove("qd8h4")
-
-
-        val startPos = Square(Column.F, Row.Two)
-        val endPos = Square(Column.F, Row.Three)
-        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
-        val move = piece.canMove(sut,PieceMove(startPos,endPos))
-        assertEquals(MoveType.ILLEGAL,move)
-    }
 
     @Test
     fun `Initial white pawn cant promote`() {
@@ -335,20 +287,7 @@ class BishopTest {
         assertEquals(MoveType.ILLEGAL, move)
     }
 
-    @Test
-    fun `Bishop cant stop protecting king if kign is going to be in check`() {
-        val sut = Board()
-            .makeMove("pa2a4").makeMove("pe7e5")
-            .makeMove("pa4a5").makeMove("qd8g5")
-            .makeMove("pb2b3").makeMove("qg5g2")
-            .makeMove("pb3b4").makeMove("qg2g1")
 
-        val startPos = Square(Column.F, Row.One)
-        val endPos = Square(Column.G, Row.Two)
-        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
-        val move = piece.canMove(sut,PieceMove(startPos,endPos))
-        assertEquals(MoveType.ILLEGAL,move)
-    }
 
 }
 
@@ -405,21 +344,6 @@ class KnightTest {
         assertEquals(MoveType.CAPTURE,move)
     }
 
-
-    @Test
-    fun `Knight checks the king`() {
-        val sut = Board().makeMove("Nb1c3").makeMove("pd7d5")
-            .makeMove("Nc3e4").makeMove("pe7e5")
-
-
-        val startPos = Square(Column.E, Row.Four)
-        val endPos = Square(Column.D, Row.Six)
-        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
-
-        val move = piece.canMove(sut,PieceMove(startPos,endPos))
-
-        assertEquals(MoveType.CHECK,move)
-    }
 
 
 
@@ -586,41 +510,7 @@ class KingTest {
         assertEquals(MoveType.ILLEGAL, move)
     }
 
-    @Test
-    fun `is king in check`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pd7d5")
-            .makeMove("Ke1e2")
 
-        assertEquals(true, isOpponentKingInCheckAfterMove(sut, "bc8g4".formatToPieceMove()))
-    }
-
-
-    @Test
-    fun `test checkMate`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pd7d5")
-            .makeMove("Ke1e2")
-
-        val pmove = "bc8g4".formatToPieceMove()
-        assertEquals(false, isCheckMateAfterMove(sut, pmove))
-    }
-
-    @Test
-    fun `test checkMate true`() {
-        val sut = Board().makeMove("Pf2f3").makeMove("pe7e5")
-            .makeMove("Pg2g4")
-
-        val pmove = "Qd8h4".formatToPieceMove()
-        assertEquals(true, isCheckMateAfterMove(sut, pmove))
-    }
-
-    @Test
-    fun `test checkMate true 2`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pf7f6")
-            .makeMove("Pd2d4").makeMove("pg7g5")
-
-        val pmove = "Qd1h5".formatToPieceMove()
-        assertEquals(true, isCheckMateAfterMove(sut, pmove))
-    }
 
     @Test
     fun `King can capture`(){
@@ -667,19 +557,7 @@ class QueenTest {
         assertEquals(MoveType.REGULAR, move)
     }
 
-    @Test
-    fun `QUEEN makes a check`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pg7g6").makeMove("pd2d4").makeMove("pg6g5").makeMove("qd1f3")
-            .makeMove("pg5g4")
 
-        val startPos = Square(Column.F, Row.Three)
-        val endPos = Square(Column.F, Row.Seven)
-        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
-
-        val move = piece.canMove(sut, PieceMove(startPos, endPos))
-
-        assertEquals(MoveType.CHECK, move)
-    }
 
     @Test
     fun `QUEEN captures a piece`() {
@@ -724,3 +602,159 @@ class QueenTest {
 
 }
 
+class SpecialMovesTest{
+
+    @Test
+    fun `Test stalemate`(){
+        val sut = Board()
+            .makeMove("Pe2e3").makeMove("pa7a5")
+            .makeMove("Qd1h5").makeMove("Ra8a6")
+            .makeMove("Qh5a5").makeMove("ph7h5")
+            .makeMove("ph2h4").makeMove("ra6h6")
+            .makeMove("Qa5c7").makeMove("pf7f6")
+            .makeMove("qc7d7").makeMove("ke8f7")
+            .makeMove("qd7b7").makeMove("qd8d3")
+            .makeMove("qb7b8").makeMove("qd3h7")
+            .makeMove("Qb8c8").makeMove("Kf7g6")
+
+
+        val startPos = Square(Column.C,Row.Eight)
+        val endPos = Square(Column.E,Row.Six)
+        val piece = sut.getPiece(startPos)
+        val move = piece!!.canMove(sut,PieceMove(startPos,endPos))
+
+        assertEquals(MoveType.STALEMATE,move)
+    }
+
+    @Test
+    fun `Testing canEnpassant algorithm2`() {
+        val sut = Board()
+            .makeMove("Pe2e4").makeMove("ph7h6")
+            .makeMove("Pe4e5").makeMove("pf7f6")
+            .makeMove("Ph2h3").makeMove("pd7d5")
+        boardTemplate(sut)
+        val endPos = Square(Column.E, Row.Five)
+        val piece = sut.getPiece(endPos)
+        val moves = piece!!.getPossibleMoves(sut, endPos, verifyForCheck = false)
+        assert(moves.size == 3)
+    }
+
+    @Test
+    fun `Testing canEnpassant algorithm3`() {
+        val sut = Board()
+            .makeMove("Pe2e4").makeMove("ph7h6")
+            .makeMove("Pe4e5").makeMove("pd7d5")
+            .makeMove("Ph2h3").makeMove("pf7f6")
+
+        val endPos = Square(Column.E, Row.Five)
+        val piece = sut.getPiece(endPos)
+        val moves = piece!!.getPossibleMoves(sut, endPos, verifyForCheck = false)
+        assert(moves.size == 2)
+    }
+
+    @Test
+    fun `Testing canEnpassant algorithm4`() {
+        val sut = Board()
+            .makeMove("Pe2e4").makeMove("ph7h6")
+            .makeMove("Pe4e5").makeMove("pf7f5")
+
+        val initialPos = Square(column = Column.E,row = Row.Five)
+        val endPos = Square(Column.E, Row.Five)
+        val piece = sut.getPiece(initialPos) ?: throw IllegalStateException("No piece at $initialPos")
+        val moves = piece.getPossibleMoves(sut, endPos, verifyForCheck = false)
+        assert(moves.size == 2)
+    }
+
+    @Test
+    fun `Pawn cant stop protecting king if king is going to be in check`() {
+        val sut = Board()
+            .makeMove("pa2a4").makeMove("pe7e5")
+            .makeMove("pa4a5").makeMove("qd8h4")
+
+
+        val startPos = Square(Column.F, Row.Two)
+        val endPos = Square(Column.F, Row.Three)
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+        assertEquals(MoveType.ILLEGAL,move)
+    }
+
+    @Test
+    fun `Bishop cant stop protecting king if king is going to be in check`() {
+        val sut = Board()
+            .makeMove("pa2a4").makeMove("pe7e5")
+            .makeMove("pa4a5").makeMove("qd8g5")
+            .makeMove("pb2b3").makeMove("qg5g2")
+            .makeMove("pb3b4").makeMove("qg2g1")
+
+        val startPos = Square(Column.F, Row.One)
+        val endPos = Square(Column.G, Row.Two)
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+        assertEquals(MoveType.ILLEGAL,move)
+    }
+
+    @Test
+    fun `Knight checks the king`() {
+        val sut = Board().makeMove("Nb1c3").makeMove("pd7d5")
+            .makeMove("Nc3e4").makeMove("pe7e5")
+
+
+        val startPos = Square(Column.E, Row.Four)
+        val endPos = Square(Column.D, Row.Six)
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut,PieceMove(startPos,endPos))
+
+        assertEquals(MoveType.CHECK,move)
+    }
+
+    @Test
+    fun `QUEEN makes a check`() {
+        val sut = Board().makeMove("Pe2e4").makeMove("pg7g6").makeMove("pd2d4").makeMove("pg6g5").makeMove("qd1f3")
+            .makeMove("pg5g4")
+
+        val startPos = Square(Column.F, Row.Three)
+        val endPos = Square(Column.F, Row.Seven)
+        val piece = sut.getPiece(startPos) ?: throw IllegalStateException("No piece at $startPos")
+
+        val move = piece.canMove(sut, PieceMove(startPos, endPos))
+
+        assertEquals(MoveType.CHECK, move)
+    }
+    @Test
+    fun `is king in check`() {
+        val sut = Board().makeMove("Pe2e4").makeMove("pd7d5")
+            .makeMove("Ke1e2")
+
+        assertEquals(true, isOpponentKingInCheckAfterMove(sut, "bc8g4".formatToPieceMove()))
+    }
+
+
+    @Test
+    fun `test checkMate`() {
+        val sut = Board().makeMove("Pe2e4").makeMove("pd7d5")
+            .makeMove("Ke1e2")
+
+        val pmove = "bc8g4".formatToPieceMove()
+        assertEquals(false, isCheckMateAfterMove(sut, pmove))
+    }
+
+    @Test
+    fun `test checkMate true`() {
+        val sut = Board().makeMove("Pf2f3").makeMove("pe7e5")
+            .makeMove("Pg2g4")
+
+        val pmove = "Qd8h4".formatToPieceMove()
+        assertEquals(true, isCheckMateAfterMove(sut, pmove))
+    }
+
+    @Test
+    fun `test checkMate true 2`() {
+        val sut = Board().makeMove("Pe2e4").makeMove("pf7f6")
+            .makeMove("Pd2d4").makeMove("pg7g5")
+
+        val pmove = "Qd1h5".formatToPieceMove()
+        assertEquals(true, isCheckMateAfterMove(sut, pmove))
+    }
+}

@@ -169,7 +169,7 @@ class Pawn (override val player: Player) : Piece  {
             moves += (PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
         }
 
-        if(verifyForCheck) moves = moves.filter { it.endSquare in board.counterCheckMoves(!board.player)  && !isMyKingInCheckPostMove(board,it) }
+        if(verifyForCheck) moves = moves.filter { !isMyKingInCheckPostMove(board,it) }
 
         return moves
     }
@@ -518,7 +518,7 @@ data class Knight (override val player: Player) : Piece {
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> {
 
         var moves = getMovesByAddingDirection(possibleDirections, pos, board)
-        if(verifyForCheck) moves = moves.filter {  it.endSquare in board.counterCheckMoves(!board.player)  && !isMyKingInCheckPostMove(board,it) }
+        if(verifyForCheck) moves = moves.filter { !isMyKingInCheckPostMove(board,it) }
         return moves
     }
 

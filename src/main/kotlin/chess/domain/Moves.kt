@@ -5,10 +5,9 @@ import Direction
 import King
 import Piece
 import chess.domain.board_components.*
-import counterCheckMoves
 import getAllBoardMovesFrom
 import getKingPossibleMoves
-import piecesCountFrom
+
 
 
 enum class MoveType{
@@ -121,7 +120,7 @@ fun getMovesByAddingDirection(possibleDirections : List<Direction> , pos : Squar
 }
 
 /**
- * This function returns the moves for the pieces: ROOK, BISHOP, QUEEN,
+ * This function returns the possible moves for the pieces: ROOK, BISHOP, QUEEN,
  * @param possibleDirections     List of [Direction] to verify
  * @param pos                    the [Square] of the piece
  * @param board                  the [Board] to verify the moves on
@@ -150,7 +149,7 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ,
             newPos = newPos.addDirection(it)
         }
     }
-    if(verifyForCheck) moves = moves.filter {  it.endSquare in board.counterCheckMoves(!board.player)  && !isMyKingInCheckPostMove(board,it) }
+    if(verifyForCheck) moves = moves.filter { !isMyKingInCheckPostMove(board,it) }
 
     return moves
 }
@@ -215,18 +214,18 @@ fun Board.isTheMovementPromotable(move: String): Boolean {
 
 
 
-
-
 fun isCheckMateAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
+    val enemy = !board.player
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-    val kingCantMove = tempBoard.getKingPossibleMoves(!board.player,true).isEmpty()
-    val playermoves = tempBoard.getAllBoardMovesFrom(!board.player,true)
-    return kingCantMove &&  isKingInCheck(tempBoard,!board.player) && playermoves.isEmpty()
+    val kingCantMove = tempBoard.getKingPossibleMoves(enemy,true).isEmpty()
+    val playermoves = tempBoard.getAllBoardMovesFrom(enemy,true)
+    return kingCantMove &&  isKingInCheck(tempBoard,enemy) && playermoves.isEmpty()
 }
 
 fun isOpponentKingInCheckAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
+    val enemy = !board.player
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-    val opponentKing = tempBoard.getKingSquare(!board.player)
+    val opponentKing = tempBoard.getKingSquare(enemy)
     val playerMoves = tempBoard.getAllBoardMovesFrom(board.player, false).map { it.endSquare }
     return opponentKing in playerMoves
 }
@@ -239,8 +238,9 @@ fun isMyKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean{
 
 fun isStalemateAfterMove(board: Board, pieceInfo: PieceMove): Boolean{
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-    val enemyPlayerCantMove = tempBoard.getAllBoardMovesFrom(!board.player,true).isEmpty()
-    return tempBoard.piecesCountFrom(!board.player) == 1 &&  !isKingInCheck(tempBoard,!board.player) && enemyPlayerCantMove
+
+    val enemyPlayerCantMove = tempBoard.getAllBoardMovesFrom(!board.player,true)
+    return  !isKingInCheck(tempBoard,!board.player) && enemyPlayerCantMove.isEmpty()
 }
 
 /**

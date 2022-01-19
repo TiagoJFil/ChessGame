@@ -241,7 +241,7 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
 /**
  * @param input          the input to filter
  * @param board          the board to filter the input on
- * @return  A moves data class with the filtered input and the database move
+ * @return  A [Moves] data class with the filtered input and the database move
  * Allows only the moves that can be played on the board.
  */
 private fun filterInputToMoves(input: String, board: Board): Moves? {

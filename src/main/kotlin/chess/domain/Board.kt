@@ -225,25 +225,6 @@ fun Board.piecesCountFrom(player: Player) =
     }
 
 
-/**
- * Creates a list with all the possible counter check Squares
- * @param player the player we want to get the possible positions and pieces positions (countercheck beeing the posistions where king can protect itself)
- * @return the list of possible counter check positions
- */
-fun Board.counterCheckMoves(player: Player): List<Square> =
-    foldRightIndexed(listOf<Square>()) { idx, p, acc ->
-        if (p != null && p.player == player) {
-
-            val piecePossibleMoves = p.getPossibleMoves(this, idx.toSquare(), false).map { it.endSquare }
-            val piecePos = idx.toSquare()
-            val pieceAntiCheckPositions = piecePossibleMoves + piecePos
-
-            acc + pieceAntiCheckPositions
-
-        } else acc
-
-    }
-
 
 /**
  * Creates a list with all the possible moves of the pieces in the board
