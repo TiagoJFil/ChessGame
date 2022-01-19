@@ -154,7 +154,7 @@ private fun dealWithMovement(movement: MoveType, board: Board,filteredInput: Mov
             board.doCastling(filteredInput.filteredMove.toString().formatToPieceMove() )
         }
         MoveType.PROMOTION -> {
-            board.promotePieceAndMove(filteredInput.filteredMove.toString(), filteredInput.databaseMove.toString().last())
+            board.moveAndPromotePiece(filteredInput.filteredMove.toString(), filteredInput.databaseMove.toString().last())
         }
         MoveType.ENPASSANT -> {
             board.doEnpassant(filteredInput.filteredMove.toString().formatToPieceMove() )

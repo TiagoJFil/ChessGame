@@ -2,11 +2,8 @@ import chess.domain.*
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
+import org.junit.Assert.*
 import org.junit.Test
-
-
 
 class PieceMoveTest {
     @Test
@@ -67,6 +64,15 @@ class Move_DataClassTest {
             val sut = Board()
             val move =  string.toMove(sut)
         }
+    }
+
+    @Test
+    fun `Move given is promotable`(){
+        val sut = Board().makeMove("Ph2h4").makeMove("pg7g5")
+            .makeMove("Ph4g5").makeMove("ng8h6").makeMove("Pg5g6")
+            .makeMove("nh6g4").makeMove("Pg6g7").makeMove("ng4h2")
+        val move = "pg7g8"
+        assertTrue(sut.isTheMovementPromotable(move))
     }
 
 }

@@ -212,11 +212,6 @@ fun Board.isTheMovementPromotable(move: String): Boolean {
     return getMoveType(filteredInput, this) == MoveType.PROMOTION
 }
 
-
-
-
-
-
 fun isCheckMateAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
     val kingCantMove = tempBoard.getKingPossibleMoves(!board.player,true).isEmpty()
