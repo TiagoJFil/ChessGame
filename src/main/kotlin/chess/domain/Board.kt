@@ -123,7 +123,7 @@ data class Board internal constructor(
      * @param promotionType  the type of the promotion
      * @return the [Board] after the promotion
      */
-    fun promotePieceAndMove(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
+    fun moveAndPromotePiece(move: String, promotionType: Char = PAWN_PROMOTION_DEFAULT_PIECE_LETTER) : Board{
         val square = move.substring(1,3).toSquare()
         val piece = getPiece(square) ?: throw IllegalStateException("No piece at $square")
         if (piece !is Pawn) throw IllegalStateException("Can't promote a non pawn piece")
@@ -142,7 +142,6 @@ data class Board internal constructor(
             return Board(newBoardList, player).makeMove(move)
         }
     }
-
 
     /**
      * @param move          The move received from the user to perform the castling.

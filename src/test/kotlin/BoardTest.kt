@@ -1,4 +1,7 @@
 import chess.domain.Player
+import chess.domain.board_components.Column
+import chess.domain.board_components.Row
+import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
 import org.junit.Assert.*
 import org.junit.Test
@@ -75,6 +78,47 @@ class BoardTest {
         assertEquals(false, squareEmpty.doesBelongTo(Player.BLACK,sut ) )
     }
 
+    @Test
+    fun `Pawn promotion to Queen and Bishop`(){
+        val sut = Board().makeMove("Ph2h4").makeMove("pa7a5")
+            .makeMove("ph4h5").makeMove("pa5a4")
+            .makeMove("ph5h6").makeMove("pa4a3")
+            .makeMove("ph6g7").makeMove("pa3b2")
+
+        val whitePromotionSquare = Square(column = Column.H, row = Row.Eight)
+        val blackPromotionSquare = Square(column = Column.A, row = Row.One)
+
+        val promotionWhite = sut.moveAndPromotePiece("pg7h8",'Q')
+
+        val promotionBlack = sut.moveAndPromotePiece("pb2a1",'b')
+
+        val piece = promotionWhite.getPiece(whitePromotionSquare)
+        assertEquals(piece,Queen(player = Player.WHITE))
+
+        val piece2 = promotionBlack.getPiece(blackPromotionSquare)
+        assertEquals(piece2,Bishop(player = Player.BLACK))
+    }
+
+    @Test
+    fun `Pawn promotion to Knight and Rook`(){
+        val sut = Board().makeMove("Ph2h4").makeMove("pa7a5")
+            .makeMove("ph4h5").makeMove("pa5a4")
+            .makeMove("ph5h6").makeMove("pa4a3")
+            .makeMove("ph6g7").makeMove("pa3b2")
+
+        val whitePromotionSquare = Square(column = Column.H, row = Row.Eight)
+        val blackPromotionSquare = Square(column = Column.A, row = Row.One)
+
+        val promotionWhite = sut.moveAndPromotePiece("pg7h8",'N')
+
+        val promotionBlack = sut.moveAndPromotePiece("pb2a1",'r')
+
+        val piece = promotionWhite.getPiece(whitePromotionSquare)
+        assertEquals(piece,Knight(player = Player.WHITE))
+
+        val piece2 = promotionBlack.getPiece(blackPromotionSquare)
+        assertEquals(piece2,Rook(player = Player.BLACK))
+    }
 
     @Test
     fun `board toString()` (){
