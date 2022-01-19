@@ -17,7 +17,7 @@ class PieceMoveTest {
     @Test
     fun `String to PieceMove`() {
         assertThrows(IllegalArgumentException::class.java) {
-            val pmove = "d1d3".formatToPieceMove()
+            "d1d3".formatToPieceMove()
         }
         val pmove = "Pd1d3".formatToPieceMove()
         assertEquals(pmove, PieceMove(Square(Column.D, Row.One), Square(Column.D, Row.Three)))
@@ -62,7 +62,7 @@ class Move_DataClassTest {
         assertThrows(IllegalArgumentException::class.java) {
             val string = "Pa2a5a"
             val sut = Board()
-            val move =  string.toMove(sut)
+            string.toMove(sut)
         }
     }
 

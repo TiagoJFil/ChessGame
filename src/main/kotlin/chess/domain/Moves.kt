@@ -194,7 +194,7 @@ fun getMoveType(moveString: Move, board: Board): MoveType {
  */
 fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMove> {
     val piece = board.getPiece(this) ?: return emptyList()
-     if(piece is King) return piece.getPossibleMoves(board,this,true)
+    if(piece is King) return piece.getPossibleMoves(board,this,true)
     if(piece.player != player)
         return emptyList()
 
@@ -232,13 +232,11 @@ fun isOpponentKingInCheckAfterMove(board: Board, pieceInfo: PieceMove): Boolean 
 
 fun isMyKingInCheckPostMove(board: Board, pieceInfo: PieceMove): Boolean{
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-
     return isKingInCheck(tempBoard,board.player)
 }
 
 fun isStalemateAfterMove(board: Board, pieceInfo: PieceMove): Boolean{
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-
     val enemyPlayerCantMove = tempBoard.getAllBoardMovesFrom(!board.player,true)
     return  !isKingInCheck(tempBoard,!board.player) && enemyPlayerCantMove.isEmpty()
 }

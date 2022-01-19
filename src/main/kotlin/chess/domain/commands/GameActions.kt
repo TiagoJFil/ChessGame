@@ -17,7 +17,7 @@ private data class Moves(val filteredMove: Move, val databaseMove: DatabaseMove)
 
 
 
-class GameActions : ActionInterface{
+class GameActions : Actions{
 
     override suspend fun openGame(gameId: GameName, chess: Chess): Result {
         val board: Board
@@ -99,14 +99,6 @@ class GameActions : ActionInterface{
 
 
 }
-/*
-/**
- * Gets all moves played from a given [GameName].
- */
-suspend fun getPlayedMoves(gameId: GameName, database: ChessRepository) : Iterable<DatabaseMove> {
-    return database.getAllMoves(gameId)
-}
-*/
 
 
 /**

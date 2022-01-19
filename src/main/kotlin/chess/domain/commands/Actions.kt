@@ -3,7 +3,8 @@ package chess.domain.commands
 import chess.Chess
 import chess.GameName
 
-interface ActionInterface {
+
+interface Actions {
 
     /**
      * Function to open a game as a player with the color WHITE and the game name received.

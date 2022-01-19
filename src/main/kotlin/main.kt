@@ -18,12 +18,12 @@ fun main() {
         else createMongoClient()
 
 
-    driver.use {
+    driver.use {//TODO maybe remove play.white and put null
         val chessGame = Chess(Board(), ChessRepository(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
-        application {
+        application(exitProcessOnExit = false) {
             App(chessGame)
         }
 
     }
 
-}//TODO fix stalemate and change castling
+}

@@ -64,7 +64,7 @@ class BoardTest {
     fun `getKingSquare for white without a king throws error`(){
         assertThrows(IllegalStateException::class.java) {
             val sut = Board().makeMove("Pa2e8")
-            val king = sut.getKingSquare(Player.BLACK)
+            sut.getKingSquare(Player.BLACK)
         }
     }
 
@@ -118,6 +118,21 @@ class BoardTest {
 
         val piece2 = promotionBlack.getPiece(blackPromotionSquare)
         assertEquals(piece2,Rook(player = Player.BLACK))
+    }
+
+    @Test
+    fun `Pawn promotion to a invalid piece`(){
+        val sut = Board().makeMove("Ph2h4").makeMove("pa7a5")
+            .makeMove("ph4h5").makeMove("pa5a4")
+            .makeMove("ph5h6").makeMove("pa4a3")
+            .makeMove("ph6g7").makeMove("pa3b2")
+
+        assertThrows(IllegalArgumentException::class.java) {
+            val promotionInvalid = sut.moveAndPromotePiece("pg7h8", 'T')
+        }
+
+
+
     }
 
     @Test

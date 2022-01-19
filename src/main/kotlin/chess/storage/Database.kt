@@ -10,7 +10,7 @@ import com.mongodb.client.MongoDatabase
 
 
 class ChessDataBaseAccessException(cause: Exception): Exception(cause)
-private const val COLLECTION_NAME = "Games"
+//private const val COLLECTION_NAME = "Games"
 
 /**
  * Contract to be supported by the database using MongoDB storage
@@ -20,7 +20,7 @@ private interface ChessDatabase {
     /**
      * Creates a new Collection with the given gameId if the collection does not exist
      * @param gameId      the id of the collection to be created
-     * @return            a [Boolean] value indicating whether the collection was already exists (true) or if it created (false)
+     * @return            a [Boolean] value indicating whether the creation was sucessfull (true) or not (false)
      */
     suspend fun createGameDocumentIfItNotExists(gameId: GameName): Boolean
 
@@ -60,7 +60,7 @@ private interface ChessDatabase {
 /**
  * Implementation of the [ChessDatabase] contract using MongoDB
  */
-class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
+class ChessRepository(private val db: MongoDatabase,private val COLLECTION_NAME : String = "Games") : ChessDatabase {
 
     /**
      * @param gameId     the id of the game whre we will put the move
@@ -84,7 +84,7 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
     /**
      * Creates a new Collection with the given gameId if the collection does not exist
      * @param gameId      the id of the collection to be created
-     * @return            a [Boolean] value indicating whether the collection was already exists (true) or if it created (false)
+     * @return            a [Boolean] value indicating whether the creation was sucessfull (true) or not (false)
      */
     override suspend fun createGameDocumentIfItNotExists(gameId: GameName): Boolean {
         try {
@@ -92,9 +92,9 @@ class ChessRepository(private val db: MongoDatabase) : ChessDatabase {
             val doc = collection.getDocument(gameId.id)
             if(doc == null) {
                 collection.createDocument(Document(gameId.id, listOf()))
-                return false
+                return true
             }
-            return true
+            return false
         } catch (e: MongoException) {
             throw ChessDataBaseAccessException(e)
         }

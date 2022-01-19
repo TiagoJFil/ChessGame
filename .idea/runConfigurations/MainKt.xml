@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="MainKt" type="JetRunConfigurationType" singleton="false" nameIsGenerated="true">
+    <envs>
+      <env name="MONGO_DB_CONNECTION" value="mongodb+srv://ycdh:BmQi2sYbNiLigBqo@tds.lkham.mongodb.net/test" />
+      <env name="MONGO_DB_NAME" value="chess" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="chess.MainKt" />
+    <module name="Tds-Chess-Compose.main" />
+    <shortenClasspath name="NONE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

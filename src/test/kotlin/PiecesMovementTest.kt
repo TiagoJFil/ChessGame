@@ -605,7 +605,7 @@ class QueenTest {
 class SpecialMovesTest{
 
     @Test
-    fun `Test stalemate`(){
+    fun `Test stalemate situation 1 `(){
         val sut = Board()
             .makeMove("Pe2e3").makeMove("pa7a5")
             .makeMove("Qd1h5").makeMove("Ra8a6")
@@ -632,7 +632,7 @@ class SpecialMovesTest{
             .makeMove("Pe2e4").makeMove("ph7h6")
             .makeMove("Pe4e5").makeMove("pf7f6")
             .makeMove("Ph2h3").makeMove("pd7d5")
-        boardTemplate(sut)
+
         val endPos = Square(Column.E, Row.Five)
         val piece = sut.getPiece(endPos)
         val moves = piece!!.getPossibleMoves(sut, endPos, verifyForCheck = false)
@@ -696,7 +696,8 @@ class SpecialMovesTest{
 
     @Test
     fun `Knight checks the king`() {
-        val sut = Board().makeMove("Nb1c3").makeMove("pd7d5")
+        val sut = Board()
+            .makeMove("Nb1c3").makeMove("pd7d5")
             .makeMove("Nc3e4").makeMove("pe7e5")
 
 
@@ -711,8 +712,10 @@ class SpecialMovesTest{
 
     @Test
     fun `QUEEN makes a check`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pg7g6").makeMove("pd2d4").makeMove("pg6g5").makeMove("qd1f3")
-            .makeMove("pg5g4")
+        val sut = Board()
+            .makeMove("Pe2e4").makeMove("pg7g6")
+            .makeMove("pd2d4").makeMove("pg6g5")
+            .makeMove("qd1f3").makeMove("pg5g4")
 
         val startPos = Square(Column.F, Row.Three)
         val endPos = Square(Column.F, Row.Seven)
@@ -724,7 +727,8 @@ class SpecialMovesTest{
     }
     @Test
     fun `is king in check`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pd7d5")
+        val sut = Board()
+            .makeMove("Pe2e4").makeMove("pd7d5")
             .makeMove("Ke1e2")
 
         assertEquals(true, isOpponentKingInCheckAfterMove(sut, "bc8g4".formatToPieceMove()))
@@ -733,7 +737,8 @@ class SpecialMovesTest{
 
     @Test
     fun `test checkMate`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pd7d5")
+        val sut = Board()
+            .makeMove("Pe2e4").makeMove("pd7d5")
             .makeMove("Ke1e2")
 
         val pmove = "bc8g4".formatToPieceMove()
@@ -742,7 +747,8 @@ class SpecialMovesTest{
 
     @Test
     fun `test checkMate true`() {
-        val sut = Board().makeMove("Pf2f3").makeMove("pe7e5")
+        val sut = Board()
+            .makeMove("Pf2f3").makeMove("pe7e5")
             .makeMove("Pg2g4")
 
         val pmove = "Qd8h4".formatToPieceMove()
@@ -751,7 +757,8 @@ class SpecialMovesTest{
 
     @Test
     fun `test checkMate true 2`() {
-        val sut = Board().makeMove("Pe2e4").makeMove("pf7f6")
+        val sut = Board()
+            .makeMove("Pe2e4").makeMove("pf7f6")
             .makeMove("Pd2d4").makeMove("pg7g5")
 
         val pmove = "Qd1h5".formatToPieceMove()

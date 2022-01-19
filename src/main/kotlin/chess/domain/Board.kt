@@ -13,7 +13,6 @@ const val MAX_Y_NUMBER = 8
 const val MIN_ROW_NUMBER = 0
 const val MAX_ROW_NUMBER = 7
 private const val PAWN_PROMOTION_DEFAULT_PIECE_LETTER = 'q'
-private val PAWN_POSSIBLE_PROMOTIONS = listOf('q', 'r', 'b', 'n')
 
 typealias BoardList = List<Piece?>
 
@@ -46,19 +45,12 @@ data class Board internal constructor(
     }
 
 
-
     /**
      * @param startPos the [Square] of the piece
      * @return the piece on the given coordinates or null if there is no piece at the given coordinates.
      */
     fun getPiece(at: Square): Piece? = board[at.toIndex()]
 
-
-    /**
-     * @param coordinates the [Square] where we check if there is a piece
-     * @return true if there is a piece on the given coordinates, false otherwise.
-     */
-    fun hasPiece(at: Square): Boolean = board[at.toIndex()] != null
 
     /**
      * @param currentPlayer color of the king we are looking for
@@ -133,7 +125,7 @@ data class Board internal constructor(
                 'r' -> Rook(piece.player)
                 'b' -> Bishop(piece.player)
                 'n' -> Knight(piece.player)
-                else -> throw IllegalStateException("Invalid promotion type")
+                else -> throw IllegalArgumentException("Invalid promotion type")
             }
             val newBoardList = this.asList().mapIndexed { index, it ->
                 if (index == square.toIndex()) newPiece
@@ -212,17 +204,6 @@ data class Board internal constructor(
 
 }
 
-/**
- * Returns the number of pieces of the given player
- * @param player the player we want to get the piece count from
- */
-fun Board.piecesCountFrom(player: Player) =
-    foldRightIndexed(0){
-            _, piece, acc ->
-        if (piece != null && piece.player == player) acc + 1
-        else acc
-    }
-
 
 
 /**
@@ -249,7 +230,7 @@ fun Board.getAllBoardMovesFrom(player: Player,inCheck: Boolean ): List<PieceMove
  * @return a list of possible king moves
  */
 fun Board.getKingPossibleMoves(player: Player,verifyForCheck: Boolean): List<PieceMove> {
-    val king = getKingPiece(player) ?: throw IllegalStateException("no king found")
+    val king = getKingPiece(player)
     val kingPos = getKingSquare(player)
     val kingMoves = king.getPossibleMoves(this, kingPos, verifyForCheck )
     return kingMoves
