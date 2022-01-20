@@ -19,6 +19,65 @@ class ActionsTest {
     private val db =  ChessRepository(driver.getDatabase(dbInfo.dbName),"Test")
     private val actions = GameActions()
 
+    private suspend fun makeMoves(moves: List<String>, id : String): Chess {
+        var Wchess = Chess(Board(), db, null, Player.WHITE)
+        var Bchess = Chess(Board(), db, null, Player.BLACK)
+        var Wres : Result = actions.openGame(GameName(id), Wchess)
+        var Bres : Result = actions.joinGame(GameName(id), Bchess)
+        require(Bres is OK)
+        require(Wres is OK)
+        Wchess = Wres.chess
+        Bchess = Bres.chess
+        var count = 0
+        moves.forEach {
+            if(count % 2 == 0) {
+                if(count != 0) {
+                    val wchess = actions.refreshBoard(Wchess)
+                    when(wchess){
+                        is OK -> Wchess = wchess.chess
+                        is CHECK -> Wchess = wchess.chess
+                    }
+                }
+                Wres = actions.play(it, Wchess)
+                when(Wres){
+                    is OK -> Wchess = (Wres as OK).chess
+                    is CHECK -> Wchess = (Wres as CHECK).chess
+                }
+            }
+            else{
+                val bchess = actions.refreshBoard(Bchess)
+                when(bchess){
+                    is OK -> Bchess = bchess.chess
+                    is CHECK -> Bchess = bchess.chess
+                }
+
+                Bres = actions.play(it, Bchess)
+                when(Bres){
+                    is OK -> Bchess = (Bres as OK).chess
+                    is CHECK -> Bchess = (Bres as CHECK).chess
+                }
+            }
+            count++
+        }
+        if(count % 2 == 0) {
+            val chess = actions.refreshBoard(Wchess)
+            when(chess){
+                is OK -> return chess.chess
+                is CHECK -> return chess.chess
+            }
+
+        }
+        else {
+            val chess = actions.refreshBoard(Bchess)
+            when(chess){
+                is OK -> return chess.chess
+                is CHECK -> return chess.chess
+            }
+        }
+            return Chess(Board(), db, null, Player.WHITE)
+    }
+
+
     @Before
     fun prepareTest() {
         val database = driver.getDatabase(dbInfo.dbName)
@@ -40,13 +99,11 @@ class ActionsTest {
                         "PPPPPPPP" +
                         "RNBQKBNR", res.chess.board.toString()
             )
-
         }
     }
 
     @Test
     fun `try to join a game that has not been openned yet`(){
-
         val chess = Chess(Board(), db, null, Player.WHITE)
         runBlocking {
             val res = actions.joinGame(GameName("abcds"), chess)
@@ -56,7 +113,6 @@ class ActionsTest {
 
     @Test
     fun `try to join a game that has been opened`(){
-
         val chess = Chess(Board(), db, null, Player.WHITE)
         runBlocking {
             actions.openGame(GameName("testGame"), chess)
@@ -122,33 +178,16 @@ class ActionsTest {
     @Test
     fun `Verify if detects checkmate`(){
         val moves = listOf<String>(
-            "f2f3","e7e5","g2g4","d8h4"
+            "f2f3","e7e5","g2g4"
         )
         val Whitechess = Chess(Board(), db, null, Player.WHITE)
         val Blackchess = Chess(Board(), db, null, Player.BLACK)
 
         runBlocking {
-            val openRes = actions.openGame(GameName("testGame2"), Whitechess)
-            val joinRes = actions.joinGame(GameName("testGame2"), Blackchess)
-            require(openRes is OK)
-            require(joinRes is OK)
-            val open1 = actions.play(moves[0], openRes.chess)
-            val refresh1 = actions.refreshBoard(joinRes.chess)
-            require(refresh1 is OK)
-            val join1 = actions.play(moves[1], refresh1.chess )
-            require(open1 is OK)
-            require(join1 is OK)
-            val refresh2 = actions.refreshBoard(open1.chess)
-            require(refresh2 is OK)
-            val open2 = actions.play(moves[2], refresh2.chess)
-
-            val refresh3 = actions.refreshBoard(join1.chess)
-            require(refresh3 is OK)
-            val join2 = actions.play(moves[3], refresh3.chess)
-
-
-            assertEquals(join2 is CHECKMATE, true)
-            require(join2 is CHECKMATE)
+            val board = makeMoves(moves, "testGame2")
+            val res = actions.play("d8h4", board)
+            assertEquals(res is CHECKMATE, true)
+            require(res is CHECKMATE)
             assertEquals(
                 "rnb kbnr" +
                         "pppp ppp" +
@@ -157,110 +196,58 @@ class ActionsTest {
                         "      Pq" +
                         "     P  " +
                         "PPPPP  P" +
-                        "RNBQKBNR", join2.chess.board.toString()
+                        "RNBQKBNR", res.chess.board.toString()
             )
+        }
+    }
 
+    @Test
+    fun `Verify if detetcs check`(){
+        val moves = listOf("f2f3","e7e5","d2d4")
+        val Whitechess = Chess(Board(), db, null, Player.WHITE)
+        val Blackchess = Chess(Board(), db, null, Player.BLACK)
+
+        runBlocking {
+            val board = makeMoves(moves, "testGame3")
+            val res = actions.play("d8h4", board)
+            assertEquals(res is CHECK, true)
+        }
+    }
+
+    @Test
+    fun `Verify if detects stalemate`(){
+        val moves = listOf("Pe2e3","pa7a5",
+            "Qd1h5","Ra8a6",
+            "Qh5a5","ph7h5",
+            "ph2h4","ra6h6",
+            "Qa5c7","pf7f6",
+            "qc7d7","ke8f7",
+            "qd7b7","qd8d3",
+            "qb7b8","qd3h7",
+            "Qb8c8","Kf7g6")
+        runBlocking {
+            val board = makeMoves(moves, "testGame4")
+            val res = actions.play("c8e6", board)
+            assertEquals(res is STALEMATE, true)
+        }
+    }
+
+    @Test
+    fun `Make en passant ,castle and promotion`(){
+        val moves = listOf("Pe2e4","ph7h6",
+            "Pe4e5","pf7f6",
+            "Ph2h3","pd7d5",
+            "e5e6","f1e2",
+            "c7c6","g1f3",
+            "g7g6"
+        )
+
+        runBlocking {
+            val board = makeMoves(moves, "testGame5")
+            val res = actions.play("e1g1", board)
+            assertEquals(res is OK, true)
         }
 
-
     }
+
 }
-
-/*
-class CommandsTest {
-    @Test
-    fun `when joining or opening game null name returns an error of type ERROR`() {
-
-        val dbInfo = getDBConnectionInfo()
-        val driver =
-            if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
-            else createMongoClient()
-
-        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE)
-
-        val handler = buildCommandHandler(chessGame)
-        val openAction =
-            handler["open"] //It will never be null cause it access open command, hence why we are using double bang in line below
-        val openResult = openAction!!.command(null)
-        val joinAction =
-            handler["join"] //It will never be null cause it access join command, hence why we are using double bang in line below
-        val joinResult = joinAction!!.command(null)
-        if (openResult is ERROR && joinResult is ERROR) {
-            assertEquals("ERROR: Missing game name.", openResult.message)
-            assertEquals("ERROR: Missing game name.", joinResult.message)
-        }
-    }
-
-    @Test
-    fun `when joining a game that doesn't exists returns an error of type ERROR`() {
-        val dbInfo = getDBConnectionInfo()
-        val driver =
-            if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
-            else createMongoClient()
-
-        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE)
-
-        val handler = buildCommandHandler(chessGame)
-        val joinAction =
-            handler["join"] //It will never be null cause it access join command, hence why we are using double bang in line below
-        val gameId = GameName("doesntExist")
-        val joinResult = joinAction!!.command(gameId.id)
-
-
-        if (joinResult is ERROR) {
-            assertEquals("ERROR: Game ${gameId.id} does not exist.", joinResult.message)
-        }
-    }
-
-    @Test
-    fun `when refreshing or getting the moves played without a game opened returns an error of type ERROR`() {
-        val dbInfo = getDBConnectionInfo()
-        val driver =
-            if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
-            else createMongoClient()
-
-        val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE)
-        val handler = buildCommandHandler(chessGame)
-        val refreshAction =
-            handler["refresh"] //It will never be null cause it access refresh command, hence why we are using double bang in line below
-        val refreshResult = refreshAction!!.command(null)
-
-        val movesAction =
-            handler["moves"] //It will never be null cause it access moves command, hence why we are using double bang in line below
-        val movesResult = movesAction!!.command(null)
-
-        if (refreshResult is ERROR && movesResult is ERROR) {
-            assertEquals("ERROR: Can't refresh without a game: try open or join commands.", refreshResult.message)
-            assertEquals("No game, no moves.", movesResult.message)
-        }
-    }
-}
-/*
-  @Test
-  fun `refreshing when it's your turn to play returns an error of type ERROR`(){
-      TODO()
-
-     al dbInfo = getDBConnectionInfo()
-      val driver =
-          if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
-          else createMongoClient()
-
-      val chessGame = Chess(Board(), ChessDataBase(driver.getDatabase(dbInfo.dbName)), null, Player(Colors.WHITE))
-
-      val handler = buildCommandHandler(chessGame)
-      val openAction = handler["open"] //It will never be null cause it access open command, hence why we are using double bang in line below
-      val gameName = GameName("abre")
-      val openResult = openAction!!.command(gameName.id)  //Open's has white pieces
-
-      if(openResult is CONTINUE<*>){
-          assertEquals("Game ${gameName.id} opened. Play with white pieces.", openResult.data)
-      }
-
-      val refreshAction = handler["refresh"] //It will never be null cause it access refresh command, hence why we are using double bang in line below
-      val refreshResult = refreshAction!!.command(null)
-
-      if(refreshResult is ERROR){
-          assertEquals("ERROR: It's your turn: try play.", refreshResult.message)
-      }
-  }
-      */
