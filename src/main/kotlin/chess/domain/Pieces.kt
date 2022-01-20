@@ -48,8 +48,6 @@ sealed interface Piece {
      */
     fun canMove(board: Board, pieceInfo: PieceMove): MoveType
 
-
-
     /**
      * @return a [Boolean] value if the piece belongs to the white player(true) or false if it belongs to the black player
      */
@@ -57,6 +55,9 @@ sealed interface Piece {
         return player.isWhite()
     }
 
+    /**
+     * Creates a new object of the same type with the same properties
+     */
     fun copy() : Piece {
         return when(this) {
             is Pawn -> {
@@ -79,9 +80,6 @@ sealed interface Piece {
         }
     }
 
-
-
-
 }
 
 /**
@@ -92,7 +90,6 @@ class Pawn (override val player: Player) : Piece  {
 
     private var moveCount: Int = 0
     private var moved: Boolean = false
-
 
 
     /**
@@ -114,15 +111,13 @@ class Pawn (override val player: Player) : Piece  {
     /**
      * @return a [Boolean] value indicating whether the piece has moved or not
      */
-     fun hasMoved(): Boolean {
-        return this.moved
-     }
+    fun hasMoved(): Boolean = this.moved
 
     /**
      * The possible offset this piece can move to
      */
     private val possibleDirections  : List<Direction> = if(player.isWhite()) listOf(Direction(0, UP))
-                                                            else listOf(Direction(0, DOWN))
+    else listOf(Direction(0, DOWN))
 
     /**
      * @return the piece as a string with the correspondent color

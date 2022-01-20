@@ -180,9 +180,6 @@ class ActionsTest {
         val moves = listOf<String>(
             "f2f3","e7e5","g2g4"
         )
-        val Whitechess = Chess(Board(), db, null, Player.WHITE)
-        val Blackchess = Chess(Board(), db, null, Player.BLACK)
-
         runBlocking {
             val board = makeMoves(moves, "testGame2")
             val res = actions.play("d8h4", board)

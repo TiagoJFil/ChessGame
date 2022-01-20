@@ -198,7 +198,7 @@ fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMov
     if(piece.player != player)
         return emptyList()
 
-    return piece.getPossibleMoves(board, this, isKingInCheck(board,player))
+    return piece.getPossibleMoves(board, this, true)
 }
 
 /**

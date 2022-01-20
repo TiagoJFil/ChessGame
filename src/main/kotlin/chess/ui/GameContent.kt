@@ -1,10 +1,12 @@
 package chess.ui
 
+import Board
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import chess.Chess
 import chess.GameName
+import chess.domain.Player
 import chess.storage.getMovesAsString
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
@@ -113,6 +115,7 @@ class GameContentViews(
         clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
     }
 
+
     /**
      * This function analyzes the [clicked] state and acts accordingly
      */
@@ -137,13 +140,13 @@ class GameContentViews(
                         move.value = start.square
                         if(showPossibleMoves.value) {
                             val moves = move.value.toSquare().getPiecePossibleMovesFrom(board,currentPlayer)
-                            //TODO maybe improve getPiecePossibleMovesFrom
+
                             if (moves.isNotEmpty()) {
                                 val possibleMoves = moves.map { it.endSquare }
                                 possibleMovesList.value = possibleMoves
                             }
                         }
-                        //getPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList, chess.value.board,chess.value.currentPlayer, move.value)
+
                     }
                 }
 
@@ -262,4 +265,8 @@ class GameContentViews(
         }
 
     }
+}
+
+private fun clearPossibleMovesIfOptionEnabled(showPossibleMoves: Boolean, selected: MutableState<List<Square>>){
+    if(showPossibleMoves) selected.value = emptyList()
 }

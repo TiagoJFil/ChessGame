@@ -29,9 +29,7 @@ data class Board internal constructor(
     },
     val player: Player = Player.WHITE
 ) {
-    companion object {
-        operator fun invoke() = Board()
-    }
+
 
     /**
      * Converts the board into a String representation.
@@ -58,9 +56,9 @@ data class Board internal constructor(
      * Finds the king of the given color
      */
     fun getKingSquare(player: Player): Square {
-            val idx = this.board.indexOfFirst { it is King && it.player == player }
-            if(idx == -1) throw IllegalStateException("No king found for player $player")
-            return idx.toSquare()
+        val idx = this.board.indexOfFirst { it is King && it.player == player }
+        if(idx == -1) throw IllegalStateException("No king found for player $player")
+        return idx.toSquare()
     }
 
     /**

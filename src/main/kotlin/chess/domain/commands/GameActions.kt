@@ -237,17 +237,15 @@ private fun filterInputToMoves(input: String, board: Board): Moves? {
     val removableInput = Regex("x?(=([NBQR]))?(.ep)?")
     val filteredMove = input.replace(removableInput,"")
 
-    val castle = Regex("([Oo]-[Oo]-?[Oo]?)")
-
     val castleLeft = if(board.player.isWhite())"Ke1c1".toMove(board) else "ke1c1".toMove(board)
     val castleRight = if(board.player.isWhite()) "Ke1g1".toMove(board) else "ke1g1".toMove(board)
     val rook = if(board.player.isWhite()) "O" else "o"
 
+    val castle = Regex("([Oo]-[Oo]-?[Oo]?)")
     if(castle.matches(input)){
         if(input.length > 3 && castleLeft != null) return Moves(castleLeft, DatabaseMove("$rook-$rook-$rook"))
         if(castleRight != null) return Moves(castleRight,DatabaseMove("$rook-$rook"))
     }
-
 
     val filterForNoPieceName = Regex("([abcdefgh])([12345678])([abcdefgh])([12345678])")
     if(filterForNoPieceName.matches(filteredMove) ) {
@@ -258,7 +256,6 @@ private fun filterInputToMoves(input: String, board: Board): Moves? {
             return Moves(simpleMove, databaseMove)
         }
     }
-
     if(!filter.matches(filteredMove)) return null
     return Moves(Move(filteredMove),DatabaseMove(input))
 }
