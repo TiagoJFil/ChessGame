@@ -52,7 +52,6 @@ class GameContentViews(
         showPossibleMoves.value = value
     }
 
-
     fun openAGame(gameId: GameName) {
         Cscope.launch {
             updateGame(action.openGame(gameId, chess.value))
@@ -72,12 +71,10 @@ class GameContentViews(
     }
 
     fun refreshGame(scope: CoroutineScope) {
-
         scope.launch {
             updateGame(action.refreshBoard(chess.value))
         }
     }
-
 
     /**
      * Updates the [promotionValue] with the given value to add to the move string
@@ -106,7 +103,6 @@ class GameContentViews(
     fun isTileSelected(square: Square) =
         clicked.value is START && (clicked.value as START).square == square.toString()
 
-
     /**
      * This function is called when the user clicks on a tile
      * @param square the square that the user clicked on
@@ -115,18 +111,15 @@ class GameContentViews(
         clicked.value = if (clicked.value is NONE) START(square.toString()) else FINISH(square.toString())
     }
 
-
     /**
      * This function analyzes the [clicked] state and acts accordingly
      */
     @Composable
     fun actOnClickValue(){
         when(clicked.value){
-
             is START -> {
                 val start = clicked.value as START
                 val board = chess.value.board
-
                 val startSquare = start.square.toSquare()
                 val currentPlayer = chess.value.localPlayer
 
@@ -140,16 +133,13 @@ class GameContentViews(
                         move.value = start.square
                         if(showPossibleMoves.value) {
                             val moves = move.value.toSquare().getPiecePossibleMovesFrom(board,currentPlayer)
-
                             if (moves.isNotEmpty()) {
                                 val possibleMoves = moves.map { it.endSquare }
                                 possibleMovesList.value = possibleMoves
                             }
                         }
-
                     }
                 }
-
             }
             is FINISH -> {
                 val finish = clicked.value as FINISH
@@ -166,17 +156,13 @@ class GameContentViews(
                     }
                 }else {
                     val finalMoveString = move.value + finish.square + promotionValue.value
-
                     playAGame(finalMoveString)
-
                     promotionValue.value = ""
                     canSelectAPromotion.value = true
                 }
             }
-
         }
     }
-
     /**
      * Updates the [chess] state and view variables depending of the given [Result]
      * @param result        the result of the action
@@ -190,8 +176,6 @@ class GameContentViews(
                 if (result.moves != null)
                     movesToDisplay.value = result.moves.getMovesAsString()
 
-
-
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
                 gameStatus.value = GameStarted(null)
@@ -202,7 +186,6 @@ class GameContentViews(
                 movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-
                 gameStatus.value =  GameStarted(showCheck(player))
             }
             is CHECKMATE -> {
@@ -211,14 +194,12 @@ class GameContentViews(
                 movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-
                 gameStatus.value =  GameOver(showCheckmate(player) )
             }
             is STALEMATE -> {
                 chess.value = result.chess
                 movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
-
 
                 gameStatus.value = GameOver(showStalemate())
 
@@ -232,38 +213,25 @@ class GameContentViews(
                     val endPiece = chess.value.board.getPiece(finish.square.toSquare())
 
                     when {
-                        startSquare == finishSquare -> {
+                        //if its the same square a enemy piece
+                        startSquare == finishSquare || endPiece != null && endPiece.player != currentPlayer-> {
                             clicked.value = NONE
-                            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
                         }
+                        //if its a friendly piece
                         finishSquare.doesBelongTo(currentPlayer, chess.value.board) -> {
                             clicked.value = START(finish.square)
-
-                            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
                         }
-                        endPiece != null && endPiece.player != currentPlayer -> {
-                            clicked.value = NONE
-
-                            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
-                        }
-                        !possibleMovesList.value.contains(finishSquare) ->
+                        !possibleMovesList.value.contains(finishSquare) -> {
                             clicked.value = START(startSquare.toString())
-
+                        }
                         else -> {
                             clicked.value = NONE
-
-                            clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
                         }
                     }
-
-
                     clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
                 }
             }
-
-
         }
-
     }
 }
 

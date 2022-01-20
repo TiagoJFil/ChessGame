@@ -98,7 +98,6 @@ fun ApplicationScope.App(chessInfo: Chess) {
             )
         }
 
-
         LaunchedEffect(gameContent.getChess()) {
             while(true) {
                 if(gameContent.getChess().currentGameId != null && gameContent.getChess().localPlayer != gameContent.getChess().board.player) {
@@ -111,29 +110,21 @@ fun ApplicationScope.App(chessInfo: Chess) {
         gameContent.actOnClickValue()
 
 
-
         when(gameContent.getGameStatus()){
             is GameNotStarted ->{
-                    drawVisualsWithoutAStartedGame()
+                drawVisualsWithoutAStartedGame()
             }
             is GameStarted ->{
                 val infoToView = (gameContent.getGameStatus() as GameStarted).InfoToView
 
-                     drawVisualsWithAStartedGame(
-                         gameContent.getChess(),
-                         infoToView,
-                         gameContent.getMoveToDisplay(),
-                        checkIfTheTileIsAPossibleMove = { square ->
-                            gameContent.isTileAPossibleMove(square)
-                        },
-                        checkIfTileIsSelected =   { square ->
-                            gameContent.isTileSelected(square)
-                        },
-                        OnTileClicked = { square ->
-                            gameContent.handleClick(square)
-                        }
-                    )
-
+                drawVisualsWithAStartedGame(
+                    gameContent.getChess(),
+                    infoToView,
+                    gameContent.getMoveToDisplay(),
+                    checkIfTheTileIsAPossibleMove = { square -> gameContent.isTileAPossibleMove(square) },
+                    checkIfTileIsSelected =   { square -> gameContent.isTileSelected(square) },
+                    OnTileClicked = { square -> gameContent.handleClick(square) }
+                )
             }
             is GameOver ->{
                 val infoToView = (gameContent.getGameStatus() as GameOver).InfoToView

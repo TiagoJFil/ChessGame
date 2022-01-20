@@ -161,6 +161,9 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ,
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
+    val myKing = board.getKingPiece(board.player)
+    val oponKing = board.getKingPiece(!board.player)
+    if(pieceAtEndSquare == myKing || pieceAtEndSquare == oponKing) return MoveType.ILLEGAL
 
     return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player) ||  isMyKingInCheckPostMove(board,pieceInfo)).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
@@ -181,9 +184,7 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
  */
 fun getMoveType(moveString: Move, board: Board): MoveType {
     val piece  = board.getPiece(moveString.move.substring(1..2).toSquare()) ?: return MoveType.ILLEGAL
-
     val pieceInfo = moveString.move.formatToPieceMove()
-
     return piece.canMove(board, pieceInfo)
 }
 
@@ -208,6 +209,11 @@ fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMov
  */
 fun Board.isTheMovementPromotable(move: String): Boolean {
     val filteredInput = move.toMove(this) ?: return false
+    val king = this.getKingSquare(this.player)
+    val opponentKing = this.getKingSquare(!this.player)
+
+    if(filteredInput.move.substring(3..4).toSquare() == king || filteredInput.move.substring(3..4).toSquare() == opponentKing)
+        return false
     return getMoveType(filteredInput, this) == MoveType.PROMOTION
 }
 

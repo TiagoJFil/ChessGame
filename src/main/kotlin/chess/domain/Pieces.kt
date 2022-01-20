@@ -180,7 +180,9 @@ class Pawn (override val player: Player) : Piece  {
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-
+        val myKing = board.getKingPiece(board.player)
+        val oponKing = board.getKingPiece(!board.player)
+        if(pieceAtEndSquare == myKing || pieceAtEndSquare == oponKing) return MoveType.ILLEGAL
 
         return when(getPossibleMoves(board, pieceInfo.startSquare,isKingInCheck(board,board.player) ||  isMyKingInCheckPostMove(board,pieceInfo) ).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
@@ -326,7 +328,9 @@ data class King (override val player: Player) : Piece {
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType {
         val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-
+        val myKing = board.getKingPiece(board.player)
+        val oponKing = board.getKingPiece(!board.player)
+        if(pieceAtEndSquare == myKing || pieceAtEndSquare == oponKing) return MoveType.ILLEGAL
 
         return when ( getPossibleMoves(board, pieceInfo.startSquare, true ).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
