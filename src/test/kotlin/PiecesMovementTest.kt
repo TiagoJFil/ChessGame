@@ -731,7 +731,7 @@ class SpecialMovesTest{
             .makeMove("Pe2e4").makeMove("pd7d5")
             .makeMove("Ke1e2")
 
-        assertEquals(true, isOpponentKingInCheckAfterMove(sut, "bc8g4".formatToPieceMove()))
+        assertEquals(true, isKingInCheckPostMove(sut, "bc8g4".formatToPieceMove(),!sut.player) )
     }
 
 

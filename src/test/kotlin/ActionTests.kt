@@ -177,8 +177,9 @@ class ActionsTest {
     }
     @Test
     fun `Verify if detects checkmate`(){
-        val moves = listOf<String>(
-            "f2f3","e7e5","g2g4"
+        val moves = listOf(
+            "f2f3","e7e5",
+            "g2g4"
         )
         runBlocking {
             val board = makeMoves(moves, "testGame2")
@@ -199,11 +200,11 @@ class ActionsTest {
     }
 
     @Test
-    fun `Verify if detetcs check`(){
-        val moves = listOf("f2f3","e7e5","d2d4")
-        val Whitechess = Chess(Board(), db, null, Player.WHITE)
-        val Blackchess = Chess(Board(), db, null, Player.BLACK)
-
+    fun `Verify if detects check`(){
+        val moves = listOf(
+            "f2f3","e7e5",
+            "d2d4"
+        )
         runBlocking {
             val board = makeMoves(moves, "testGame3")
             val res = actions.play("d8h4", board)
@@ -213,7 +214,8 @@ class ActionsTest {
 
     @Test
     fun `Verify if detects stalemate`(){
-        val moves = listOf("Pe2e3","pa7a5",
+        val moves = listOf(
+            "Pe2e3","pa7a5",
             "Qd1h5","Ra8a6",
             "Qh5a5","ph7h5",
             "ph2h4","ra6h6",
@@ -230,21 +232,49 @@ class ActionsTest {
     }
 
     @Test
-    fun `Make en passant ,castle and promotion`(){
-        val moves = listOf("Pe2e4","ph7h6",
+    fun `Make en passant ,castle `(){
+        val moves = listOf(
+            "Pe2e4","ph7h6",
             "Pe4e5","pf7f6",
             "Ph2h3","pd7d5",
             "e5e6","f1e2",
             "c7c6","g1f3",
             "g7g6"
         )
-
         runBlocking {
             val board = makeMoves(moves, "testGame5")
             val res = actions.play("e1g1", board)
             assertEquals(res is OK, true)
         }
-
     }
+
+    @Test
+    fun `Detects illegal move`(){
+        val moves = listOf(
+            "f2f3","e7e5",
+            "d2d4")
+
+        runBlocking {
+            val board = makeMoves(moves, "testGame3")
+            val res = actions.play("d8a2", board)
+            assertEquals(res is EMPTY, true)
+        }
+    }
+
+    @Test
+    fun `Make promotion`(){
+        val moves = listOf(
+            "f2f4","e7e5",
+            "f4f5","d7d6",
+            "f5f6","d8d7",
+            "f6g7","d6d5",
+        )
+        runBlocking {
+            val board = makeMoves(moves, "testGame6")
+            val res = actions.play("g7h8=Q", board)
+            assertEquals(res is OK, true)
+        }
+    }
+
 
 }

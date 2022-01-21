@@ -42,6 +42,7 @@ sealed interface Piece {
     fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove>
 
     /**
+     * Gets the [MoveType] of the movement received
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
      * @return the [MoveType] of the piece
@@ -128,10 +129,11 @@ class Pawn (override val player: Player) : Piece  {
 
 
     /**
+     * Gets the piece possible moves
      * @param pos      the position of the piece
      * @param board    the board where the piece is
      * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check(to be able to protect him)
-     * @return the list of possible directions for the piece
+     * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> {
         var moves = listOf<PieceMove>()
@@ -164,16 +166,14 @@ class Pawn (override val player: Player) : Piece  {
             moves += (PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
         }
 
-        if(verifyForCheck) moves = moves.filter { !isMyKingInCheckPostMove(board,it) }
+        if(verifyForCheck) moves = moves.filter { !isKingInCheckPostMove(board,it,board.player) }
 
         return moves
     }
 
 
-
-
-
     /**
+     * Gets the [MoveType] of the movement received
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
      * @return the [MoveType] of the piece
@@ -184,10 +184,10 @@ class Pawn (override val player: Player) : Piece  {
         val oponKing = board.getKingPiece(!board.player)
         if(pieceAtEndSquare == myKing || pieceAtEndSquare == oponKing) return MoveType.ILLEGAL
 
-        return when(getPossibleMoves(board, pieceInfo.startSquare,isKingInCheck(board,board.player) ||  isMyKingInCheckPostMove(board,pieceInfo) ).contains(pieceInfo)){
+        return when(getPossibleMoves(board, pieceInfo.startSquare,isKingInCheck(board,board.player) ||  isKingInCheckPostMove(board,pieceInfo,board.player) ).contains(pieceInfo)){
             false -> MoveType.ILLEGAL
             isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
-            isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
+            isKingInCheckPostMove(board,pieceInfo,!board.player) -> MoveType.CHECK
             isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
             canPromote(pieceInfo) -> MoveType.PROMOTION
             pieceAtEndSquare == null && canEnPassant(board,pieceInfo) -> MoveType.ENPASSANT
@@ -273,7 +273,7 @@ data class King (override val player: Player) : Piece {
      */
     fun hasMoved(): Boolean {
         return moved
-     }
+    }
 
     /**
      * The possible offset this piece can move to
@@ -296,12 +296,12 @@ data class King (override val player: Player) : Piece {
         return if (player.isWhite()) "K" else "k"
     }
 
-
     /**
+     * Gets the piece possible moves
      * @param pos      the position of the piece
      * @param board    the board where the piece is
-     * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check( always true, because we dont want a suicidal king)
-     * @return the list of possible directions for the piece
+     * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check(to be able to protect him)
+     * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> {
         var moves = getMovesByAddingDirection(possibleDirections, pos, board)
@@ -312,9 +312,7 @@ data class King (override val player: Player) : Piece {
         if( !this.hasMoved() && canCastle(board, PieceMove(pos, pos.addDirectionNotNull(Direction(2 * LEFT, 0))))) {
             moves = moves + (PieceMove(pos, pos.addDirectionNotNull(Direction(2 * LEFT, 0))))
         }
-
-        if(verifyForCheck) moves = moves.filter { !isMyKingInCheckPostMove(board,it) }
-
+        if(verifyForCheck) moves = moves.filter { !isKingInCheckPostMove(board,it,board.player) }
 
 
         return moves
@@ -322,6 +320,7 @@ data class King (override val player: Player) : Piece {
 
 
     /**
+     * Gets the [MoveType] of the movement received
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
      * @return the [MoveType] of the piece
@@ -335,7 +334,7 @@ data class King (override val player: Player) : Piece {
         return when ( getPossibleMoves(board, pieceInfo.startSquare, true ).contains(pieceInfo)) {
             false -> MoveType.ILLEGAL
             isCheckMateAfterMove(board,pieceInfo) -> MoveType.CHECKMATE
-            isOpponentKingInCheckAfterMove(board,pieceInfo) -> MoveType.CHECK
+            isKingInCheckPostMove(board,pieceInfo,!board.player) -> MoveType.CHECK
             isStalemateAfterMove(board,pieceInfo) -> MoveType.STALEMATE
             canCastle(board, pieceInfo) -> MoveType.CASTLE
             pieceAtEndSquare == null -> MoveType.REGULAR
@@ -352,7 +351,6 @@ data class King (override val player: Player) : Piece {
      * @return a [Boolean] value if the king can castle
      */
     private fun canCastle(board: Board, pieceInfo: PieceMove): Boolean {
-
         if (hasMoved()) return false
         val possibleDirections = listOf(
             Direction(RIGHT, 0),
@@ -409,14 +407,16 @@ data class Queen (override val player: Player) : Piece {
     }
 
     /**
-     * @param board    the board where the piece is
+     * Gets the piece possible moves
      * @param pos      the position of the piece
+     * @param board    the board where the piece is
      * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check(to be able to protect him)
-     * @return the list of possible directions for the piece
+     * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
 
     /**
+     * Gets the [MoveType] of the movement received
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
      * @return the [MoveType] of the piece
@@ -465,14 +465,16 @@ data class Rook (override val player: Player) : Piece {
     }
 
     /**
+     * Gets the piece possible moves
      * @param pos      the position of the piece
      * @param board    the board where the piece is
      * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check(to be able to protect him)
-     * @return the list of possible directions for the piece
+     * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
 
     /**
+     * Gets the [MoveType] of the movement received
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
      * @return the [MoveType] of the piece
@@ -509,21 +511,22 @@ data class Knight (override val player: Player) : Piece {
     }
 
     /**
+     * Gets the piece possible moves
      * @param pos      the position of the piece
      * @param board    the board where the piece is
      * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check(to be able to protect him)
-     * @return the list of possible directions for the piece
+     * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> {
-
         var moves = getMovesByAddingDirection(possibleDirections, pos, board)
-        if(verifyForCheck) moves = moves.filter { !isMyKingInCheckPostMove(board,it) }
+        if(verifyForCheck) moves = moves.filter { !isKingInCheckPostMove(board,it,board.player) }
         return moves
     }
 
     /**
+     * Gets the [MoveType] of the movement received
      * @param board         the board to check the movement on
-     * @param pieceInfo     the piece to movement to check
+     * @param pieceInfo     the [PieceMove] to check
      * @return the [MoveType] of the piece
      */
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
@@ -553,14 +556,17 @@ data class Bishop (override val player: Player) : Piece {
     }
 
     /**
+     * Gets the piece possible moves
      * @param pos      the position of the piece
      * @param board    the board where the piece is
-     * @return the list of possible moves for the piece
+     * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check(to be able to protect him)
+     * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
 
 
     /**
+     * Gets the [MoveType] of the movement received
      * @param board         the board to check the movement on
      * @param pieceInfo     the piece to movement to check
      * @return the [MoveType] of the piece
@@ -568,4 +574,3 @@ data class Bishop (override val player: Player) : Piece {
     override fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
 
 }
-
