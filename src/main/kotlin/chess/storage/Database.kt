@@ -10,7 +10,7 @@ import com.mongodb.client.MongoDatabase
 
 
 class ChessDataBaseAccessException(cause: Exception): Exception(cause)
-//private const val COLLECTION_NAME = "Games"
+private const val DEFAULT_COLLECTION_NAME = "Games"
 
 /**
  * Contract to be supported by the database using MongoDB storage
@@ -60,7 +60,7 @@ private interface ChessDatabase {
 /**
  * Implementation of the [ChessDatabase] contract using MongoDB
  */
-class ChessRepository(private val db: MongoDatabase,private val COLLECTION_NAME : String = "Games") : ChessDatabase {
+class ChessRepository(private val db: MongoDatabase,private val COLLECTION_NAME : String = DEFAULT_COLLECTION_NAME) : ChessDatabase {
 
     /**
      * @param gameId     the id of the game whre we will put the move
@@ -75,7 +75,7 @@ class ChessRepository(private val db: MongoDatabase,private val COLLECTION_NAME 
             val newMoveOnDBList  = moves + move
             collection.updateDocument(Document(gameId.id,newMoveOnDBList))
 
-         return true
+            return true
         } catch (e: MongoException) {
             throw ChessDataBaseAccessException(e)
         }
