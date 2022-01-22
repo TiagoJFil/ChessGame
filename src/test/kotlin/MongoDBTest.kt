@@ -8,6 +8,7 @@ import com.mongodb.client.MongoClient
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 
 
@@ -65,9 +66,27 @@ class MongoDBTest(){
         }
     }
 
+    @Test
+    fun `trying to create a document that already exists doesnt work`() {
+        val dbInfo = getDBConnectionInfo()
+        val id = "new"
+        runBlocking {
+
+            getMongoClient().use { driver ->
+                val repo = ChessRepository(driver.getDatabase(dbInfo.dbName), "Test")
+                repo.createGameDocumentIfItNotExists(GameName(id))
+                val gameRes = repo.doesGameExist(GameName(id))
+                assertEquals(gameRes, true)
+                val game = repo.createGameDocumentIfItNotExists(GameName(id))
+                assertEquals(game, false)
+
+            }
+        }
+    }
+
 
     @Test
-    fun `Adds a move to a existing game`() {
+    fun `Adds a move to an existing game`() {
         val dbInfo = getDBConnectionInfo()
         val id = "new1"
         runBlocking {
@@ -76,14 +95,45 @@ class MongoDBTest(){
 
                 val repo = ChessRepository(driver.getDatabase(dbInfo.dbName), "Test")
 
-
-                val game = repo.createGameDocumentIfItNotExists(GameName(id))
+                repo.createGameDocumentIfItNotExists(GameName(id))
 
                 val move = DatabaseMove("Pe2e4")
                 val result = repo.addMoveToDb(move, GameName(id))
                 assertEquals(result, true)
 
 
+            }
+        }
+    }
+
+    @Test
+    fun `trying to add a move to a non existing game doesnt work`() {
+        val dbInfo = getDBConnectionInfo()
+        val id = "new1"
+        runBlocking {
+
+            getMongoClient().use { driver ->
+
+                val repo = ChessRepository(driver.getDatabase(dbInfo.dbName), "Test")
+
+                val move = DatabaseMove("Pe2e4")
+                val result = repo.addMoveToDb(move, GameName(id))
+                assertEquals(result, false)
+            }
+        }
+    }
+
+    @Test
+    fun `trying to get last move from a non existing game returns null`() {
+        val dbInfo = getDBConnectionInfo()
+        val id = "new1"
+        runBlocking {
+
+            getMongoClient().use { driver ->
+
+                val repo = ChessRepository(driver.getDatabase(dbInfo.dbName), "Test")
+                val result = repo.getLastMove(GameName(id))
+                assertNull(result)
             }
         }
     }
@@ -106,7 +156,7 @@ class MongoDBTest(){
                 assertEquals(movesCount, 1)
 
                 val moves = repo.getAllMoves(GameName(id))
-                assertEquals(moves.toList()[0].move,move   )
+                assertEquals(moves.toList()[0].move,move)
 
             }
         }
