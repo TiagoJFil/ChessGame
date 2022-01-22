@@ -1,42 +1,65 @@
-import chess.domain.board_components.Row
+import chess.domain.board_components.*
 import org.junit.Assert.*
 import org.junit.Test
 /**
  * The Row type identifies one of the rows on the board, also called ranks.
  * Rows are identified by a digit from '8' to '1'. The top row is '8'.
  */
-/*
+
 class TestRow {
     @Test
     fun `Digit to Row with ordinal property`() {
-        val row = '7'.toRowOrNull()
+        val row = '7'.toRow()
         assertNotNull(row)
-        assertEquals(1, row.ordinal)
+        assertEquals(1, row.number)
     }
     @Test
     fun `Int to Row with digit property`() {
         val row = 3.toRow()
-        assertEquals('5' ,row.digit)
+        assertEquals(Row.Five ,row)
     }
+
     @Test
-    fun `Invalid digit to Row results null`() {
-        val row = '0'.toRowOrNull()
-        assertNull(row)
+    fun `Char to Row returns corresponding number`() {
+        val row = '1'.toRow()
+        assertEquals(7,row.number)
     }
     @Test
     fun `All valid digits to rows`() {
-        assertEquals((7 downTo 0).toList(),  ('1'..'8').mapNotNull{ it.toRowOrNull()?.ordinal })
+        assertEquals((7 downTo 0).toList(),  ('1'..'8').map{ it.toRow().ordinal })
     }
     @Test
     fun `Get all valid values of Rows`() {
-        assertEquals(8, Row.values().size)
-        assertEquals(('1'..'8').toList().reversed(), Row.values().map{ it.digit })
+        val values = Row.values().toList().reversed()
+        val validValues = ('1'..'8').toList().map{it.toRow()}
+        assertEquals(8, values.size)
+        assertEquals(values,validValues)
     }
+
     @Test
-    fun `All invalid rows`() {
-        val invalidChars = (0..255).map{ it.toChar() } - ('1'..'8')
-        val invalidRows = invalidChars.mapNotNull{ it.toRowOrNull() }
-        assertEquals(0 , invalidRows.size)
+    fun `Invalid char and int row`() {
+       assertThrows(IllegalArgumentException::class.java){
+           '9'.toRow()
+       }
+       assertThrows(IllegalArgumentException::class.java){
+           9.toRow()
+       }
+
+    }
+
+    @Test
+    fun `All invalid char rows`(){
+        assertThrows(IllegalArgumentException::class.java){
+            ((Char.MIN_VALUE..Char.MAX_VALUE) - ('1'..'8')).toList().map { it.toRow() }
+        }
+
     }
 }
-*/
+
+
+
+
+
+
+
+
