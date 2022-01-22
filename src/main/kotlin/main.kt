@@ -17,7 +17,7 @@ fun main() {
         else createMongoClient()
 
 
-    driver.use {//TODO maybe remove play.white and put null
+    driver.use {
         val chessGame = Chess( Board(), ChessRepository(driver.getDatabase(dbInfo.dbName)), null, null )
         application(exitProcessOnExit = false) {
             App(chessGame)

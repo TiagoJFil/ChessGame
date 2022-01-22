@@ -17,14 +17,15 @@ import chess.domain.board_components.toSquare
 private data class Moves(val filteredMove: Move, val databaseMove: DatabaseMove)
 
 
-
+/**
+ * Represents an action that can be performed on a game.
+ */
 class GameActions : Actions{
 
-
     /**
-     * Opens a game idetified by its id and atributes the user the white [Player]
-     * @param gameId the id of the game to open
-     * @param chess the chess game to alter
+     * Opens a game idetified by the [gameId] and atributes the user the WHITE [Player]
+     * @param gameId t      he id of the game to open
+     * @param chess         the chess game to use to make the new one
      * @return a [Result] with the new [Chess] and played [DatabaseMove]
      */
     override suspend fun openGame(gameId: GameName, chess: Chess): Result {
@@ -51,7 +52,10 @@ class GameActions : Actions{
 
 
     /**
-     * Function to join a game as a player with the color BLACK and the game name received.
+     * Joins a game idetified by the [gameId] received and atributes the user the BLACK [Player]
+     * @param gameId        the id of the game to open
+     * @param chess          the chess game to use to make the new one
+     * @return a [Result] with the new [Chess] and played [DatabaseMove]s
      */
     override suspend fun joinGame(gameId: GameName, chess: Chess): Result {
         val gameExists = chess.database.doesGameExist(gameId)
@@ -69,6 +73,10 @@ class GameActions : Actions{
     /**
      * Function to move a piece on the board and update the database with the new move.
      */
+    /**
+     * @param move          the move to be performed
+     * @param chess          the chess game to use to make the new one
+     */
     override suspend fun play(move: String, chess: Chess): Result {
         if (chess.board.player != chess.localPlayer) return EMPTY()
         val gameId = chess.currentGameId
@@ -85,7 +93,7 @@ class GameActions : Actions{
 
 
     /**
-     * Function to get update the board with the last move played.
+     * Function to get update the board received in the [Chess] object with the last move played.
      */
     override suspend fun refreshBoard(chess: Chess): Result {
         require(chess.currentGameId != null)
@@ -208,9 +216,9 @@ private fun filterToDbString(moves: Moves, type: MoveType, board: Board): Databa
 
 
 /**
+ * Updates a board with the moves from the DataBase with the given gameId.
  * @param dataBase      the database to use
  * @param gameId        the id of the game to update from
- * Updates a board with the moves from the DataBase with the given gameId.
  */
 private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: GameName): Board {
     val lastMove = dataBase.getLastMove(gameId)
@@ -228,9 +236,10 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
 
 
 /**
+ * Filters the input to a [Moves] object containing a [Move] and a [DatabaseMove]
  * @param input          the input to filter
  * @param board          the board to filter the input on
- * @return  A [Moves] data class with the filtered input and the database move
+ * @return  A [Moves] data class with a playable move and the database move
  * Allows only the moves that can be played on the board.
  */
 private fun filterInputToMoves(input: String, board: Board): Moves? {

@@ -172,19 +172,7 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     }
 }
 
-/**
- * Determines the type of the movement for the piece given
- * @param moveString string like Pa2a3
- * @param board local game board
- * @return the type of the movement for the piece given
- * Detects already if the player is trying to move a piece that is not his and if there is a piece at the start
- */
-fun getMoveType(moveString: Move, board: Board): MoveType {
-    val piece  = board.getPiece(moveString.move.substring(1..2).toSquare()) ?: return MoveType.ILLEGAL
-    if(piece.player != board.player) return MoveType.ILLEGAL
-    val pieceInfo = moveString.move.formatToPieceMove()
-    return piece.canMove(board, pieceInfo)
-}
+
 
 /**
  * Gets the possible moves for the piece at the given square

@@ -21,15 +21,16 @@ import kotlinx.coroutines.delay
 
 
 private const val ORANGE = 0xFFB5651E
-
+private const val WHITE = 0xFFFFFFFF
 val TILE_SIZE = 60.dp
-private val MOVES_TEXT_SIZE_HEIGHT = 500.dp
-private val MOVES_TEXT_SIZE_WIDTH = 200.dp
-private val MOVES_FONT_SIZE = 16.sp
-private val INFO_FONT_SIZE = 18.sp
-private val WINDOW_HEIGHT = 600.dp
-private val BACKGROUND_COLOR = Color(ORANGE)
-private val MOVES_BACKGROUND_COLOR = Color.White
+
+private const val MOVES_TEXT_SIZE_HEIGHT = 500
+private const val MOVES_TEXT_SIZE_WIDTH = 200
+private const val MOVES_FONT_SIZE = 16
+private const val INFO_FONT_SIZE = 18
+private const val WINDOW_HEIGHT = 600
+private const val BACKGROUND_COLOR = ORANGE
+private const val MOVES_BACKGROUND_COLOR = WHITE
 
 const val RESOURCE_PAWN_FILENAME = "pawn.png"
 const val RESOURCE_ROOK_FILENAME = "rook.png"
@@ -40,6 +41,9 @@ const val RESOURCE_KING_FILENAME = "king.png"
 private const val RESOURCE_ICON_FILENAME = "favicon.ico"
 
 
+/**
+ *
+ */
 enum class ACTION(val text: String) {
     OPEN("Open"),
     JOIN("Join")
@@ -115,7 +119,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 drawVisualsWithoutAStartedGame()
             }
             is GameStarted ->{
-                val infoToView = (gameContent.getGameStatus() as GameStarted).InfoToView
+                val infoToView = (gameContent.getGameStatus() as GameStarted).infoToView
 
                 drawVisualsWithAStartedGame(
                     gameContent.getChess(),
@@ -127,7 +131,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 )
             }
             is GameOver ->{
-                val infoToView = (gameContent.getGameStatus() as GameOver).InfoToView
+                val infoToView = (gameContent.getGameStatus() as GameOver).infoToView
 
                 drawVisualsWithEndedGame(gameContent.getChess(),
                     infoToView,
@@ -152,10 +156,12 @@ private fun drawVisualsWithAStartedGame(
 ) {
     val infoModifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
     val gameId = chess.currentGameId
-    require(gameId != null) { "Game id is null" }
+    require(gameId != null) { "Game id will never be null with a started Game" }
+    require(infoToShow is ShowCheck || infoToShow == null) { "infoToShow can only be null or ShowCheck" }
+
     MaterialTheme {
 
-        Row(Modifier.background(BACKGROUND_COLOR).height(WINDOW_HEIGHT)) {
+        Row(Modifier.background(Color(BACKGROUND_COLOR)).height(WINDOW_HEIGHT.dp)) {
 
             drawCoordinateNumbers()
 
@@ -171,52 +177,32 @@ private fun drawVisualsWithAStartedGame(
                 val info = if (chess.board.player == chess.localPlayer) "Your turn" else "Waiting..."
                 Text(
                     "Game:${gameId.id} | You:${chess.localPlayer} | $info",
-                    fontSize = INFO_FONT_SIZE,
+                    fontSize = INFO_FONT_SIZE.sp,
                     modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
                 )
 
-                when(infoToShow){
-                    is showCheckmate -> {
-                        val playerMessage = if (infoToShow.player == chess.localPlayer) "Lose." else "Win!!!"
-                        Text(
-                            "CHECKMATE You $playerMessage",
-                            fontSize = INFO_FONT_SIZE,
-                            modifier = infoModifier
-                        )
-                    }
-                    is showCheck -> {
-                        if(infoToShow.player == chess.localPlayer) {
-                            Text(
-                                "CHECK",
-                                fontSize = INFO_FONT_SIZE,
-                                modifier = infoModifier
-                            )
-                        }
-                    }
-                    is showStalemate -> {
-                        Text(
-                            "STALEMATE",
-                            fontSize = INFO_FONT_SIZE,
-                            modifier = infoModifier
-                        )
-                    }
+                if(infoToShow is ShowCheck && infoToShow.player == chess.localPlayer){
+                    Text(
+                        "CHECK",
+                        fontSize = INFO_FONT_SIZE.sp,
+                        modifier = infoModifier
+                    )
                 }
             }
 
             Column(
                 Modifier.padding(32.dp)
-                    .height(MOVES_TEXT_SIZE_HEIGHT)
-                    .width(MOVES_TEXT_SIZE_WIDTH)
-                    .background(MOVES_BACKGROUND_COLOR)
+                    .height(MOVES_TEXT_SIZE_HEIGHT.dp)
+                    .width(MOVES_TEXT_SIZE_WIDTH.dp)
+                    .background(Color(MOVES_BACKGROUND_COLOR))
                     .verticalScroll(
                         state = ScrollState(0),
                         enabled = true
                     )
             ) {
-
                 Text(
                     movesPlayed,
-                    fontSize = MOVES_FONT_SIZE,
+                    fontSize = MOVES_FONT_SIZE.sp,
                 )
             }
         }
@@ -229,7 +215,7 @@ private fun drawVisualsWithAStartedGame(
 private fun drawVisualsWithoutAStartedGame(){
     MaterialTheme {
 
-        Row(Modifier.background(Color(ORANGE)).height(WINDOW_HEIGHT)) {
+        Row(Modifier.background(Color(ORANGE)).height(WINDOW_HEIGHT.dp)) {
 
             drawCoordinateNumbers()
 
@@ -244,9 +230,15 @@ private fun drawVisualsWithoutAStartedGame(){
                 }
             }
             Column(
-                Modifier.padding(32.dp).height(MOVES_TEXT_SIZE_HEIGHT).width(MOVES_TEXT_SIZE_WIDTH).background(Color.White)
+                Modifier
+                    .padding(32.dp)
+                    .height(MOVES_TEXT_SIZE_HEIGHT.dp)
+                    .width(MOVES_TEXT_SIZE_WIDTH.dp)
+                    .background(Color.White)
             ) {
-                Text(modifier = Modifier.padding(top=  MOVES_TEXT_SIZE_HEIGHT /2 , start = MOVES_TEXT_SIZE_WIDTH /3  ),text ="Welcome")
+
+                Text(modifier = Modifier.padding(top=  MOVES_TEXT_SIZE_HEIGHT.dp /2 , start = MOVES_TEXT_SIZE_WIDTH.dp /3  ),text ="Welcome")
+
             }
         }
 
@@ -262,11 +254,12 @@ private fun drawVisualsWithEndedGame(
     val infoModifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
     val gameId = chess.currentGameId
     val info = remember { mutableStateOf("") }
-    require(gameId != null) { "Game id cant be null here" }
+    require(gameId != null) { "Game id will never be null with a started Game" }
+    require(infoToShow !is ShowCheck) { "Game is over, but we are showing a check" }
 
     MaterialTheme {
 
-        Row(Modifier.background(BACKGROUND_COLOR).height(WINDOW_HEIGHT)) {
+        Row(Modifier.background(Color(BACKGROUND_COLOR)).height(WINDOW_HEIGHT.dp)) {
 
             drawCoordinateNumbers()
 
@@ -279,28 +272,26 @@ private fun drawVisualsWithEndedGame(
                     boardToComposableView(chess.board, { false }, { false }, { })
                 }
 
-                info.value = if (chess.board.player == chess.localPlayer) "Your turn" else "Waiting..."
-                if(infoToShow != null && infoToShow !is showCheck) info.value = ""
                 Text(
-                    "Game:${gameId.id} | You:${chess.localPlayer} | ${info.value}",
-                    fontSize = INFO_FONT_SIZE,
+                    "Game:${gameId.id} | You:${chess.localPlayer}",
+                    fontSize = INFO_FONT_SIZE.sp,
                     modifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp)
                 )
 
                 when (infoToShow) {
-                    is showCheckmate -> {
-                        val playerMessage = if (infoToShow.player == chess.localPlayer) "Lose." else "Win!!!"
+                    is ShowCheckmate -> {
+                        val playerMessage = if (infoToShow.loser == chess.localPlayer) "Lose." else "Win!!!"
                         Text(
                             "CHECKMATE You $playerMessage",
-                            fontSize = INFO_FONT_SIZE,
+                            fontSize = INFO_FONT_SIZE.sp,
                             modifier = infoModifier
                         )
                     }
 
-                    is showStalemate -> {
+                    is ShowStalemate -> {
                         Text(
                             "STALEMATE! Draw.",
-                            fontSize = INFO_FONT_SIZE,
+                            fontSize = INFO_FONT_SIZE.sp,
                             modifier = infoModifier
                         )
                     }
@@ -308,9 +299,9 @@ private fun drawVisualsWithEndedGame(
             }
             Column(
                 Modifier.padding(32.dp)
-                    .height(MOVES_TEXT_SIZE_HEIGHT)
-                    .width(MOVES_TEXT_SIZE_WIDTH)
-                    .background(MOVES_BACKGROUND_COLOR)
+                    .height(MOVES_TEXT_SIZE_HEIGHT.dp)
+                    .width(MOVES_TEXT_SIZE_WIDTH.dp)
+                    .background(Color(MOVES_BACKGROUND_COLOR))
                     .verticalScroll(
                         state = ScrollState(0),
                         enabled = true
@@ -318,11 +309,9 @@ private fun drawVisualsWithEndedGame(
             ) {
                 Text(
                     movesPlayed,
-                    fontSize = MOVES_FONT_SIZE,
+                    fontSize = MOVES_FONT_SIZE.sp,
                 )
             }
         }
     }
-
-
 }

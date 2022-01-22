@@ -44,7 +44,6 @@ private fun getResource(piece: Piece?):String?{
         is Bishop -> RESOURCE_BISHOP_FILENAME
         is Queen -> RESOURCE_QUEEN_FILENAME
         is King -> RESOURCE_KING_FILENAME
-        else -> null
     }
 
     val color = if (pieceColor == Player.WHITE) "w_"

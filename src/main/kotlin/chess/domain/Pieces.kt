@@ -4,6 +4,7 @@ import Board
 import chess.domain.board_components.Square
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
+import chess.domain.board_components.toSquare
 
 const val LEFT = -1
 const val RIGHT = 1
@@ -23,9 +24,26 @@ private const val G_COLUMN_NUMBER = 6
 
 typealias Direction = Pair<Int, Int>
 
+
+
 /**
- * @param type    the [PieceType] of the piece
- * @param player  the [Player] corresponding of the piece
+ * Determines the type of the movement for the piece given
+ * @param moveString string like Pa2a3
+ * @param board local game board
+ * @return the type of the movement for the piece given
+ * Detects already if the player is trying to move a piece that is not his and if there is a piece at the start
+ */
+fun getMoveType(moveString: Move, board: Board): MoveType {
+    val piece  = board.getPiece(moveString.move.substring(1..2).toSquare()) ?: return MoveType.ILLEGAL
+    if(piece.player != board.player) return MoveType.ILLEGAL
+    val pieceInfo = moveString.move.formatToPieceMove()
+    return piece.canMove(board, pieceInfo)
+}
+
+
+
+
+/**
  * Represents a chess piece.
  */
 sealed interface Piece {
@@ -37,6 +55,7 @@ sealed interface Piece {
     override fun toString(): String
 
     /**
+     * Gets all the posible [PieceMove]s for the given piece
      * @param pos      the position of the piece
      * @param board    the board where the piece is
      * @param verifyForCheck a [Boolean] indicating wheter the possible moves should take into account the fact that the king is on check(to be able to protect him)
@@ -44,13 +63,6 @@ sealed interface Piece {
      */
     fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove>
 
-    /**
-     * Gets the [MoveType] of the movement received
-     * @param board         the board to check the movement on
-     * @param pieceInfo     the piece to movement to check
-     * @return the [MoveType] of the piece
-     */
-    fun canMove(board: Board, pieceInfo: PieceMove): MoveType
 
     /**
      * @return a [Boolean] value if the piece belongs to the white player(true) or false if it belongs to the black player
@@ -78,6 +90,14 @@ sealed interface Piece {
             is Queen -> Queen(player)
         }
     }
+
+    /**
+     * Gets the [MoveType] of the movement received
+     * @param board         the board to check the movement on
+     * @param pieceInfo     the piece to movement to check
+     * @return the [MoveType] of the piece
+     */
+    fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
 
 }
 
@@ -108,8 +128,6 @@ class Pawn (override val player: Player) : Piece {
     fun increaseMoveCounter(){
         if(this.moved) this.moveCount++
     }
-
-
 
     /**
      * The possible offset this piece can move to
@@ -161,6 +179,7 @@ class Pawn (override val player: Player) : Piece {
             if(canEnPassant(board,PieceMove(pos,squareToDiagonalRight)))
                 moves = moves + (PieceMove(pos, squareToDiagonalRight))
         }
+
         if(pos.addDirection(possibleDirections[0]) != null && board.getPiece(pos.addDirectionNotNull(possibleDirections[0])) == null){
             moves = moves + (PieceMove(pos, pos.addDirectionNotNull(possibleDirections[0])))
         }
@@ -423,14 +442,6 @@ data class Queen (override val player: Player) : Piece {
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
 
-    /**
-     * Gets the [MoveType] of the movement received
-     * @param board         the board to check the movement on
-     * @param pieceInfo     the piece to movement to check
-     * @return the [MoveType] of the piece
-     */
-    override fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
-
 }
 
 /**
@@ -438,7 +449,6 @@ data class Queen (override val player: Player) : Piece {
  * Represents a rook piece
  */
 data class Rook (override val player: Player) : Piece {
-
     private var moved = false
 
     /**
@@ -480,14 +490,6 @@ data class Rook (override val player: Player) : Piece {
      * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean ): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
-
-    /**
-     * Gets the [MoveType] of the movement received
-     * @param board         the board to check the movement on
-     * @param pieceInfo     the piece to movement to check
-     * @return the [MoveType] of the piece
-     */
-    override fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
 
     /**
      * Adds the ability to copy a piece
@@ -539,13 +541,6 @@ data class Knight (override val player: Player) : Piece {
         return moves
     }
 
-    /**
-     * Gets the [MoveType] of the movement received
-     * @param board         the board to check the movement on
-     * @param pieceInfo     the [PieceMove] to check
-     * @return the [MoveType] of the piece
-     */
-    override fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
 
 }
 
@@ -579,14 +574,5 @@ data class Bishop (override val player: Player) : Piece {
      * @return the list of possible [PieceMove] for the piece
      */
     override fun getPossibleMoves(board: Board, pos: Square, verifyForCheck : Boolean): List<PieceMove> = getMoves(possibleDirections, pos, board,verifyForCheck)
-
-
-    /**
-     * Gets the [MoveType] of the movement received
-     * @param board         the board to check the movement on
-     * @param pieceInfo     the piece to movement to check
-     * @return the [MoveType] of the piece
-     */
-    override fun canMove(board: Board, pieceInfo: PieceMove): MoveType = canNormalPieceMove(board, pieceInfo)
 
 }

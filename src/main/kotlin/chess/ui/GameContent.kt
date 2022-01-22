@@ -1,12 +1,10 @@
 package chess.ui
 
-import Board
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import chess.Chess
 import chess.GameName
-import chess.domain.Player
 import chess.storage.getMovesAsString
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
@@ -18,15 +16,31 @@ import doesNotBelongTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-
+/**
+ * Represents the status of the game.
+ */
 sealed class GameStatus
 
-class GameStarted(val InfoToView: ShowInfo?) : GameStatus()
+/**
+ * The game is in progress.
+ * @property infoToView     the special information to be displayed to the user, may be null(no special information).
+ */
+class GameStarted(val infoToView: ShowInfo?) : GameStatus()
 
+/**
+ * The game has not started yet.
+ */
 object GameNotStarted : GameStatus()
 
-class GameOver(val InfoToView: ShowInfo) : GameStatus()
+/**
+ * The game has ended.
+ * @property infoToView    the special information to be displayed to the user
+ */
+class GameOver(val infoToView: ShowInfo) : GameStatus()
 
+/**
+ * Represents the game view main properties
+ */
 class GameContentViews(
     private val chessInfo: Chess,
     private val action: GameActions,
@@ -38,7 +52,7 @@ class GameContentViews(
     private val canSelectAPromotion = mutableStateOf(true)                 // Oppener of the dialog to select a promotion
     val actionToEnterGame: MutableState<ACTION?> = mutableStateOf(null)    //Oppener for the select game name dialog
     private val clicked: MutableState<Clicked> = mutableStateOf(NONE)            // The state of click on a tile
-    private val showPossibleMoves = mutableStateOf(true)                           // Show possible moves starts as true by default
+    private val showPossibleMoves = mutableStateOf(true)                    // Show possible moves starts as true by default
     private val possibleMovesList = mutableStateOf(emptyList<Square>())          // List of possible moves for a piece
 
     private val movesToDisplay = mutableStateOf("")
@@ -187,7 +201,7 @@ class GameContentViews(
                 movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-                gameStatus.value =  GameStarted(showCheck(player))
+                gameStatus.value =  GameStarted(ShowCheck(player))
             }
             is CHECKMATE -> {
                 val player = result.playerInCheckMate
@@ -195,14 +209,14 @@ class GameContentViews(
                 movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-                gameStatus.value =  GameOver(showCheckmate(player) )
+                gameStatus.value =  GameOver(ShowCheckmate(player) )
             }
             is STALEMATE -> {
                 chess.value = result.chess
                 movesToDisplay.value = result.moves.getMovesAsString()
                 clearPossibleMovesIfOptionEnabled(showPossibleMoves.value, possibleMovesList)
 
-                gameStatus.value = GameOver(showStalemate())
+                gameStatus.value = GameOver(ShowStalemate)
 
             }
             is EMPTY -> {

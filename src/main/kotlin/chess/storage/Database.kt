@@ -65,7 +65,7 @@ class ChessRepository(private val db: MongoDatabase,private val COLLECTION_NAME 
     /**
      * @param gameId     the id of the game whre we will put the move
      * @param move       the move to add to the dataBase
-     * @return      a boolean value indicating whether the operation was successful (true) or not (false)
+     * @return      a [Boolean] value indicating whether the operation was successful (true) or not (false)
      */
     override suspend fun addMoveToDb(move: DatabaseMove, gameId: GameName): Boolean {
         try {
