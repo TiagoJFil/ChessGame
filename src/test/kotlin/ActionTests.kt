@@ -172,7 +172,7 @@ class ActionsTest {
     fun `make a play on a opened game`(){
         val chess = Chess(Board(), db, null, null)
         runBlocking {
-            val openRes =actions.openGame(GameName("testGame"), chess)
+            val openRes = actions.openGame(GameName("testGame"), chess)
             require(openRes is OK)
             val res = actions.play("a2a4", openRes.chess)
             assertTrue(res is OK)
@@ -250,7 +250,6 @@ class ActionsTest {
 
         }
     }
-
 
     @Test
     fun `Verify if detects checkmate`(){

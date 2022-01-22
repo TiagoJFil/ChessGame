@@ -70,10 +70,9 @@ class GameActions : Actions{
         return refreshBoard(Chess(board, chess.database, gameId, Player.BLACK))
     }
 
+
     /**
      * Function to move a piece on the board and update the database with the new move.
-     */
-    /**
      * @param move          the move to be performed
      * @param chess          the chess game to use to make the new one
      */
@@ -107,7 +106,6 @@ class GameActions : Actions{
     }
 
 }
-
 
 /**
  * Added to avoid code repetition
@@ -176,7 +174,6 @@ private fun dealWithMovement(movement: MoveType, board: Board,filteredInput: Mov
         }
     }
 
-
 /**
  * @param moves     the [Moves] object with the filtered move
  * @param type      the type of the move
@@ -213,8 +210,6 @@ private fun filterToDbString(moves: Moves, type: MoveType, board: Board): Databa
     }
 }
 
-
-
 /**
  * Updates a board with the moves from the DataBase with the given gameId.
  * @param dataBase      the database to use
@@ -233,7 +228,6 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
         }
     }
 }
-
 
 /**
  * Filters the input to a [Moves] object containing a [Move] and a [DatabaseMove]
