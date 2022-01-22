@@ -12,7 +12,7 @@ import chess.domain.Player
  * @property currentGameId         the GameId of the current game, can be null if no game is running
  * @property localPlayer         the current Player on this machine
  */
-data class Chess(val board: Board, val database: ChessRepository, val currentGameId: GameName?, val localPlayer: Player)
+data class Chess(val board: Board, val database: ChessRepository, val currentGameId: GameName?, val localPlayer: Player?)
 
 /**
  * Represents a GameId with an identifier.

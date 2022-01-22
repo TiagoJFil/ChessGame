@@ -1,9 +1,6 @@
 package chess.domain
 
 import Board
-import Direction
-import King
-import Piece
 import chess.domain.board_components.*
 import getAllBoardMovesFrom
 import getKingPossibleMoves
@@ -57,6 +54,7 @@ private fun String.isFormatted(): Boolean {
     return filtered.matches(this)
 }
 
+
 /**
  * Converts a string to a board move
  * @param board the board to be used to convert the string
@@ -67,11 +65,10 @@ fun String.toMove(board: Board): Move? {
 
     if(this.length == NO_PIECE_INPUT && filterForNoPieceName.matches(this)) {
         val piece = board.getPiece(this.substring(0, 2).toSquare())
-        if(piece != null) {
+        return if(piece != null) {
             val filteredInput = piece.toString().uppercase() + this
-            return Move(filteredInput)
-        }
-        else return null
+            Move(filteredInput)
+        } else null
     }
 
     return Move(this)
@@ -104,7 +101,7 @@ fun PieceMove.formatToString(board : Board) =
  * @param board                  the [Board] to verify the moves on
  * @return the list of possible [PieceMove] for the piece given
  */
-fun getMovesByAddingDirection(possibleDirections : List<Direction> , pos : Square, board : Board): List<PieceMove> {
+fun getMovesByAddingDirection(possibleDirections : List<Direction>, pos : Square, board : Board): List<PieceMove> {
     val startingPiece = board.getPiece(pos) ?: return emptyList()
     val moves = possibleDirections.mapNotNull {
         val newPos = pos.addDirection(it)
@@ -127,7 +124,7 @@ fun getMovesByAddingDirection(possibleDirections : List<Direction> , pos : Squar
  * @param verifyForCheck        a [Boolean] value indicating whether the moves should be verified for check or not
  * @return the list of possible moves for the piece given
  */
-fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board , verifyForCheck : Boolean): List<PieceMove> {
+fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board, verifyForCheck : Boolean): List<PieceMove> {
     var moves = listOf<PieceMove>()
     val piece = board.getPiece(pos) ?: throw IllegalArgumentException("No piece at position $pos")
     val color = piece.player
@@ -145,19 +142,18 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board ,
             if(pieceAtEndSquare != null && pieceAtEndSquare.player == color){
                 break
             }
-
             newPos = newPos.addDirection(it)
         }
     }
     if(verifyForCheck) moves = moves.filter { !isKingInCheckPostMove(board,it,board.player) }
-
     return moves
 }
 
 /**
+ * Returns the movetype of the move by the following pieces: QUEEN, ROOK, BISHOP, KNIGHT
  * @param board                  the board to verify the move on
  * @param pieceInfo              the [PieceMove] on the move to verify
- * @return the [MoveType] of move the piece wants to make
+ * @return the [MoveType] of move the user wants to make
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
@@ -181,17 +177,20 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
  * @param moveString string like Pa2a3
  * @param board local game board
  * @return the type of the movement for the piece given
+ * Detects already if the player is trying to move a piece that is not his and if there is a piece at the start
  */
 fun getMoveType(moveString: Move, board: Board): MoveType {
     val piece  = board.getPiece(moveString.move.substring(1..2).toSquare()) ?: return MoveType.ILLEGAL
+    if(piece.player != board.player) return MoveType.ILLEGAL
     val pieceInfo = moveString.move.formatToPieceMove()
     return piece.canMove(board, pieceInfo)
 }
 
 /**
  * Gets the possible moves for the piece at the given square
- * @param square the square where the piece is located
- * @return a list of possible moves for the piece at the given square or an empty list if there is no piece at the given square or the piece is not movable
+ * @param board     the [Board] where we want to get the possible moves
+ * @param player    the [Player] of the piece at the given square
+ * @return a list of possible [PieceMove]s for the piece at the given square or an empty list if there is no piece at the given square or the piece is not movable
  */
 fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMove> {
     val piece = board.getPiece(this) ?: return emptyList()
@@ -224,7 +223,6 @@ fun isCheckMateAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
     val playermoves = tempBoard.getAllBoardMovesFrom(enemy,true)
     return kingCantMove &&  isKingInCheck(tempBoard,enemy) && playermoves.isEmpty()
 }
-
 
 /**
  * Checks whether the move received as a [PieceMove] produces a Check after its played.

@@ -1,7 +1,7 @@
 package chess.domain.board_components
 
 import BOARD_SIZE
-import Direction
+import chess.domain.Direction
 
 
 /**

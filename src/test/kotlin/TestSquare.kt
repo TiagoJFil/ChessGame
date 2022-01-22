@@ -1,3 +1,4 @@
+import chess.domain.Direction
 import chess.domain.board_components.*
 import org.junit.Assert.*
 import org.junit.Test

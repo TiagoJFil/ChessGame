@@ -5,7 +5,6 @@ import androidx.compose.ui.window.application
 import chess.storage.ChessRepository
 import chess.storage.MongoDb.createMongoClient
 import chess.ui.App
-import chess.domain.Player
 import chess.storage.DbMode
 import chess.storage.getDBConnectionInfo
 
@@ -19,7 +18,7 @@ fun main() {
 
 
     driver.use {//TODO maybe remove play.white and put null
-        val chessGame = Chess(Board(), ChessRepository(driver.getDatabase(dbInfo.dbName)), null, Player.WHITE )
+        val chessGame = Chess( Board(), ChessRepository(driver.getDatabase(dbInfo.dbName)), null, null )
         application(exitProcessOnExit = false) {
             App(chessGame)
         }

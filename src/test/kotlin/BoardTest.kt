@@ -1,3 +1,7 @@
+import chess.domain.Bishop
+import chess.domain.Knight
+import chess.domain.Queen
+import chess.domain.Rook
 import chess.domain.Player
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row
@@ -93,10 +97,10 @@ class BoardTest {
         val promotionBlack = sut.moveAndPromotePiece("pb2a1",'b')
 
         val piece = promotionWhite.getPiece(whitePromotionSquare)
-        assertEquals(piece,Queen(player = Player.WHITE))
+        assertEquals(piece, Queen(player = Player.WHITE))
 
         val piece2 = promotionBlack.getPiece(blackPromotionSquare)
-        assertEquals(piece2,Bishop(player = Player.BLACK))
+        assertEquals(piece2, Bishop(player = Player.BLACK))
     }
 
     @Test
@@ -114,10 +118,10 @@ class BoardTest {
         val promotionBlack = sut.moveAndPromotePiece("pb2a1",'r')
 
         val piece = promotionWhite.getPiece(whitePromotionSquare)
-        assertEquals(piece,Knight(player = Player.WHITE))
+        assertEquals(piece, Knight(player = Player.WHITE))
 
         val piece2 = promotionBlack.getPiece(blackPromotionSquare)
-        assertEquals(piece2,Rook(player = Player.BLACK))
+        assertEquals(piece2, Rook(player = Player.BLACK))
     }
 
     @Test

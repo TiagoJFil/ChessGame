@@ -74,7 +74,7 @@ class ActionsTest {
                 is CHECK -> return chess.chess
             }
         }
-            return Chess(Board(), db, null, Player.WHITE)
+        return Chess(Board(), db, null, Player.WHITE)
     }
 
 
@@ -86,7 +86,7 @@ class ActionsTest {
 
     @Test
     fun `open a game`() {
-        val chess = Chess(Board(), db, null, Player.WHITE)
+        val chess = Chess(Board(), db, null, null)
         runBlocking {
             val res = actions.openGame(GameName("testGame"), chess)
 
@@ -101,10 +101,48 @@ class ActionsTest {
             )
         }
     }
+    @Test
+    fun `open a game that has moves`(){
+        val chess = Chess(Board(), db, null, null)
+        runBlocking {
+            val res = actions.openGame(GameName("testGame"), chess)
+            assertTrue(res is OK)
+            require(res is OK)
+            assertEquals(
+                "rnbqkbnr" +
+                        "pppppppp" +
+                        "        ".repeat(4) +
+                        "PPPPPPPP" +
+                        "RNBQKBNR", res.chess.board.toString()
+            )
+            val res2 = actions.play("a2a3", res.chess)
+            assertTrue(res2 is OK)
+            require(res2 is OK)
+            assertEquals(
+                "rnbqkbnr" +
+                        "pppppppp" +
+                        "        ".repeat(3) +
+                        "P       " +
+                        " PPPPPPP" +
+                        "RNBQKBNR", res2.chess.board.toString()
+            )
+            val open2 = actions.openGame(GameName("testGame"), chess)
+            assertTrue(open2 is OK)
+            require(open2 is OK)
+            assertEquals(
+                "rnbqkbnr" +
+                        "pppppppp" +
+                        "        ".repeat(3) +
+                        "P       " +
+                        " PPPPPPP" +
+                        "RNBQKBNR", open2.chess.board.toString()
+            )
+        }
+    }
 
     @Test
     fun `try to join a game that has not been openned yet`(){
-        val chess = Chess(Board(), db, null, Player.WHITE)
+        val chess = Chess(Board(), db, null, null)
         runBlocking {
             val res = actions.joinGame(GameName("abcds"), chess)
             assertTrue(res is EMPTY )
@@ -113,7 +151,7 @@ class ActionsTest {
 
     @Test
     fun `try to join a game that has been opened`(){
-        val chess = Chess(Board(), db, null, Player.WHITE)
+        val chess = Chess(Board(), db, null, null)
         runBlocking {
             actions.openGame(GameName("testGame"), chess)
             val res = actions.joinGame(GameName("testGame"), chess)
@@ -132,7 +170,7 @@ class ActionsTest {
 
     @Test
     fun `make a play on a opened game`(){
-        val chess = Chess(Board(), db, null, Player.WHITE)
+        val chess = Chess(Board(), db, null, null)
         runBlocking {
             val openRes =actions.openGame(GameName("testGame"), chess)
             require(openRes is OK)
@@ -153,8 +191,8 @@ class ActionsTest {
     }
 
     @Test
-    fun `join a already opened game`(){
-        val chess = Chess(Board(), db, null, Player.WHITE)
+    fun `join a already opened game with a move`(){
+        val chess = Chess(Board(), db, null, null)
         runBlocking {
             val openRes =actions.openGame(GameName("testGame1"), chess)
             require(openRes is OK)
@@ -175,6 +213,45 @@ class ActionsTest {
             )
         }
     }
+
+    @Test
+    fun `join a game with a lot of moves`() {
+        val chessEmpty = Chess(Board(), db, null, null)
+        runBlocking {
+            val moves = listOf(
+                "f2f4","e7e5",
+                "f4f5","d7d6",
+            )
+            val chess = makeMoves(moves, "testGame8")
+            val res1 = actions.play("a2a3", chess)
+            require(res1 is OK)
+            assertEquals(
+                "rnbqkbnr" +
+                        "ppp  ppp" +
+                        "   p    " +
+                        "    pP  " +
+                        "        " +
+                        "P       " +
+                        " PPPP PP" +
+                        "RNBQKBNR", res1.chess.board.toString()
+            )
+            val res2 = actions.openGame(GameName("testGame8"), chessEmpty)
+            require(res2 is OK)
+            assertEquals(
+                "rnbqkbnr" +
+                        "ppp  ppp" +
+                        "   p    " +
+                        "    pP  " +
+                        "        " +
+                        "P       " +
+                        " PPPP PP" +
+                        "RNBQKBNR", res2.chess.board.toString()
+            )
+
+        }
+    }
+
+
     @Test
     fun `Verify if detects checkmate`(){
         val moves = listOf(
@@ -232,19 +309,61 @@ class ActionsTest {
     }
 
     @Test
-    fun `Make en passant ,castle `(){
+    fun `Make en passant , and castle white right side `(){
         val moves = listOf(
             "Pe2e4","ph7h6",
             "Pe4e5","pf7f6",
             "Ph2h3","pd7d5",
-            "e5e6","f1e2",
-            "c7c6","g1f3",
-            "g7g6"
+            "e5d6" ,"a7a6",
+            "f1e2" ,"c7c6",
+            "g1f3" ,"g7g6"
         )
         runBlocking {
             val board = makeMoves(moves, "testGame5")
             val res = actions.play("e1g1", board)
             assertEquals(res is OK, true)
+            require(res is OK)
+            assertEquals("O-O", res.moves!!.last().move)
+            val joinBlack = actions.joinGame(GameName("testGame5"), Chess(Board(), db, null, null))
+            require(joinBlack is OK)
+            val res2 = actions.play("a6a5", joinBlack.chess)
+            assertEquals(res2 is OK, true)
+            require(res2 is OK)
+        }
+    }
+
+    @Test
+    fun `Black makes castling left`(){
+        val moves = listOf(
+            "a2a3","d7d5",
+            "a3a4","c8e6",
+            "a4a5","b8c6",
+            "a5a6","d8d6",
+            "b2b3"
+        )
+        runBlocking {
+            val board = makeMoves(moves, "testGame9")
+            val res = actions.play("e8c8", board)
+            assertEquals(res is OK, true)
+            require(res is OK)
+            assertEquals("o-o-o", res.moves!!.last().move)
+            val openWhite = actions.openGame(GameName("testGame9"), Chess(Board(), db, null, null))
+            require(openWhite is OK)
+            val res2 = actions.play("g2g3", openWhite.chess)
+            assertEquals(res2 is OK, true)
+            require(res2 is OK)
+        }
+    }
+
+    @Test
+    fun `White tries to move a black piece`(){
+        val moves = listOf(
+            "Pe2e4","ph7h6",
+        )
+        runBlocking {
+            val board = makeMoves(moves, "testGame5")
+            val res = actions.play("pf7f6", board)
+            assertEquals(res is EMPTY, true)
         }
     }
 

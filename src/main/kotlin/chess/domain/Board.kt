@@ -1,3 +1,4 @@
+import chess.domain.*
 import chess.domain.PieceMove
 import chess.domain.Player
 import chess.domain.board_components.*
@@ -44,16 +45,17 @@ data class Board internal constructor(
 
 
     /**
-     * @param startPos the [Square] of the piece
+     * Gets the piece at the given [Square].
+     * @param at    the [Square] of the piece
      * @return the piece on the given coordinates or null if there is no piece at the given coordinates.
      */
     fun getPiece(at: Square): Piece? = board[at.toIndex()]
 
 
     /**
-     * @param currentPlayer color of the king we are looking for
-     * @return the square were the king is positioned
      * Finds the king of the given color
+     * @param player  of the king we are looking for
+     * @return the square were the king is positioned
      */
     fun getKingSquare(player: Player): Square {
         val idx = this.board.indexOfFirst { it is King && it.player == player }
@@ -85,7 +87,7 @@ data class Board internal constructor(
         when (newPiece) {
             is Pawn -> {
                 newPiece.setAsMoved()
-                newPiece.increaseMoveCounter()  //its needed here because this piece wont get affected by the if on the map
+                newPiece.increaseMoveCounter()  //its needed here because this piece won't get affected by the if on the map
             }
             is King -> newPiece.setAsMoved()
             is Rook -> newPiece.setAsMoved()
@@ -211,7 +213,7 @@ data class Board internal constructor(
  * @return the list of pieces of the given player
  */
 fun Board.getAllBoardMovesFrom(player: Player,inCheck: Boolean ): List<PieceMove> =
-    foldRightIndexed(listOf<PieceMove>()){
+    foldRightIndexed(listOf()){
             idx, p, acc ->
         if (p != null) {
             if (p.player == player) acc + p.getPossibleMoves(this, idx.toSquare(),inCheck)
@@ -221,17 +223,15 @@ fun Board.getAllBoardMovesFrom(player: Player,inCheck: Boolean ): List<PieceMove
     }
 
 
-
 /**
  * Creates a list with all the possible king moves that match the given player
  * @param player the player that corresponds to the king
  * @return a list of possible king moves
  */
-fun Board.getKingPossibleMoves(player: Player,verifyForCheck: Boolean): List<PieceMove> {
+fun Board.getKingPossibleMoves(player: Player, verifyForCheck: Boolean): List<PieceMove> {
     val king = getKingPiece(player)
     val kingPos = getKingSquare(player)
-    val kingMoves = king.getPossibleMoves(this, kingPos, verifyForCheck )
-    return kingMoves
+    return king.getPossibleMoves(this, kingPos, verifyForCheck)
 }
 
 

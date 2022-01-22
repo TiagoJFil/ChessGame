@@ -145,10 +145,11 @@ class GameContentViews(
                 val finish = clicked.value as FINISH
                 val finishSquare = finish.square.toSquare()
                 val startSquare = move.value.toSquare()
-
+                val player = chess.value.localPlayer
+                require(player != null)
                 if(promotionValue.value == "" && chess.value.board.isTheMovementPromotable("$startSquare$finishSquare") && canSelectAPromotion.value) {
                     selectPossiblePromotions(
-                        chess.value.localPlayer,
+                        player,
                         onClose = { canSelectAPromotion.value = false }
                     ) {   piece ->
                         updatePromotionValue(piece)
@@ -211,12 +212,13 @@ class GameContentViews(
                     val startSquare = move.value.toSquare()
                     val currentPlayer = chess.value.localPlayer
                     val endPiece = chess.value.board.getPiece(finish.square.toSquare())
-
+                    require((currentPlayer != null))
                     when {
                         //if its the same square a enemy piece
                         startSquare == finishSquare || endPiece != null && endPiece.player != currentPlayer-> {
                             clicked.value = NONE
                         }
+
                         //if its a friendly piece
                         finishSquare.doesBelongTo(currentPlayer, chess.value.board) -> {
                             clicked.value = START(finish.square)

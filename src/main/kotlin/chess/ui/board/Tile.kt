@@ -1,12 +1,12 @@
 package chess.ui.board
 
-import Bishop
-import King
-import Knight
-import Pawn
-import Piece
-import Queen
-import Rook
+import chess.domain.Bishop
+import chess.domain.King
+import chess.domain.Knight
+import chess.domain.Pawn
+import chess.domain.Piece
+import chess.domain.Queen
+import chess.domain.Rook
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
