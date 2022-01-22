@@ -1,5 +1,8 @@
 import chess.domain.Direction
+import chess.domain.PieceMove
+import chess.domain.Player
 import chess.domain.board_components.*
+import chess.domain.getPiecePossibleMovesFrom
 import org.junit.Assert.*
 import org.junit.Test
 import java.lang.IllegalArgumentException
@@ -69,6 +72,41 @@ class TestSquare {
             "h8".toSquare().addDirectionNotNull(Direction(1,0)) // out of board right
             "h8".toSquare().addDirectionNotNull(Direction(0,-1)) // out of board up
         }
+    }
+
+    @Test
+    fun `Getting moves from an empty square returns empty list`(){
+        val sut = Board()
+        val square = Square(column = Column.A, row = Row.Five)
+        val moves = square.getPiecePossibleMovesFrom(sut,Player.BLACK)
+        assertEquals(moves, emptyList<PieceMove>())
+    }
+
+    @Test
+    fun `Getting moves from a square with King returns its possible moves`(){
+        val sut = Board()
+        val square = Square(column = Column.E, row = Row.One)
+        val moves = square.getPiecePossibleMovesFrom(sut,Player.WHITE)
+        assertEquals(moves, emptyList<PieceMove>())
+    }
+
+    @Test
+    fun `Getting moves from a square with a different coloured piece returns empty list`(){
+        val sut = Board()
+        val square = Square(column = Column.E, row = Row.Two)
+        val moves = square.getPiecePossibleMovesFrom(sut,!sut.player)
+        assertEquals(moves, emptyList<PieceMove>())
+    }
+
+    @Test
+    fun `Getting moves from a piece in a given square returns its possible moves `(){
+        val sut = Board()
+        val square = Square(column = Column.E, row = Row.Two)
+        val moves = square.getPiecePossibleMovesFrom(sut,Player.WHITE)
+        val list = listOf(
+            PieceMove(startSquare = square, endSquare = Square(column = Column.E, row = Row.Four)),
+            PieceMove(startSquare = square, endSquare = Square(column = Column.E, row = Row.Three)))
+        assertEquals(moves, list)
     }
 
 }

@@ -16,10 +16,7 @@ import chess.domain.board_components.toSquare
  */
 private data class Moves(val filteredMove: Move, val databaseMove: DatabaseMove)
 
-
-
 class GameActions : Actions{
-
 
     /**
      * Opens a game idetified by its id and atributes the user the white [Player]
@@ -100,7 +97,6 @@ class GameActions : Actions{
 
 }
 
-
 /**
  * Added to avoid code repetition
  * Receives a move type and returns a Result according to the type.
@@ -168,7 +164,6 @@ private fun dealWithMovement(movement: MoveType, board: Board,filteredInput: Mov
         }
     }
 
-
 /**
  * @param moves     the [Moves] object with the filtered move
  * @param type      the type of the move
@@ -205,8 +200,6 @@ private fun filterToDbString(moves: Moves, type: MoveType, board: Board): Databa
     }
 }
 
-
-
 /**
  * @param dataBase      the database to use
  * @param gameId        the id of the game to update from
@@ -225,7 +218,6 @@ private suspend fun updateBoardUntilLastMove(dataBase: ChessRepository, gameId: 
         }
     }
 }
-
 
 /**
  * @param input          the input to filter

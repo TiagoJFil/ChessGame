@@ -3,7 +3,6 @@ package chess.domain.commands
 import chess.Chess
 import chess.GameName
 
-
 interface Actions {
 
     /**
