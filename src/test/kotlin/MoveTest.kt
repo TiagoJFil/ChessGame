@@ -68,9 +68,11 @@ class MoveDataClassTest {
 
     @Test
     fun `Move given is promotable`(){
-        val sut = Board().makeMove("Ph2h4").makeMove("pg7g5")
-            .makeMove("Ph4g5").makeMove("ng8h6").makeMove("Pg5g6")
-            .makeMove("nh6g4").makeMove("Pg6g7").makeMove("ng4h2")
+        val sut = Board()
+            .makeMove("Ph2h4").makeMove("pg7g5")
+            .makeMove("Ph4g5").makeMove("ng8h6")
+            .makeMove("Pg5g6").makeMove("nh6g4")
+            .makeMove("Pg6g7").makeMove("ng4h2")
         val move = "pg7g8"
         assertTrue(sut.isTheMovementPromotable(move))
     }

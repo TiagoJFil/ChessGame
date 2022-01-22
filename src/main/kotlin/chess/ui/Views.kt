@@ -19,7 +19,7 @@ import chess.domain.board_components.Square
 import chess.domain.commands.*
 import kotlinx.coroutines.delay
 
-
+private const val RED = 0xFFFF0000
 private const val ORANGE = 0xFFB5651E
 private const val WHITE = 0xFFFFFFFF
 val TILE_SIZE = 60.dp
@@ -40,6 +40,7 @@ const val RESOURCE_QUEEN_FILENAME = "queen.png"
 const val RESOURCE_KING_FILENAME = "king.png"
 private const val RESOURCE_ICON_FILENAME = "favicon.ico"
 
+private const val DELAY_BETWEEN_REFRESH = 1500L
 
 /**
  *
@@ -107,7 +108,7 @@ fun ApplicationScope.App(chessInfo: Chess) {
                 if(gameContent.getChess().currentGameId != null && gameContent.getChess().localPlayer != gameContent.getChess().board.player) {
                     gameContent.refreshGame(this)
                 }
-                delay(1500)
+                delay(DELAY_BETWEEN_REFRESH)
             }
         }
 
@@ -154,7 +155,7 @@ private fun drawVisualsWithAStartedGame(
     checkIfTileIsSelected: (square: Square) -> Boolean,
     OnTileClicked : (square: Square) -> Unit
 ) {
-    val infoModifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
+    val infoModifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color(RED))
     val gameId = chess.currentGameId
     require(gameId != null) { "Game id will never be null with a started Game" }
     require(infoToShow is ShowCheck || infoToShow == null) { "infoToShow can only be null or ShowCheck" }
