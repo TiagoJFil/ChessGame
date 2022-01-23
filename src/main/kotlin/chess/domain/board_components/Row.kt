@@ -1,8 +1,10 @@
 package chess.domain.board_components
 
 import BOARD_SIZE
+import MAX_ROW_CHAR
 import MAX_ROW_NUMBER
 import MAX_Y_NUMBER
+import MIN_ROW_CHAR
 import MIN_ROW_NUMBER
 import MIN_Y_NUMBER
 
@@ -32,7 +34,7 @@ enum class Row(val number: Int) {
  */
 fun Char.toRow() : Row{
     require(this.isARow())
-    return Row.values()[8 - this.toString().toInt()]
+    return Row.values()['8' - this]
 }
 
 /**
@@ -46,4 +48,4 @@ fun Int.toRow(): Row {
 /**
  * @return true if the given char is a row
  */
-private fun Char.isARow() = this.toString().toInt() in MIN_Y_NUMBER..MAX_Y_NUMBER
+private fun Char.isARow() = this in MIN_ROW_CHAR..MAX_ROW_CHAR

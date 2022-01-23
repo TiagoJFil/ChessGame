@@ -48,12 +48,14 @@ class TestRow {
     }
 
     @Test
-    fun `All invalid char rows`(){
-        assertThrows(IllegalArgumentException::class.java){
-            ((Char.MIN_VALUE..Char.MAX_VALUE) - ('1'..'8')).toList().map { it.toRow() }
-        }
+    fun `All invalid char rows`() {
+        for (i in ((Char.MIN_VALUE..Char.MAX_VALUE) - ('1'..'8')).toList())
+            assertThrows(IllegalArgumentException::class.java) {
+                i.toRow()
+            }
 
     }
+
 }
 
 
