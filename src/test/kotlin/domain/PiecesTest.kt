@@ -1,5 +1,5 @@
-import chess.domain.King
-import chess.domain.Pawn
+package domain
+import Board
 import chess.domain.Rook
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row

@@ -1,3 +1,6 @@
+package domain
+
+import Board
 import chess.domain.Bishop
 import chess.domain.Knight
 import chess.domain.Queen
@@ -7,6 +10,7 @@ import chess.domain.board_components.Column
 import chess.domain.board_components.Row
 import chess.domain.board_components.Square
 import chess.domain.board_components.toSquare
+import doesBelongTo
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -134,9 +138,6 @@ class BoardTest {
         assertThrows(IllegalArgumentException::class.java) {
             val promotionInvalid = sut.moveAndPromotePiece("pg7h8", 'T')
         }
-
-
-
     }
 
     @Test
@@ -146,34 +147,7 @@ class BoardTest {
         assertEquals(boardString, sut.toString() )
     }
 
-    /*
-    @Test
-    fun `get board as a list`(){
-        val sut = Board()
-        val bList = sut.asList().map { it.toString() }
-        val expected = listOf(
-            "r","n","b","q","k","b","n","r",
-            "p","p","p","p","p","p","p","p",
-            "null","null","null","null","null","null","null","null",
-            "null","null","null","null","null","null","null","null",
-            "null","null","null","null","null","null","null","null",
-            "null","null","null","null","null","null","null","null",
-            "P","P","P","P","P","P","P","P",
-            "R","N","B","Q","K","B","N","R"
-        )
-        assertEquals(expected, bList)
-    }
-    */
 
 
-/*
-    @Test
-    fun `empty board equals empty board`(){
-        val a = Board()
-        val b = Board()
-        assertEquals (Board(),Board())
-        val Boar = Board()
-    }
-*/
 
 }

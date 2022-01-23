@@ -10,7 +10,7 @@ import chess.domain.Player
  * @property board                 the board containing the chess pieces
  * @property database              the database to use
  * @property currentGameId         the GameId of the current game, can be null if no game is running
- * @property localPlayer         the current Player on this machine
+ * @property localPlayer           the current Player on this machine
  */
 data class Chess(val board: Board, val database: ChessRepository, val currentGameId: GameName?, val localPlayer: Player?)
 

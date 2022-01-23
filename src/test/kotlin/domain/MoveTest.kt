@@ -1,3 +1,6 @@
+package domain
+
+import Board
 import chess.domain.*
 import chess.domain.board_components.Column
 import chess.domain.board_components.Row

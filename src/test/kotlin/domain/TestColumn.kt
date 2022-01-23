@@ -1,16 +1,13 @@
+package domain
+
 import chess.domain.board_components.Column
 import chess.domain.board_components.toColumn
 import org.junit.Assert.*
 import org.junit.Test
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import java.lang.IllegalArgumentException
 
 
-/**
- * The Column type identifies one of the columns on the board, also called files.
- * Columns are identified by a letter from 'a' to 'h'. The left column is 'a'.
- */
+
 class TestColumn {
     @Test
     fun `Letter to Column with ordinal property`() {

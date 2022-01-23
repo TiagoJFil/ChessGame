@@ -77,9 +77,9 @@ data class Board internal constructor(
 
 
     /**
+     * Makes a move on the board and changes the player turn
      * @param move the movement we want to make
      * @return the [Board] after the move
-     * Makes a move on the board and changes the player turn
      */
     fun makeMove(move: String): Board {
         val pieceMovement = move.formatToPieceMove()

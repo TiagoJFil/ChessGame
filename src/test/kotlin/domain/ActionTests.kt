@@ -1,3 +1,6 @@
+package domain
+
+import Board
 import chess.Chess
 import chess.GameName
 import chess.domain.*

@@ -254,7 +254,6 @@ private fun drawVisualsWithEndedGame(
 ){
     val infoModifier = Modifier.padding(start = 4.dp, end = 16.dp, top = 16.dp).background(Color.Red)
     val gameId = chess.currentGameId
-    val info = remember { mutableStateOf("") }
     require(gameId != null) { "Game id will never be null with a started Game" }
     require(infoToShow !is ShowCheck) { "Game is over, but we are showing a check" }
 

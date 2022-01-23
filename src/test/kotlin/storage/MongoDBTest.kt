@@ -1,3 +1,5 @@
+package storage
+
 import chess.GameName
 import chess.storage.ChessRepository
 import chess.storage.DatabaseMove
@@ -12,15 +14,17 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 
 
-private fun getMongoClient(): MongoClient {
-    val dbInfo = getDBConnectionInfo()
-    val driver =
-        if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
-        else createMongoClient()
 
-    return driver
-}
 class MongoDBTest(){
+    private fun getMongoClient(): MongoClient {
+        val dbInfo = getDBConnectionInfo()
+        val driver =
+            if (dbInfo.mode == DbMode.REMOTE) createMongoClient(dbInfo.connectionString)
+            else createMongoClient()
+
+        return driver
+    }
+
 
     @Before
     fun prepareTest() {

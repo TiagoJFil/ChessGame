@@ -1,3 +1,6 @@
+package domain
+
+import Board
 import chess.domain.Direction
 import chess.domain.PieceMove
 import chess.domain.Player
@@ -6,11 +9,6 @@ import chess.domain.getPiecePossibleMovesFrom
 import org.junit.Assert.*
 import org.junit.Test
 import java.lang.IllegalArgumentException
-
-/**
- * The Square type identifies a position on the board (Column and Row)
- * Squares are identified by one letter and one digit. The top left is "a8"
- */
 
 class TestSquare {
     @Test
