@@ -157,9 +157,6 @@ fun getMoves(possibleDirections : List<Direction>, pos : Square, board : Board, 
  */
 fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
     val pieceAtEndSquare = board.getPiece(pieceInfo.endSquare)
-    val myKing = board.getKingPiece(board.player)
-    val oponKing = board.getKingPiece(!board.player)
-    if(pieceAtEndSquare == myKing || pieceAtEndSquare == oponKing) return MoveType.ILLEGAL
 
     return when(getPossibleMoves(board, pieceInfo.startSquare, isKingInCheck(board,board.player) ||  isKingInCheckPostMove(board,pieceInfo,board.player)).contains(pieceInfo)){
         false -> MoveType.ILLEGAL
@@ -182,7 +179,6 @@ fun Piece.canNormalPieceMove(board: Board, pieceInfo: PieceMove): MoveType {
  */
 fun Square.getPiecePossibleMovesFrom(board: Board,player: Player): List<PieceMove> {
     val piece = board.getPiece(this) ?: return emptyList()
-    if(piece is King) return piece.getPossibleMoves(board,this,true)
     if(piece.player != player)
         return emptyList()
 
@@ -218,9 +214,9 @@ fun isCheckMateAfterMove(board: Board, pieceInfo: PieceMove): Boolean {
  * @param pieceInfo     The move to be checked.
  * @param player        The player to check if the king is checked after the move.
  */
-fun isKingInCheckPostMove(board: Board, pieceInfo: PieceMove, player: Player): Boolean{
+fun isKingInCheckPostMove(board: Board, pieceInfo: PieceMove, player: Player): Boolean {
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-    return isKingInCheck(tempBoard,player)
+    return isKingInCheck(tempBoard, player)
 }
 
 /**
@@ -230,9 +226,19 @@ fun isKingInCheckPostMove(board: Board, pieceInfo: PieceMove, player: Player): B
  */
 fun isStalemateAfterMove(board: Board, pieceInfo: PieceMove): Boolean{
     val tempBoard = board.makeMove(pieceInfo.formatToString(board))
-    val enemyPlayerCantMove = tempBoard.getAllBoardMovesFrom(!board.player,true)
-    return  !isKingInCheck(tempBoard,!board.player) && enemyPlayerCantMove.isEmpty()
+    val myPlayerMoves =board.getAllBoardMovesFrom( board.player,true)
+    val myPlayerCantMove = myPlayerMoves.size == 1 && myPlayerMoves[0] == pieceInfo
+
+    val enemyPlayerMoves = tempBoard.getAllBoardMovesFrom(!board.player,true)
+    val enemyPlayerCantMove = enemyPlayerMoves.isEmpty()
+
+
+    val myPlayerStalemate =        !isKingInCheck(tempBoard, board.player) && myPlayerCantMove
+    val opponnentPlayerStalemate = !isKingInCheck(tempBoard,!board.player) && enemyPlayerCantMove
+    return  myPlayerStalemate || opponnentPlayerStalemate
 }
+
+
 
 /**
  * Verifies if the [Player]'s king is in check.
@@ -240,6 +246,7 @@ fun isStalemateAfterMove(board: Board, pieceInfo: PieceMove): Boolean{
  * @param player    the player to check if the king is checked
  * @return true if the king is in check false otherwise
  */
-fun isKingInCheck(board: Board,player: Player) = board.getKingSquare(player) in board.getAllBoardMovesFrom(!player,false).map { it.endSquare }
+fun isKingInCheck(board: Board,player: Player) =
+    board.getKingSquare(player) in board.getAllBoardMovesFrom(!player,false).map { it.endSquare }
 
 
